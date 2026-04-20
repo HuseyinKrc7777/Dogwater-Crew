@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 #endif
 
-namespace StarterAssets
+namespace DogWater
 {
-	public class StarterAssetsInputs : MonoBehaviour
+	public class PlayerInputs : MonoBehaviour
 	{
 		[Header("Character Input Values")]
 		public Vector2 move;

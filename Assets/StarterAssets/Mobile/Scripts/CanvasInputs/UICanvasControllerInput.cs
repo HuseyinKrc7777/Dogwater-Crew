@@ -1,12 +1,12 @@
 using UnityEngine;
 
-namespace StarterAssets
+namespace DogWater
 {
     public class UICanvasControllerInput : MonoBehaviour
     {
 
         [Header("Output")]
-        public StarterAssetsInputs starterAssetsInputs;
+        public PlayerInputs starterAssetsInputs;
 
         public void VirtualMoveInput(Vector2 virtualMoveDirection)
         {

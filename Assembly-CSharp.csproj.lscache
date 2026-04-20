@@ -52,10 +52,18 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 /warnaserror+:NU1605
 
 [sourceFiles]
-Assets/StarterAssets/FirstPersonController/Scripts/
- BasicRigidBodyPush.cs
+Assets/Scripts/
+ BoatBouyancy.cs
+ BootstrapManager.cs
+ ClientPlayerMove.cs
  FirstPersonController.cs
+ GerstnerWaveDisplacement.cs
+ MainMenuUI.cs
+ SessionManager.cs
+ Ship.cs
+ WaterController.cs
 Assets/StarterAssets/
+ FirstPersonController/Scripts/BasicRigidBodyPush.cs
  InputSystem/StarterAssetsInputs.cs
  Mobile/Scripts/
   CanvasInputs/UICanvasControllerInput.cs
@@ -64,7 +72,6 @@ Assets/StarterAssets/
    UIVirtualButton.cs
    UIVirtualJoystick.cs
    UIVirtualTouchZone.cs
-Assets/TutorialInfo/Scripts/Readme.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]
@@ -392,6 +399,10 @@ Library/ScriptAssemblies/
  Unity.Networking.Transport.dll
  Unity.Performance.Profile-Analyzer.Editor.dll
  Unity.PlasticSCM.Editor.dll
+ Unity.ProBuilder.AddOns.Editor.dll
+ Unity.ProBuilder.AssetIdRemapUtility.dll
+ Unity.ProBuilder.dll
+ Unity.ProBuilder.Editor.dll
  Unity.Profiling.Core.dll
  Unity.Rendering.LightTransport.Editor.dll
  Unity.RenderPipeline.Universal.ShaderLibrary.dll
