@@ -324,6 +324,7 @@ Temp/obj/Assembly-CSharp-Editor/.NETStandard,Version=v2.1.AssemblyAttributes.cs
   System.Transactions.dll
   System.Xml.dll
   System.Xml.Linq.dll
+Assets/FloatingEntities/Scripts/ArchimedsLab.dll
 Library/PackageCache/com.unity.collab-proxy@a5329f833fa8/Lib/Editor/
  log4netPlastic.dll
  Unity.Plastic.Antlr3.Runtime.dll
