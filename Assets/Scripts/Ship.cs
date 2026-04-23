@@ -3,27 +3,35 @@ using UnityEngine;
 
 public class Ship : NetworkBehaviour
 {
-    public Vector3 lastPosition;
-    public Vector3 velocityDelta;
-    public Quaternion deltaRot;
-    public Quaternion shipLastRot;
+    private Vector3 _lastFramePosition;
+    public Vector3 VisualDelta { get; private set; }
 
-    void LateUpdate()
-    {
-        velocityDelta = transform.position - lastPosition;
-        lastPosition = transform.position;
-        deltaRot = transform.rotation * Quaternion.Inverse(shipLastRot);
-        shipLastRot = transform.rotation;
-    }
+    // Logic for rotation (if needed for the player's Move function)
+    private Quaternion _lastFrameRotation;
+    public Quaternion VisualRotationDelta { get; private set; }
+public float VerticalVelocity { get; private set; }
 
     void Start()
     {
-        
+        _lastFramePosition = transform.position;
+        _lastFrameRotation = transform.rotation;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (Time.deltaTime > 0)
+        {
+            VerticalVelocity = (transform.position.y - _lastFramePosition.y) / Time.deltaTime;
+        }
+        // Calculate exactly how much the VISUAL model moved this frame
+        Vector3 currentPos = transform.position;
+    Quaternion currentRot = transform.rotation;
+
+    VisualDelta = currentPos - _lastFramePosition;
+    VisualRotationDelta = currentRot * Quaternion.Inverse(_lastFrameRotation);
+
+    _lastFramePosition = currentPos;
+    _lastFrameRotation = currentRot;
     }
+
 }

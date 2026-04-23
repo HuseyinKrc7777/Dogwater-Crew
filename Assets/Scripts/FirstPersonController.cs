@@ -37,7 +37,7 @@ namespace DogWater
         [Header("Ship Settings")]
         [SerializeField] private Ship ship;
         [Tooltip("If enabled, the player will tilt to match the ship's orientation (X and Z axis).")]
-        [SerializeField] private bool _alignToShipRotation = true; 
+        [SerializeField] private bool _alignToShipRotation = false;
 
         [Header("Cinemachine")]
         public GameObject CinemachineCameraTarget;
@@ -98,22 +98,23 @@ namespace DogWater
             }
 
             GroundedCheck();
-            AlignOrientation(); 
+            AlignOrientation();
             JumpAndGravity();
-            Move(); 
+            Move();
+            Interact();
         }
 
         private void LateUpdate()
         {
             if (!IsOwner) return;
-            CameraRotation(); 
+            CameraRotation();
         }
 
         private void GroundedCheck()
         {
             Vector3 spherePosition = transform.position - (transform.up * GroundedOffset);
             Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
-            
+
             if (Grounded)
             {
                 Collider[] colliders = Physics.OverlapSphere(spherePosition, GroundedRadius, GroundLayers);
@@ -131,9 +132,9 @@ namespace DogWater
 
         private void AlignOrientation()
         {
-     
+
             Vector3 targetUp = (_alignToShipRotation && ship != null) ? ship.transform.up : Vector3.up;
-			
+
             if (Vector3.Angle(transform.up, targetUp) > 0.01f)
             {
                 Quaternion targetRotation = Quaternion.FromToRotation(transform.up, targetUp) * transform.rotation;
@@ -157,33 +158,45 @@ namespace DogWater
             }
         }
 
+        private Vector3 lastAppliedBoatDelta;
+        [SerializeField] private bool moveInputEnabled = true;
+        
         private void Move()
         {
+            if (!IsOwner) return;
+
+            // 1. CALCULATE WALKING
             float targetSpeed = _input.move == Vector2.zero ? 0.0f : (_input.sprint ? SprintSpeed : MoveSpeed);
-            float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
-
-            if (Mathf.Abs(currentHorizontalSpeed - targetSpeed) > 0.1f)
-            {
-                _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed, Time.deltaTime * SpeedChangeRate);
-            }
-            else _speed = targetSpeed;
-
+            _speed = Mathf.Lerp(_speed, targetSpeed, Time.deltaTime * SpeedChangeRate);
             Vector3 inputDirection = (transform.right * _input.move.x + transform.forward * _input.move.y).normalized;
+            Vector3 playerMotion = inputDirection * (_speed * Time.deltaTime);
 
-            Vector3 playerMotion = inputDirection * (_speed * Time.deltaTime) + (transform.up * _verticalVelocity * Time.deltaTime);
-
+            if(!moveInputEnabled)
+            {
+                playerMotion = Vector3.zero;
+            }
+            
+            Vector3 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
+            // 3. APPLY BOAT SYNC
             if (ship != null)
             {
-                Vector3 shipTranslation = ship.velocityDelta;
+                // Calculate displacement caused by ship rotation
                 Vector3 relativePos = transform.position - ship.transform.position;
-                Vector3 rotatedPos = ship.deltaRot * relativePos;
-                Vector3 shipRotationDisplacement = (rotatedPos - relativePos);
+                Vector3 rotatedPos = ship.VisualRotationDelta * relativePos;
+                Vector3 rotationDisplacement = rotatedPos - relativePos;
+                Vector3 shipTranslation = ship.VisualDelta;
 
-                _controller.Move(playerMotion + shipTranslation + shipRotationDisplacement);
+                if (!Grounded) 
+                {
+                    shipTranslation.y = 0;
+                }
+                // Final Move: Walk + Gravity + Ship Move + Ship Rotate
+
+                _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
             }
             else
             {
-                _controller.Move(playerMotion);
+                _controller.Move(playerMotion + verticalMotion);
             }
         }
 
@@ -192,11 +205,14 @@ namespace DogWater
             if (Grounded)
             {
                 _fallTimeoutDelta = FallTimeout;
-                if (_verticalVelocity < 0.0f) _verticalVelocity = -0.5f; 
+                if (_verticalVelocity < 0.0f) _verticalVelocity = -0.5f;
 
-                if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+                if (_input.jump && _jumpTimeoutDelta <= 0.0f && moveInputEnabled)
                 {
-                    _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+                    if(ship!=null)
+                        _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) + ship.VerticalVelocity;
+                    else
+                        _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) ;
                 }
                 if (_jumpTimeoutDelta >= 0.0f) _jumpTimeoutDelta -= Time.deltaTime;
             }
@@ -205,8 +221,22 @@ namespace DogWater
                 _jumpTimeoutDelta = JumpTimeout;
                 if (_fallTimeoutDelta >= 0.0f) _fallTimeoutDelta -= Time.deltaTime;
                 _input.jump = false;
-                
+
                 if (_verticalVelocity < _terminalVelocity) _verticalVelocity += Gravity * Time.deltaTime;
+            }
+        }
+
+        private void Interact()
+        {
+            if(_input.interact)
+            {
+                RaycastHit hit;
+                Physics.Raycast(CinemachineCameraTarget.transform.position, CinemachineCameraTarget.transform.forward,out hit, 2f);
+                if(hit.collider != null && hit.collider.TryGetComponent<IInteractable>(out var interactable))
+                {
+                    interactable.OnInteract();
+                     
+                }
             }
         }
 
