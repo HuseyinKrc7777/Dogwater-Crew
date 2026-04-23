@@ -161,6 +161,10 @@ namespace DogWater
         private Vector3 lastAppliedBoatDelta;
         [SerializeField] private bool moveInputEnabled = true;
         
+        private Ship _previousShip;
+        private Vector3 _previousShipPosition;
+        private Quaternion _previousShipRotation;
+
         private void Move()
         {
             if (!IsOwner) return;
@@ -177,25 +181,42 @@ namespace DogWater
             }
             
             Vector3 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
+            
             // 3. APPLY BOAT SYNC
             if (ship != null)
             {
+                if (_previousShip != ship)
+                {
+                    _previousShip = ship;
+                    _previousShipPosition = ship.transform.position;
+                    _previousShipRotation = ship.transform.rotation;
+                }
+
+                Vector3 currentShipPos = ship.transform.position;
+                Quaternion currentShipRot = ship.transform.rotation;
+
                 // Calculate displacement caused by ship rotation
-                Vector3 relativePos = transform.position - ship.transform.position;
-                Vector3 rotatedPos = ship.VisualRotationDelta * relativePos;
+                Vector3 relativePos = transform.position - _previousShipPosition;
+                Quaternion shipRotationDelta = currentShipRot * Quaternion.Inverse(_previousShipRotation);
+                Vector3 rotatedPos = shipRotationDelta * relativePos;
                 Vector3 rotationDisplacement = rotatedPos - relativePos;
-                Vector3 shipTranslation = ship.VisualDelta;
+                
+                Vector3 shipTranslation = currentShipPos - _previousShipPosition;
 
                 if (!Grounded) 
                 {
                     shipTranslation.y = 0;
                 }
+                
                 // Final Move: Walk + Gravity + Ship Move + Ship Rotate
-
                 _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
+
+                _previousShipPosition = ship.transform.position;
+                _previousShipRotation = ship.transform.rotation;
             }
             else
             {
+                _previousShip = null;
                 _controller.Move(playerMotion + verticalMotion);
             }
         }

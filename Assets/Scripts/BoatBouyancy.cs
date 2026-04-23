@@ -83,7 +83,7 @@ public class BoatMovement : NetworkBehaviour
             totalWeight += weight;
         }
 
-        center /= totalWeight;
+        if (totalWeight > 0f) center /= totalWeight;
 
         // --- NORMAL ---
         Vector3 normal = Vector3.up;
@@ -93,30 +93,46 @@ public class BoatMovement : NetworkBehaviour
             Vector3 b = effectorTargets[1];
             Vector3 c = effectorTargets[2];
             normal = Vector3.Cross(b - a, c - a).normalized;
+            if (normal == Vector3.zero || float.IsNaN(normal.x)) normal = Vector3.up;
         }
 
         // --- SPEED BOAT LIFT (PLANING) ---
         // Calculate forward speed. Dot product ensures we only care about moving forward.
-        float forwardSpeed = Vector3.Dot(rb.linearVelocity, transform.forward);
+        Vector3 currentVelocity = rb.linearVelocity;
+        if (float.IsNaN(currentVelocity.x) || float.IsNaN(currentVelocity.y) || float.IsNaN(currentVelocity.z))
+        {
+            currentVelocity = Vector3.zero;
+            rb.linearVelocity = currentVelocity;
+        }
+        float forwardSpeed = Vector3.Dot(currentVelocity, transform.forward);
         float dynamicLift = Mathf.Clamp(forwardSpeed * planingStrength, 0, maxPlaningLift);
 
         // --- POSITION ---
         // Reduce objectDepth by dynamicLift to make the boat sit "higher"
         float currentBuoyancyOffset = objectDepth - dynamicLift;
 
+        Vector3 currentPos = rb.position;
+        if (float.IsNaN(currentPos.x) || float.IsNaN(currentPos.y) || float.IsNaN(currentPos.z))
+        {
+            currentPos = transform.position; // Fallback
+        }
+
         Vector3 targetPos = new Vector3(
-            rb.position.x,
+            currentPos.x,
             center.y - currentBuoyancyOffset,
-            rb.position.z
+            currentPos.z
         );
 
         targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
         targetPos += sails.GetTotalWindPush() * Time.fixedDeltaTime;
 
-        if (float.IsNaN(velocity.y) || float.IsInfinity(velocity.y)) velocity = Vector3.zero;
+        if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z) || float.IsInfinity(velocity.y)) 
+        {
+            velocity = Vector3.zero;
+        }
 
         // --- JUMP LOGIC (SMOOTHING BIAS) ---
-        float verticalDiff = targetPos.y - rb.position.y;
+        float verticalDiff = targetPos.y - currentPos.y;
         float adjustedLerp = positionLerp;
 
         // If boat is moving fast and the water drops (verticalDiff < 0), 
@@ -127,7 +143,7 @@ public class BoatMovement : NetworkBehaviour
         }
 
         Vector3 newPos = Vector3.SmoothDamp(
-            rb.position,
+            currentPos,
             targetPos,
             ref velocity,
             1f / adjustedLerp,
@@ -135,10 +151,19 @@ public class BoatMovement : NetworkBehaviour
             Time.fixedDeltaTime
         );
 
-        rb.MovePosition(newPos);
+        if (!float.IsNaN(newPos.x) && !float.IsNaN(newPos.y) && !float.IsNaN(newPos.z))
+        {
+            rb.MovePosition(newPos);
+        }
 
         // --- ROTATION ---
-        Quaternion targetRot = Quaternion.FromToRotation(transform.up, normal) * rb.rotation;
+        Quaternion currentRot = rb.rotation;
+        if (float.IsNaN(currentRot.x) || float.IsNaN(currentRot.y) || float.IsNaN(currentRot.z) || float.IsNaN(currentRot.w) || currentRot == new Quaternion(0,0,0,0))
+        {
+            currentRot = Quaternion.identity;
+        }
+
+        Quaternion targetRot = Quaternion.FromToRotation(transform.up, normal) * currentRot;
         targetRot *= WaveRotation(wave);
         targetRot *= sails.GetTotalWindRotation();
 
@@ -154,11 +179,15 @@ public class BoatMovement : NetworkBehaviour
         float currentRotLerp = Mathf.Lerp(rotationLerp, rotationLerp * minRotationMultiplier, speedFactor);
 
         Quaternion newRot = Quaternion.Slerp(
-            rb.rotation,
+            currentRot,
             targetRot,
             currentRotLerp * Time.fixedDeltaTime
         );
-        rb.MoveRotation(newRot);
+        
+        if (!float.IsNaN(newRot.x) && !float.IsNaN(newRot.y) && !float.IsNaN(newRot.z) && !float.IsNaN(newRot.w) && newRot != new Quaternion(0,0,0,0))
+        {
+            rb.MoveRotation(newRot);
+        }
 
     }
 
