@@ -67,7 +67,8 @@ namespace DogWater
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            if (!IsOwner) return;
+            
+            // DO NOT return on !IsOwner here! Observers need their components enabled to run LateUpdate overrides!
 
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<PlayerInputs>();
@@ -77,37 +78,89 @@ namespace DogWater
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
 
-            followCam = GameObject.FindGameObjectWithTag("PlayerFollowCamera");
-            if (followCam != null && followCam.TryGetComponent<CinemachineCamera>(out var vCam))
-            {
-                vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
-            }
-            _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-        }
-
-        private void Update()
-        {
-            if (!IsOwner) return;
-
-            if (_mainCamera == null) _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            if (followCam == null)
+            if (IsOwner) 
             {
                 followCam = GameObject.FindGameObjectWithTag("PlayerFollowCamera");
                 if (followCam != null && followCam.TryGetComponent<CinemachineCamera>(out var vCam))
+                {
                     vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
+                }
+                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
-
-            GroundedCheck();
-            AlignOrientation();
-            JumpAndGravity();
-            Move();
-            Interact();
         }
 
+        // --- CUSTOM MOVING PLATFORM SYNC ---
+        private NetworkVariable<bool> _netIsOnShip = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<Vector3> _netLocalPos = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<ulong> _netShipId = new NetworkVariable<ulong>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        
+        private Vector3 _observerVisualLocalPos;
+        // -----------------------------------
+
+        private void Update()
+        {
+            if (IsOwner)
+            {
+                if (_mainCamera == null) _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+                if (followCam == null)
+                {
+                    followCam = GameObject.FindGameObjectWithTag("PlayerFollowCamera");
+                    if (followCam != null && followCam.TryGetComponent<CinemachineCamera>(out var vCam))
+                        vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
+                }
+
+                GroundedCheck();
+                AlignOrientation();
+                JumpAndGravity();
+                Move();
+                Interact();
+
+                // SYNC LOCAL POSITION TO OBSERVERS
+                if (ship != null && ship.NetworkObject != null)
+                {
+                    if (!_netIsOnShip.Value) _netIsOnShip.Value = true;
+                    _netShipId.Value = ship.NetworkObjectId;
+                    _netLocalPos.Value = ship.transform.InverseTransformPoint(transform.position);
+                }
+                else
+                {
+                    if (_netIsOnShip.Value) _netIsOnShip.Value = false;
+                }
+            }
+        }
+        private void FixedUpdate()
+        {
+        }
         private void LateUpdate()
         {
-            if (!IsOwner) return;
-            CameraRotation();
+            if (IsOwner)
+            {
+                CameraRotation();
+            }
+            else
+            {
+                // OBSERVER: FLAWLESS JITTER-FREE VISUAL GLUE
+                // Ignore NetworkTransform's jittery world space and use the owner's exact local position
+                if (_netIsOnShip.Value && NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(_netShipId.Value, out NetworkObject shipObj))
+                {
+                    // Prevent snapping if we just got on the ship
+                    if (Vector3.Distance(_observerVisualLocalPos, _netLocalPos.Value) > 5f) 
+                    {
+                        _observerVisualLocalPos = _netLocalPos.Value;
+                    }
+                    
+                    // Smoothly interpolate the 30-tick network updates into a silky smooth visual position
+                    _observerVisualLocalPos = Vector3.Lerp(_observerVisualLocalPos, _netLocalPos.Value, Time.deltaTime * 15f);
+                    
+                    // Override the final visual position relative to the ship!
+                    transform.position = shipObj.transform.TransformPoint(_observerVisualLocalPos);
+                }
+                else
+                {
+                    // Not on a ship, let standard NetworkTransform handle world space
+                    _observerVisualLocalPos = Vector3.zero;
+                }
+            }
         }
 
         private void GroundedCheck()
@@ -118,21 +171,23 @@ namespace DogWater
             if (Grounded)
             {
                 Collider[] colliders = Physics.OverlapSphere(spherePosition, GroundedRadius, GroundLayers);
+                bool foundShip = false;
                 foreach (var col in colliders)
                 {
                     if (col.CompareTag("Ship"))
                     {
                         ship = col.GetComponentInParent<Ship>();
+                        foundShip = true;
                         break;
                     }
                 }
+                if (!foundShip) ship = null;
             }
             else ship = null;
         }
 
         private void AlignOrientation()
         {
-
             Vector3 targetUp = (_alignToShipRotation && ship != null) ? ship.transform.up : Vector3.up;
 
             if (Vector3.Angle(transform.up, targetUp) > 0.01f)
@@ -161,6 +216,10 @@ namespace DogWater
         private Vector3 lastAppliedBoatDelta;
         [SerializeField] private bool moveInputEnabled = true;
         
+        private Ship _previousShip;
+        private Vector3 _previousShipPosition;
+        private Quaternion _previousShipRotation;
+
         private void Move()
         {
             if (!IsOwner) return;
@@ -176,26 +235,48 @@ namespace DogWater
                 playerMotion = Vector3.zero;
             }
             
-            Vector3 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
-            // 3. APPLY BOAT SYNC
+            // 2. GRAVITY 
+            Vector3 verticalMotion = Vector3.zero;
+            if (ship == null || _verticalVelocity > 0f)
+            {
+                verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
+            }
+            
+            // 3. APPLY BOAT SYNC (MANUAL DELTA)
             if (ship != null)
             {
+                if (_previousShip != ship)
+                {
+                    _previousShip = ship;
+                    _previousShipPosition = ship.transform.position;
+                    _previousShipRotation = ship.transform.rotation;
+                }
+
+                Vector3 currentShipPos = ship.transform.position;
+                Quaternion currentShipRot = ship.transform.rotation;
+
                 // Calculate displacement caused by ship rotation
-                Vector3 relativePos = transform.position - ship.transform.position;
-                Vector3 rotatedPos = ship.VisualRotationDelta * relativePos;
+                Vector3 relativePos = transform.position - _previousShipPosition;
+                Quaternion shipRotationDelta = currentShipRot * Quaternion.Inverse(_previousShipRotation);
+                Vector3 rotatedPos = shipRotationDelta * relativePos;
                 Vector3 rotationDisplacement = rotatedPos - relativePos;
-                Vector3 shipTranslation = ship.VisualDelta;
+                
+                Vector3 shipTranslation = currentShipPos - _previousShipPosition;
 
                 if (!Grounded) 
                 {
                     shipTranslation.y = 0;
                 }
-                // Final Move: Walk + Gravity + Ship Move + Ship Rotate
-
+                
+                // Final Move: Walk + (No sliding gravity) + Ship Move + Ship Rotate
                 _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
+
+                _previousShipPosition = ship.transform.position;
+                _previousShipRotation = ship.transform.rotation;
             }
             else
             {
+                _previousShip = null;
                 _controller.Move(playerMotion + verticalMotion);
             }
         }
@@ -205,7 +286,12 @@ namespace DogWater
             if (Grounded)
             {
                 _fallTimeoutDelta = FallTimeout;
-                if (_verticalVelocity < 0.0f) _verticalVelocity = -0.5f;
+                
+                // ANTI-SLIDE FIX: Only apply the stick-to-ground downward force if NOT on a ship
+                if (_verticalVelocity < 0.0f) 
+                {
+                    _verticalVelocity = (ship != null) ? 0.0f : -0.5f; 
+                }
 
                 if (_input.jump && _jumpTimeoutDelta <= 0.0f && moveInputEnabled)
                 {

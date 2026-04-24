@@ -86,7 +86,7 @@ Material:
     - _Wave_Length: 6.4
     - _Wave_Speed: 0.56
     - _Wave_Steepness: 0.126
-    - _Wave_Time: 56.089157
+    - _Wave_Time: 150.24036
     m_Colors:
     - _Deep_Color: {r: 0, g: 0.3102526, b: 0.5943396, a: 0.36862746}
     - _Diffuse_Color: {r: 1, g: 0, b: 0, a: 1}

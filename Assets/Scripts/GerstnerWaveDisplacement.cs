@@ -5,6 +5,8 @@ public static class GerstnerWaveDisplacement
 {
     private static Vector3 GerstnerWave(Vector3 position, float steepness, float wavelength, float speed, float direction)
     {
+        if (wavelength <= 0f) return Vector3.zero;
+
         direction = direction * 2 - 1;
         Vector2 d = new Vector2(Mathf.Cos(Mathf.PI * direction), Mathf.Sin(Mathf.PI * direction)).normalized;
         float k = 2 * Mathf.PI / wavelength;
