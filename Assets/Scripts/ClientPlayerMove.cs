@@ -17,7 +17,7 @@ public class ClientPlayerMove : NetworkBehaviour
         m_FirstPersonController.enabled = false;
         m_PlayerInput.enabled = false;
         m_CharacterController.enabled = false;
-
+        
     }
 
     public override void OnNetworkSpawn()
