@@ -16,7 +16,7 @@ public class BoatMovement : NetworkBehaviour
 
     [Header("Speed Boat Physics")]
     [Tooltip("How much the boat rises out of the water based on speed.")]
-    public float planingStrength = 0.2f; 
+    public float planingStrength = 0.2f;
     [Tooltip("Maximum height the boat can lift above the water surface.")]
     public float maxPlaningLift = 0.8f;
     [Tooltip("Limits how much the boat can pitch up/down (X-axis) to prevent flipping.")]
@@ -29,7 +29,7 @@ public class BoatMovement : NetworkBehaviour
     public float positionLerp = 3f;
     public float rotationLerp = 3f;
     [Header("Advanced Tuning")]
-    public float minRotationMultiplier = 0.3f; 
+    public float minRotationMultiplier = 0.3f;
     public float highSpeedThreshold = 20f;
 
     private Vector3[] effectorTargets;
@@ -37,6 +37,7 @@ public class BoatMovement : NetworkBehaviour
 
     private WaterController waterController;
     private Rigidbody rb;
+    private Ship ship;
 
     public override void OnNetworkSpawn()
     {
@@ -45,6 +46,7 @@ public class BoatMovement : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
         effectorTargets = new Vector3[effectors.Length];
         waterController = GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>();
+        ship = GetComponent<Ship>();
     }
 
     void FixedUpdate()
@@ -126,7 +128,7 @@ public class BoatMovement : NetworkBehaviour
         targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
         targetPos += sails.GetTotalWindPush() * Time.fixedDeltaTime;
 
-        if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z) || float.IsInfinity(velocity.y)) 
+        if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z) || float.IsInfinity(velocity.y))
         {
             velocity = Vector3.zero;
         }
@@ -158,16 +160,56 @@ public class BoatMovement : NetworkBehaviour
 
         // --- ROTATION ---
         Quaternion currentRot = rb.rotation;
-        if (float.IsNaN(currentRot.x) || float.IsNaN(currentRot.y) || float.IsNaN(currentRot.z) || float.IsNaN(currentRot.w) || currentRot == new Quaternion(0,0,0,0))
+
+        // --- 1. WAVE ALIGNMENT (PITCH + ROLL ONLY) ---
+        Quaternion waveRot = Quaternion.FromToRotation(transform.up, normal) * currentRot;
+
+        // remove yaw from wave rotation so it doesn't fight rudder
+        Vector3 waveAngles = waveRot.eulerAngles;
+        waveRot = Quaternion.Euler(waveAngles.x, currentRot.eulerAngles.y, waveAngles.z);
+
+
+        // --- 2. RUDDER YAW (THIS IS THE ACTUAL TURNING) ---
+        Vector3 rudderDir = ship.wheel.GetRudderDirection();
+
+        // flatten directions
+        Vector3 flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+        Vector3 flatRudder = Vector3.ProjectOnPlane(rudderDir, Vector3.up).normalized;
+
+        // signed angle between forward and rudder
+        float rudderAngle = Vector3.SignedAngle(flatForward, flatRudder, Vector3.up);
+
+        // speed-based turning (no speed = no turning)
+        
+        float speedFactor = Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
+
+        // THIS VALUE CONTROLS TURN POWER (increase if still weak)
+        float turnSpeed = 120f;
+
+        
+        float yawDelta = rudderAngle * speedFactor * turnSpeed * Time.fixedDeltaTime;
+
+        float angularDamping = 2f; // tweak this
+
+        yawDelta *= Mathf.Clamp01(forwardSpeed / highSpeedThreshold);  
+        yawDelta = Mathf.Lerp(yawDelta, 0f, angularDamping * Time.fixedDeltaTime);     
+
+        float minTurnSpeed = 1.0f;
+
+        if (forwardSpeed < minTurnSpeed)
         {
-            currentRot = Quaternion.identity;
+            yawDelta = 0f;
         }
 
-        Quaternion targetRot = Quaternion.FromToRotation(transform.up, normal) * currentRot;
-        targetRot *= WaveRotation(wave);
-        targetRot *= sails.GetTotalWindRotation();
+        // apply yaw separately
+        Quaternion yawRot = Quaternion.Euler(0f, yawDelta, 0f);
+
+
+        // --- 3. COMBINE ---
+        Quaternion targetRot = yawRot * waveRot;
 
         // SPEED BOAT TWEAK: Clamp Pitch to stop the boat from flipping vertically
+        /*
         Vector3 angles = targetRot.eulerAngles;
         float pitch = angles.x;
         if (pitch > 180) pitch -= 360;
@@ -177,21 +219,21 @@ public class BoatMovement : NetworkBehaviour
         float speedFactor = Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
 
         float currentRotLerp = Mathf.Lerp(rotationLerp, rotationLerp * minRotationMultiplier, speedFactor);
-
+        */
         Quaternion newRot = Quaternion.Slerp(
             currentRot,
             targetRot,
-            currentRotLerp * Time.fixedDeltaTime
+            rotationLerp * Time.fixedDeltaTime
         );
-        
-        if (!float.IsNaN(newRot.x) && !float.IsNaN(newRot.y) && !float.IsNaN(newRot.z) && !float.IsNaN(newRot.w) && newRot != new Quaternion(0,0,0,0))
+
+        if (!float.IsNaN(newRot.x) && !float.IsNaN(newRot.y) && !float.IsNaN(newRot.z) && !float.IsNaN(newRot.w) && newRot != new Quaternion(0, 0, 0, 0))
         {
             rb.MoveRotation(newRot);
         }
 
     }
 
-    public float driftIntensity = 0.09f; 
+    public float driftIntensity = 0.09f;
     private Vector3 WaveDrift(Vector3 wave) => new Vector3(wave.x, 0, wave.z) * driftIntensity;
 
     public float driftRotationIntensiy = 0.00001f;

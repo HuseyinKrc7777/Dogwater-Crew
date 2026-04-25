@@ -37,7 +37,9 @@ namespace DogWater
         [Header("Ship Settings")]
         [SerializeField] private Ship ship;
         [Tooltip("If enabled, the player will tilt to match the ship's orientation (X and Z axis).")]
-        [SerializeField] private bool _alignToShipRotation = false;
+        [SerializeField] private bool _alignToShipRotationPitchAndRoll = false;
+        [SerializeField] private bool _alignToShipRotationYaw = false;
+
 
         [Header("Cinemachine")]
         public GameObject CinemachineCameraTarget;
@@ -67,7 +69,7 @@ namespace DogWater
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            
+
             // DO NOT return on !IsOwner here! Observers need their components enabled to run LateUpdate overrides!
 
             _controller = GetComponent<CharacterController>();
@@ -78,7 +80,7 @@ namespace DogWater
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
 
-            if (IsOwner) 
+            if (IsOwner)
             {
                 followCam = GameObject.FindGameObjectWithTag("PlayerFollowCamera");
                 if (followCam != null && followCam.TryGetComponent<CinemachineCamera>(out var vCam))
@@ -93,7 +95,7 @@ namespace DogWater
         private NetworkVariable<bool> _netIsOnShip = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         private NetworkVariable<Vector3> _netLocalPos = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         private NetworkVariable<ulong> _netShipId = new NetworkVariable<ulong>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        
+
         private Vector3 _observerVisualLocalPos;
         // -----------------------------------
 
@@ -110,7 +112,6 @@ namespace DogWater
                 }
 
                 GroundedCheck();
-                AlignOrientation();
                 JumpAndGravity();
                 Move();
                 Interact();
@@ -136,6 +137,8 @@ namespace DogWater
             if (IsOwner)
             {
                 CameraRotation();
+                AlignOrientation();
+
             }
             else
             {
@@ -144,14 +147,14 @@ namespace DogWater
                 if (_netIsOnShip.Value && NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(_netShipId.Value, out NetworkObject shipObj))
                 {
                     // Prevent snapping if we just got on the ship
-                    if (Vector3.Distance(_observerVisualLocalPos, _netLocalPos.Value) > 5f) 
+                    if (Vector3.Distance(_observerVisualLocalPos, _netLocalPos.Value) > 5f)
                     {
                         _observerVisualLocalPos = _netLocalPos.Value;
                     }
-                    
+
                     // Smoothly interpolate the 30-tick network updates into a silky smooth visual position
                     _observerVisualLocalPos = Vector3.Lerp(_observerVisualLocalPos, _netLocalPos.Value, Time.deltaTime * 15f);
-                    
+
                     // Override the final visual position relative to the ship!
                     transform.position = shipObj.transform.TransformPoint(_observerVisualLocalPos);
                 }
@@ -185,21 +188,54 @@ namespace DogWater
             }
             else ship = null;
         }
+        private float lastShipYaw;
+        private float yawOffset;
+        private float yawOffsetVelocity;
+
+        [SerializeField] private float yawSmoothTime = 0.08f;
+        [SerializeField] private float tiltLerpSpeed = 12f;
 
         private void AlignOrientation()
         {
-            Vector3 targetUp = (_alignToShipRotation && ship != null) ? ship.transform.up : Vector3.up;
+            if (ship == null) return;
 
-            if (Vector3.Angle(transform.up, targetUp) > 0.01f)
+            // =====================================================
+            // 1. SMOOTH YAW (camera-style but damped)
+            // =====================================================
+            if (_alignToShipRotationYaw)
             {
-                Quaternion targetRotation = Quaternion.FromToRotation(transform.up, targetUp) * transform.rotation;
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 15f);
+                float shipYaw = ship.transform.eulerAngles.y;
+
+                float deltaYaw = Mathf.DeltaAngle(lastShipYaw, shipYaw);
+
+                transform.Rotate(0f, deltaYaw, 0f, Space.World);
+
+                lastShipYaw = shipYaw;
+            }
+
+
+            // =====================================================
+            // 2. SMOOTH PITCH + ROLL (tilt follow ship up)
+            // =====================================================
+            if (_alignToShipRotationPitchAndRoll)
+            {
+                Vector3 targetUp = ship.transform.up;
+
+                Quaternion targetTilt =
+                    Quaternion.FromToRotation(transform.up, targetUp) * transform.rotation;
+
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetTilt,
+                    Time.deltaTime * tiltLerpSpeed
+                );
+                
             }
         }
-
+        bool cameraRotationAllowed = true;
         private void CameraRotation()
         {
-            if (_input.look.sqrMagnitude >= _threshold)
+            if (_input.look.sqrMagnitude >= _threshold && cameraRotationAllowed)
             {
                 float deltaTimeMultiplier = _playerInput.currentControlScheme == "KeyboardMouse" ? 1.0f : Time.deltaTime;
 
@@ -215,7 +251,7 @@ namespace DogWater
 
         private Vector3 lastAppliedBoatDelta;
         [SerializeField] private bool moveInputEnabled = true;
-        
+
         private Ship _previousShip;
         private Vector3 _previousShipPosition;
         private Quaternion _previousShipRotation;
@@ -230,18 +266,18 @@ namespace DogWater
             Vector3 inputDirection = (transform.right * _input.move.x + transform.forward * _input.move.y).normalized;
             Vector3 playerMotion = inputDirection * (_speed * Time.deltaTime);
 
-            if(!moveInputEnabled)
+            if (!moveInputEnabled)
             {
                 playerMotion = Vector3.zero;
             }
-            
+
             // 2. GRAVITY 
             Vector3 verticalMotion = Vector3.zero;
             if (ship == null || _verticalVelocity > 0f)
             {
                 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
             }
-            
+
             // 3. APPLY BOAT SYNC (MANUAL DELTA)
             if (ship != null)
             {
@@ -260,14 +296,14 @@ namespace DogWater
                 Quaternion shipRotationDelta = currentShipRot * Quaternion.Inverse(_previousShipRotation);
                 Vector3 rotatedPos = shipRotationDelta * relativePos;
                 Vector3 rotationDisplacement = rotatedPos - relativePos;
-                
+
                 Vector3 shipTranslation = currentShipPos - _previousShipPosition;
 
-                if (!Grounded) 
+                if (!Grounded)
                 {
                     shipTranslation.y = 0;
                 }
-                
+
                 // Final Move: Walk + (No sliding gravity) + Ship Move + Ship Rotate
                 _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
 
@@ -286,19 +322,19 @@ namespace DogWater
             if (Grounded)
             {
                 _fallTimeoutDelta = FallTimeout;
-                
+
                 // ANTI-SLIDE FIX: Only apply the stick-to-ground downward force if NOT on a ship
-                if (_verticalVelocity < 0.0f) 
+                if (_verticalVelocity < 0.0f)
                 {
-                    _verticalVelocity = (ship != null) ? 0.0f : -0.5f; 
+                    _verticalVelocity = (ship != null) ? 0.0f : -0.5f;
                 }
 
                 if (_input.jump && _jumpTimeoutDelta <= 0.0f && moveInputEnabled)
                 {
-                    if(ship!=null)
+                    if (ship != null)
                         _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) + ship.VerticalVelocity;
                     else
-                        _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) ;
+                        _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
                 }
                 if (_jumpTimeoutDelta >= 0.0f) _jumpTimeoutDelta -= Time.deltaTime;
             }
@@ -311,19 +347,82 @@ namespace DogWater
                 if (_verticalVelocity < _terminalVelocity) _verticalVelocity += Gravity * Time.deltaTime;
             }
         }
-
+        bool _isMouseClosed = false;
+        IHandInput CurrentHandInput;
+        float startPos = 0.0f;
         private void Interact()
         {
-            if(_input.interact)
+            if (_isMouseClosed && CurrentHandInput != null)
             {
-                RaycastHit hit;
-                Physics.Raycast(CinemachineCameraTarget.transform.position, CinemachineCameraTarget.transform.forward,out hit, 2f);
-                if(hit.collider != null && hit.collider.TryGetComponent<IInteractable>(out var interactable))
+                float currentPos = Mouse.current.position.value.y;
+                CurrentHandInput.OnHandInput((startPos - currentPos) / 1000);
+                startPos = currentPos;
+            }
+            if (_handMode)
+            {
+                if (_input.leftMouseButton && !_isMouseClosed)
                 {
-                    interactable.OnInteract();
-                     
+                    Debug.LogError("Cursor Closed");
+                    Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
+                    _isMouseClosed = true;
+                    startPos = Mouse.current.position.value.y;
+                }
+                else if (!_input.leftMouseButton && _isMouseClosed)
+                {
+                    Debug.LogError("Cursor Open");
+
+                    Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
+                    _isMouseClosed = false;
                 }
             }
+            if (_input.interact)
+            {
+
+                RaycastHit hit;
+                Physics.Raycast(CinemachineCameraTarget.transform.position, CinemachineCameraTarget.transform.forward, out hit, 2f);
+                if (hit.collider != null && hit.collider.TryGetComponent<IInteractable>(out var interactable) && hit.collider.TryGetComponent<IHandInput>(out var handInput))
+                {
+                    if (!_handMode)
+                    {
+                        interactable.OnInteract();
+                        CurrentHandInput = handInput;
+                        EnterHandMode();
+                    }
+
+                }
+
+            }
+            else if (_handMode)
+            {
+                ExitHandMode();
+                CurrentHandInput = null;
+            }
+        }
+        [SerializeField] private bool _handMode = false;
+        [SerializeField] Texture2D cursorClosed;
+        [SerializeField] Texture2D cursorOpen;
+        public void EnterHandMode()
+        {
+            _handMode = true;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.Confined;
+            moveInputEnabled = false;
+            _alignToShipRotationPitchAndRoll = true;
+            _alignToShipRotationYaw = true;
+
+            cameraRotationAllowed = false;
+
+        }
+        public void ExitHandMode()
+        {
+            _handMode = false;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            moveInputEnabled = true;
+            _alignToShipRotationPitchAndRoll = false;
+            _alignToShipRotationYaw = false;
+            cameraRotationAllowed = true;
+
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)

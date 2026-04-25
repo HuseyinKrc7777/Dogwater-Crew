@@ -11,6 +11,8 @@ public class Ship : NetworkBehaviour
     public Quaternion VisualRotationDelta { get; private set; }
 public float VerticalVelocity { get; private set; }
 
+public Wheel wheel;
+
     void Start()
     {
         _lastFramePosition = transform.position;

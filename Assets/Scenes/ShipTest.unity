@@ -30775,6 +30775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ship
   ShowTopMostFoldoutHeaderGroup: 1
+  wheel: {fileID: 7994915632957196215}
 --- !u!114 &1217644622
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50571,7 +50572,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
-  rudderRotation: 0
+  rudderRotation:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!65 &8040253218244299710
 BoxCollider:
   m_ObjectHideFlags: 0

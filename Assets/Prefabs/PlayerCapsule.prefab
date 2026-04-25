@@ -255,7 +255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3744462911
+  GlobalObjectIdHash: 3776343090
   InScenePlacedSourceGlobalObjectIdHash: 3744462911
   DeferredDespawnTick: 0
   Ownership: 1
@@ -296,11 +296,15 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   ship: {fileID: 0}
-  _alignToShipRotation: 1
+  _alignToShipRotationPitchAndRoll: 0
+  _alignToShipRotationYaw: 0
   CinemachineCameraTarget: {fileID: 4135013735270702863}
   TopClamp: 89
   BottomClamp: -89
   moveInputEnabled: 1
+  _handMode: 0
+  cursorClosed: {fileID: 2800000, guid: 4cf01273b1dbb68818f6ba4a07fd708d, type: 3}
+  cursorOpen: {fileID: 2800000, guid: b94b767e90e413239acfd1dc5a6470b2, type: 3}
 --- !u!114 &1978471637655604388
 MonoBehaviour:
   m_ObjectHideFlags: 0
