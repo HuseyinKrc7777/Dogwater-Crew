@@ -53,12 +53,13 @@ TemporaryDependencyNodeTargetIdentifier=netstandard2.1
 Assets/
  InputSystem/PlayerInputs.cs
  Scripts/
-  BoatBouyancy.cs
+  BoatMovement.cs
   BootstrapManager.cs
   ClientPlayerMove.cs
   FirstPersonController.cs
   GerstnerWaveDisplacement.cs
   MainMenuUI.cs
+  Rope.cs
   Sail.cs
   Sails.cs
   SessionManager.cs

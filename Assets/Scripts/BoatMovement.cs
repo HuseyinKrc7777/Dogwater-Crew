@@ -186,6 +186,7 @@ public class BoatMovement : NetworkBehaviour
         // THIS VALUE CONTROLS TURN POWER (increase if still weak)
         float turnSpeed = 120f;
 
+        //TODO özellikle düşük hızlarda gemi neredeyse hiç dönemiyor. azıcık da olsa düşük hızlarda dönme daha kullanışlı hale getirilmeli
         
         float yawDelta = rudderAngle * speedFactor * turnSpeed * Time.fixedDeltaTime;
 

@@ -1,0 +1,328 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3348350456318158277
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1174981344164072961}
+  - component: {fileID: 4012628305966694738}
+  - component: {fileID: 6522370224890489918}
+  - component: {fileID: 6199786891558961878}
+  - component: {fileID: 65854035236746906}
+  - component: {fileID: 8019163083898211611}
+  - component: {fileID: 3180766565377872494}
+  - component: {fileID: 1978175466342397819}
+  m_Layer: 0
+  m_Name: BoatRootHolder
+  m_TagString: Ship
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1174981344164072961
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5101140814732849819}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4012628305966694738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 345906426
+  InScenePlacedSourceGlobalObjectIdHash: 775600657
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &6522370224890489918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39d6aa03292c84520b3da93e241f1422, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuoyantObject
+  ShowTopMostFoldoutHeaderGroup: 1
+  steepness: {x: 0, y: 0, z: 0, w: 0}
+  wavelength: {x: 0, y: 0, z: 0, w: 0}
+  speed: {x: 0, y: 0, z: 0, w: 0}
+  directions: {x: 0, y: 0, z: 0, w: 0}
+  sails: {fileID: 8019163083898211611}
+  strength: 1
+  objectDepth: 4
+  planingStrength: 0.2
+  maxPlaningLift: 0.8
+  maxPitchAngle: 15
+  effectors:
+  - {fileID: 8185786455790925937}
+  - {fileID: 6050331723535462959}
+  - {fileID: 5380574096907430275}
+  - {fileID: 7574453586013785247}
+  positionLerp: 3
+  rotationLerp: 3
+  minRotationMultiplier: 0.3
+  highSpeedThreshold: 20
+  driftIntensity: 0.05
+  driftRotationIntensiy: 0.00001
+--- !u!114 &6199786891558961878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95876fe078400f704bef8cf9a6646d3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ship
+  ShowTopMostFoldoutHeaderGroup: 1
+  wheel: {fileID: 4123916739027338565}
+--- !u!114 &65854035236746906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 1
+  RotationInterpolationType: 1
+  ScaleInterpolationType: 1
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 1
+--- !u!114 &8019163083898211611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c67ef609f1f270b6694db37c502c81bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sails
+  ShowTopMostFoldoutHeaderGroup: 1
+  sailList:
+  - {fileID: 5807671826321795255}
+  Wind: {x: 0, y: 0, z: 1}
+--- !u!54 &3180766565377872494
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!114 &1978175466342397819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkRigidbodyBaseExpanded: 0
+  UseRigidBodyForMotion: 1
+  AutoUpdateKinematicState: 0
+  AutoSetKinematicOnDespawn: 0
+--- !u!1001 &6325513502374525903
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1174981344164072961}
+    m_Modifications:
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883617206471221181, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_Name
+      value: Boat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_VersionIndex
+      value: 13
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4111baf309fecb9679462856534709cf, type: 3}
+--- !u!114 &4123916739027338565 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7994915631956459146, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c910a76b2930635da848b2a6119f76e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+--- !u!4 &5101140814732849819 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1225640521219541332, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5380574096907430275 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2117569948228096588, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5807671826321795255 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 526995670881276792, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 273558d85c3da7f02abbeaf0cec04882, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+--- !u!4 &6050331723535462959 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 306145413552130528, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7574453586013785247 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4527630982751287120, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8185786455790925937 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2761124855799038910, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
