@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class IslandSceneChanger : MonoBehaviour
+public class IslandSceneChanger : NetworkBehaviour
 {
     [SerializeField] public string IslandName;
     private bool _isTransitioning = false;
@@ -11,25 +11,23 @@ public class IslandSceneChanger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if(_isTransitioning == true)
-        return;
+            return;
 
         var player = other.GetComponentInParent<ClientPlayerMove>();
 
         if(player != null && player.IsOwner)
         {
+            _isTransitioning = true;
             RequestSceneLoadServerRpc(IslandName);
         }
-
     }
 
-    [ServerRpc]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void RequestSceneLoadServerRpc(string sceneName)
     {
-        if (_isTransitioning || sceneName == null) return;
+        if (!IsServer || string.IsNullOrEmpty(sceneName)) return;
         
-        _isTransitioning = true;
-
-        NetworkManager.Singleton.SceneManager.LoadScene(IslandName, LoadSceneMode.Single);
+        NetworkManager.Singleton.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
     
 }
