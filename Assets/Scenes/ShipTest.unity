@@ -49460,7 +49460,11 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+<<<<<<< HEAD
 --- !u!1001 &6657447564000624035
+=======
+--- !u!1001 &3822462317734990872
+>>>>>>> origin/DevE
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -49468,6 +49472,7 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+<<<<<<< HEAD
     - target: {fileID: 1174981344164072961, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -49531,12 +49536,81 @@ PrefabInstance:
     - target: {fileID: 4012628305966694738, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 345906426
+=======
+    - target: {fileID: 1637419786744924423, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 1425501399}
+    - target: {fileID: 2581354251773006791, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 1425501399}
+    - target: {fileID: 2581354251773006791, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_VersionIndex
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704198734910724103, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_Name
+      value: BoatRootHolder
+      objectReference: {fileID: 0}
+    - target: {fileID: 9077976691467239980, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1988793436
+      objectReference: {fileID: 0}
+    - target: {fileID: 9077976691467239980, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 464404707
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9114790395026915217, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+>>>>>>> origin/DevE
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
+<<<<<<< HEAD
   m_SourcePrefab: {fileID: 100100000, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+=======
+  m_SourcePrefab: {fileID: 100100000, guid: 72cd824a8b4872245907bd9c5d53de30, type: 3}
+>>>>>>> origin/DevE
 --- !u!1001 &8595091607731368520
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49613,4 +49687,8 @@ SceneRoots:
   - {fileID: 262424036}
   - {fileID: 8595091607731368520}
   - {fileID: 326171131}
+<<<<<<< HEAD
   - {fileID: 6657447564000624035}
+=======
+  - {fileID: 3822462317734990872}
+>>>>>>> origin/DevE
