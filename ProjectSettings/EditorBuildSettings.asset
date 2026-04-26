@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ShipTest.unity
     guid: ffa0158e5069846d09519177d6d3eb22
+  - enabled: 1
+    path: Assets/Scenes/IslandTemp.unity
+    guid: 0fee97a046e894445977cff080a16f17
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
