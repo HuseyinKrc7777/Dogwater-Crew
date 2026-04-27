@@ -2,14 +2,6 @@ using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 
-public interface IInteractable
-{
-    abstract public void OnInteract();
-}
-public interface IHandInput
-{
-    abstract public void OnHandInput(float value);
-}
 public class Wheel : NetworkBehaviour, IInteractable, IHandInput
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -60,8 +52,11 @@ public class Wheel : NetworkBehaviour, IInteractable, IHandInput
         return yaw * transform.forward;
     }
 
-    public void OnHandInput(float value)
+    public void OnHandInput(float xValue, float yValue)
     {
-        RotateRudderRpc(value);
+        //TODO burda belki x ve y nin toplamı veya tutuş yerine göre x veya y daha ağırlıklı olacak şekilde olabilir
+        //mesela önünden tutarsam sadece x , yanından tutarsan sadece y , ama yöne göre aynalanmış filan fişman öyle yani
+        //belki olabilir ama gerek yok gibi bişey
+        RotateRudderRpc(yValue);
     }
 }

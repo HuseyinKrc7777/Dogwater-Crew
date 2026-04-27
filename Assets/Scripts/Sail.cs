@@ -89,7 +89,8 @@ public class Sail : NetworkBehaviour
     }
     private void OnSailAreaChanged(float oldVal, float newVal)
     {
-        sailArea.Value = openRope.currentValue.Value / 100;
+        if(IsServer)
+            sailArea.Value = openRope.currentValue.Value / 100;
 
         Vector3 scale = transform.localScale;
         scale.y = sailArea.Value;
