@@ -23,7 +23,7 @@ public class Cannon : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void RequestFireRpc(RpcParams rpcParams = default)
     {
-        .
+        
         GameObject cannonballInstance = Instantiate(cannonballPrefab, spawnPoint.position, spawnPoint.rotation);
 
         
