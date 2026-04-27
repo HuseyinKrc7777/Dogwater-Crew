@@ -58,6 +58,7 @@ Assets/
   ClientPlayerMove.cs
   FirstPersonController.cs
   GerstnerWaveDisplacement.cs
+  IslandSceneChanger.cs
   MainMenuUI.cs
   Rope.cs
   Sail.cs
