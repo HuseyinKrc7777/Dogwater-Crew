@@ -58,6 +58,8 @@ Assets/
   ClientPlayerMove.cs
   FirstPersonController.cs
   GerstnerWaveDisplacement.cs
+  IHandInput.cs
+  IInteractable.cs
   IslandSceneChanger.cs
   MainMenuUI.cs
   Rope.cs

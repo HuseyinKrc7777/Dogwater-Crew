@@ -349,13 +349,15 @@ namespace DogWater
         }
         bool _isMouseClosed = false;
         IHandInput CurrentHandInput;
-        float startPos = 0.0f;
+        Vector2 startPos = Vector2.zero;
+
         private void Interact()
         {
             if (_isMouseClosed && CurrentHandInput != null)
             {
-                float currentPos = Mouse.current.position.value.y;
-                CurrentHandInput.OnHandInput((startPos - currentPos) / 1000);
+                Vector2 currentPos = Mouse.current.position.value;
+                Vector2 value = (startPos - currentPos) / 1000;
+                CurrentHandInput.OnHandInput(value.x , value.y);
                 startPos = currentPos;
             }
             if (_handMode)
@@ -365,7 +367,7 @@ namespace DogWater
                     Debug.LogError("Cursor Closed");
                     Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = true;
-                    startPos = Mouse.current.position.value.y;
+                    startPos = Mouse.current.position.value;
                 }
                 else if (!_input.leftMouseButton && _isMouseClosed)
                 {

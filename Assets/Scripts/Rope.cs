@@ -11,9 +11,9 @@ public class Rope : NetworkBehaviour , IInteractable , IHandInput
     public float hardMin = -80;
 
 
-    public void OnHandInput(float value)
+    public void OnHandInput(float xValue , float yValue)
     {
-        changeValueRpc(value);
+        changeValueRpc(yValue);
     }
 
     [Rpc(SendTo.Server)]
