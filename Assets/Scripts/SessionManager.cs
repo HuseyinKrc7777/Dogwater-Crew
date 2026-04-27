@@ -28,7 +28,7 @@ public class SessionManager : MonoBehaviour
                 Debug.Log("<color=green>Host Başlatıldı! Gelen oyuncular bekleniyor...</color>");
 
                 // Oyuna geçiş yap
-                NetworkManager.Singleton.SceneManager.LoadScene("ShipTest", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene("ShipTest 1", LoadSceneMode.Single);
             }
             else
             {
