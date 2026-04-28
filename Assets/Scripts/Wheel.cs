@@ -7,7 +7,7 @@ public class Wheel : NetworkBehaviour, IInteractable, IHandInput
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public NetworkVariable<float> rudderRotation = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public void OnInteract()
+    public void OnInteract(Player player)
     {
         //        throw new System.NotImplementedException();
     }
@@ -58,5 +58,10 @@ public class Wheel : NetworkBehaviour, IInteractable, IHandInput
         //mesela önünden tutarsam sadece x , yanından tutarsan sadece y , ama yöne göre aynalanmış filan fişman öyle yani
         //belki olabilir ama gerek yok gibi bişey
         RotateRudderRpc(yValue);
+    }
+
+    public void OnUnInteract(Player player)
+    {
+        throw new System.NotImplementedException();
     }
 }
