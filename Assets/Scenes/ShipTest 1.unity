@@ -5296,7 +5296,7 @@ GameObject:
   - component: {fileID: 162186580}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Ship
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5411,6 +5411,20 @@ MonoBehaviour:
   cannonballPrefab: {fileID: 4934504865122602455, guid: 1df7ef0117323bd4792bf7776fad94cf, type: 3}
   spawnPoint: {fileID: 485057610}
   fireForce: 20
+  maxYaw: 15
+  minPitch: -5
+  maxPitch: 15
+  manualRotationSpeed: 100
+  cannonYaw:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  cannonPitch:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!43 &175628458
 Mesh:
   m_ObjectHideFlags: 0
@@ -49679,7 +49693,7 @@ PrefabInstance:
       objectReference: {fileID: 118715271}
     - target: {fileID: 2622713439418969914, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_VersionIndex
-      value: 19
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 3348350456318158277, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Name
@@ -49687,7 +49701,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4012628305966694738, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 149929620
+      value: 821628736
       objectReference: {fileID: 0}
     - target: {fileID: 4012628305966694738, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
