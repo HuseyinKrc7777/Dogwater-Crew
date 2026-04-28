@@ -63,6 +63,7 @@ Assets/
   IslandSceneChanger.cs
   MainMenuUI.cs
   Player.cs
+  PlayerFloat.cs
   RatLines.cs
   Rope.cs
   Sail.cs

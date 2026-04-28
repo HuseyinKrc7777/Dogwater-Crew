@@ -35,7 +35,7 @@ namespace DogWater
         public LayerMask GroundLayers;
 
         [Header("Ship Settings")]
-        [SerializeField] private Ship ship;
+        [SerializeField] public Ship ship;
         [Tooltip("If enabled, the player will tilt to match the ship's orientation (X and Z axis).")]
         [SerializeField] private bool _alignToShipRotationPitchAndRoll = false;
         [SerializeField] private bool _alignToShipRotationYaw = false;
