@@ -49,7 +49,7 @@ namespace DogWater
         private float _cinemachineTargetPitch;
         private float _speed;
         private float _rotationVelocity;
-        private float _verticalVelocity;
+        public float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
 
         private float _jumpTimeoutDelta;
@@ -184,9 +184,10 @@ namespace DogWater
                         break;
                     }
                 }
-                if (!foundShip) ship = null;
+                if (!foundShip && !_handMode) ship = null;
             }
-            else ship = null;
+            else if(!_handMode)
+                ship = null;
         }
         private float lastShipYaw;
         private float yawOffset;
@@ -199,9 +200,6 @@ namespace DogWater
         {
             if (ship == null) return;
 
-            // =====================================================
-            // 1. SMOOTH YAW (camera-style but damped)
-            // =====================================================
             if (_alignToShipRotationYaw)
             {
                 float shipYaw = ship.transform.eulerAngles.y;
@@ -214,9 +212,7 @@ namespace DogWater
             }
 
 
-            // =====================================================
-            // 2. SMOOTH PITCH + ROLL (tilt follow ship up)
-            // =====================================================
+
             if (_alignToShipRotationPitchAndRoll)
             {
                 Vector3 targetUp = ship.transform.up;
@@ -260,7 +256,7 @@ namespace DogWater
         {
             if (!IsOwner) return;
 
-            // 1. CALCULATE WALKING
+            
             float targetSpeed = _input.move == Vector2.zero ? 0.0f : (_input.sprint ? SprintSpeed : MoveSpeed);
             _speed = Mathf.Lerp(_speed, targetSpeed, Time.deltaTime * SpeedChangeRate);
             Vector3 inputDirection = (transform.right * _input.move.x + transform.forward * _input.move.y).normalized;
@@ -271,14 +267,14 @@ namespace DogWater
                 playerMotion = Vector3.zero;
             }
 
-            // 2. GRAVITY 
+             
             Vector3 verticalMotion = Vector3.zero;
             if (ship == null || _verticalVelocity > 0f)
             {
                 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
             }
 
-            // 3. APPLY BOAT SYNC (MANUAL DELTA)
+            
             if (ship != null)
             {
                 if (_previousShip != ship)
@@ -291,7 +287,7 @@ namespace DogWater
                 Vector3 currentShipPos = ship.transform.position;
                 Quaternion currentShipRot = ship.transform.rotation;
 
-                // Calculate displacement caused by ship rotation
+                
                 Vector3 relativePos = transform.position - _previousShipPosition;
                 Quaternion shipRotationDelta = currentShipRot * Quaternion.Inverse(_previousShipRotation);
                 Vector3 rotatedPos = shipRotationDelta * relativePos;
@@ -304,7 +300,7 @@ namespace DogWater
                     shipTranslation.y = 0;
                 }
 
-                // Final Move: Walk + (No sliding gravity) + Ship Move + Ship Rotate
+                
                 _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
 
                 _previousShipPosition = ship.transform.position;
@@ -349,6 +345,7 @@ namespace DogWater
         }
         bool _isMouseClosed = false;
         IHandInput CurrentHandInput;
+        IInteractable CurrentInteract;
         Vector2 startPos = Vector2.zero;
 
         private void Interact()
@@ -386,8 +383,10 @@ namespace DogWater
                 {
                     if (!_handMode)
                     {
-                        interactable.OnInteract();
+                        ship = hit.collider.GetComponentInParent<Ship>();
+                        interactable.OnInteract(GetComponent<Player>());
                         CurrentHandInput = handInput;
+                        CurrentInteract = interactable;
                         EnterHandMode();
                     }
 
@@ -397,6 +396,8 @@ namespace DogWater
             else if (_handMode)
             {
                 ExitHandMode();
+                CurrentInteract.OnUnInteract(GetComponent<Player>());
+                CurrentInteract = null;
                 CurrentHandInput = null;
             }
         }

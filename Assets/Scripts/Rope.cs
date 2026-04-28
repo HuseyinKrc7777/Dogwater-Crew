@@ -24,7 +24,7 @@ public class Rope : NetworkBehaviour , IInteractable , IHandInput
         currentValue.Value += value;
     }
 
-    public void OnInteract()
+    public void OnInteract(Player player)
     {
         //throw new System.NotImplementedException();
     }
@@ -39,5 +39,10 @@ public class Rope : NetworkBehaviour , IInteractable , IHandInput
     void Update()
     {
         
+    }
+
+    public void OnUnInteract(Player player)
+    {
+        throw new System.NotImplementedException();
     }
 }

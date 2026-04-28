@@ -270,6 +270,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Boat
       objectReference: {fileID: 0}
+    - target: {fileID: 2986233829023771541, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1250414247
+      objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
       value: 13
