@@ -269,7 +269,7 @@ namespace DogWater
 
              
             Vector3 verticalMotion = Vector3.zero;
-            if (ship == null || _verticalVelocity > 0f)
+            if (!Grounded || _verticalVelocity > 0f)
             {
                 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
             }
@@ -344,6 +344,8 @@ namespace DogWater
             }
         }
         bool _isMouseClosed = false;
+        bool _isRightMouseClosed = false;
+
         IHandInput CurrentHandInput;
         IInteractable CurrentInteract;
         Vector2 startPos = Vector2.zero;
@@ -355,6 +357,14 @@ namespace DogWater
                 Vector2 currentPos = Mouse.current.position.value;
                 Vector2 value = (startPos - currentPos) / 1000;
                 CurrentHandInput.OnHandInput(value.x , value.y);
+                startPos = currentPos;
+            }
+
+            if (_isRightMouseClosed && CurrentHandInput != null)
+            {
+                Vector2 currentPos = Mouse.current.position.value;
+                Vector2 value = (startPos - currentPos) / 1000;
+                CurrentHandInput.OnRightHandInput(value.x , value.y);
                 startPos = currentPos;
             }
             if (_handMode)
@@ -372,6 +382,27 @@ namespace DogWater
 
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = false;
+                }
+
+                if (_input.rightMouseButton && !_isRightMouseClosed)
+                {
+                    Debug.LogError("Right Cursor Closed");
+                    Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
+                    _isRightMouseClosed = true;
+                    startPos = Mouse.current.position.value;
+                }
+                else if (!_input.rightMouseButton && _isRightMouseClosed)
+                {
+                    Debug.LogError("Right Cursor Open");
+
+                    Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
+                    _isRightMouseClosed = false;
+                }
+
+                if(_input.jump)
+                {
+                    CurrentHandInput.OnButtonInput();
+                    _input.jump = false;
                 }
             }
             if (_input.interact)

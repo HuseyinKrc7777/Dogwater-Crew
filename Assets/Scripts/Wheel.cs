@@ -64,4 +64,17 @@ public class Wheel : NetworkBehaviour, IInteractable, IHandInput
     {
         throw new System.NotImplementedException();
     }
+
+    public void OnRightHandInput(float xValue, float yValue)
+    {
+        //test için yapılmıştır , tamamlanmış ürünü temsil etmemektedir
+        RotateRudderRpc(xValue);
+
+    }
+
+    public void OnButtonInput()
+    {
+        Debug.Log("Ben de eklendim evet");
+        //throw new System.NotImplementedException();
+    }
 }
