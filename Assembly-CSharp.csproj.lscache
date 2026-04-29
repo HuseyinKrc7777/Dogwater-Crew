@@ -62,6 +62,7 @@ Assets/
   IInteractable.cs
   IslandSceneChanger.cs
   MainMenuUI.cs
+  Map.cs
   Player.cs
   PlayerFloat.cs
   RatLines.cs
