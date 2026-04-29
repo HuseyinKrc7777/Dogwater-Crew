@@ -9,8 +9,8 @@ public class WaterController : NetworkBehaviour
     public NetworkVariable<Vector4> wavelength;
     public NetworkVariable<Vector4> speed;
     public NetworkVariable<Vector4> directions;
-
-
+    public NetworkVariable<Vector3> wind = new NetworkVariable<Vector3>(Vector3.forward, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public Vector3 editorWind;
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -19,15 +19,21 @@ public class WaterController : NetworkBehaviour
         {
             obj.GetComponent<Renderer>().sharedMaterial = WaterMaterial;
         }
+        if (IsServer)
+        {
+            wind.Value = Vector3.forward;
+        }
         if(!IsOwner)
             return;
-        
     }
-
 
     // Update is called once per frame
     void Update()
     {
+        if(IsServer)
+        {
+            wind.Value = editorWind;
+        }
         if(IsOwner)
         {
             steepness.Value = WaterMaterial.GetVector("_Wave_Steepness");
