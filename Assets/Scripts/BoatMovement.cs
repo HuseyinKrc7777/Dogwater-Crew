@@ -144,6 +144,8 @@ public class BoatMovement : NetworkBehaviour
             adjustedLerp *= 0.3f; // Less aggressive following of the water's downward slope
         }
 
+        //TODO geminin pozisyonunun kordinatsal değişimine göre velocity'sinden  ; anında hareket yerine
+        // hızlanma / yavaşlama mantığına geçilecek.
         Vector3 newPos = Vector3.SmoothDamp(
             currentPos,
             targetPos,
@@ -186,7 +188,6 @@ public class BoatMovement : NetworkBehaviour
         // THIS VALUE CONTROLS TURN POWER (increase if still weak)
         float turnSpeed = 120f;
 
-        //TODO özellikle düşük hızlarda gemi neredeyse hiç dönemiyor. azıcık da olsa düşük hızlarda dönme daha kullanışlı hale getirilmeli
         
         float yawDelta = rudderAngle * speedFactor * turnSpeed * Time.fixedDeltaTime;
 
