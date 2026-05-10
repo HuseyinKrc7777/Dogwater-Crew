@@ -30,7 +30,7 @@ public class BoatMovement : NetworkBehaviour
     public float rotationLerp = 3f;
     [Header("Advanced Tuning")]
     public float minRotationMultiplier = 0.3f;
-    public float highSpeedThreshold = 20f;
+    public float highSpeedThreshold = 5f;
 
     private Vector3[] effectorTargets;
     private Vector3 velocity;
