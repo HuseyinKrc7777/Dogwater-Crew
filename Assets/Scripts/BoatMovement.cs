@@ -111,13 +111,12 @@ public class BoatMovement : NetworkBehaviour
         float dynamicLift = Mathf.Clamp(forwardSpeed * planingStrength, 0, maxPlaningLift);
 
         // --- POSITION ---
-        // Reduce objectDepth by dynamicLift to make the boat sit "higher"
         float currentBuoyancyOffset = objectDepth - dynamicLift;
 
         Vector3 currentPos = rb.position;
         if (float.IsNaN(currentPos.x) || float.IsNaN(currentPos.y) || float.IsNaN(currentPos.z))
         {
-            currentPos = transform.position; // Fallback
+            currentPos = transform.position; 
         }
 
         Vector3 targetPos = new Vector3(
@@ -173,10 +172,8 @@ public class BoatMovement : NetworkBehaviour
 
         rb.MovePosition(newPos);
 
-        // --- ROTATION ---
         Quaternion currentRot = rb.rotation;
 
-        // --- 1. WAVE ALIGNMENT (PITCH + ROLL ONLY) ---
         Quaternion waveRot = Quaternion.FromToRotation(transform.up, normal) * currentRot;
 
         Vector3 waveAngles = waveRot.eulerAngles;
@@ -198,7 +195,7 @@ public class BoatMovement : NetworkBehaviour
 
         float yawDelta = rudderAngle * speedFactor * turnSpeed * Time.fixedDeltaTime;
 
-        float angularDamping = 1f; // tweak this
+        float angularDamping = 1f; 
 
         yawDelta *= Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
         yawDelta = Mathf.Lerp(yawDelta, 0f, angularDamping * Time.fixedDeltaTime);
@@ -240,11 +237,6 @@ public class BoatMovement : NetworkBehaviour
                 angularAccel * Mathf.Deg2Rad * Time.fixedDeltaTime
             );
 
-            Quaternion stepRot = Quaternion.Euler(
-                currentAngularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime
-            );
-
-
             Vector3 currentEuler = currentRot.eulerAngles;
 
 
@@ -267,7 +259,6 @@ public class BoatMovement : NetworkBehaviour
 
 
             float currentYaw = currentEuler.y;
-            float targetYaw = (yawRot * currentRot).eulerAngles.y;
 
 
             float desiredYawVelocity =
