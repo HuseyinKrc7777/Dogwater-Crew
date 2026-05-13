@@ -86,7 +86,6 @@ MonoBehaviour:
   objectDepth: 4
   planingStrength: 0.2
   maxPlaningLift: 0.8
-  maxPitchAngle: 15
   effectors:
   - {fileID: 8185786455790925937}
   - {fileID: 6050331723535462959}
@@ -95,7 +94,9 @@ MonoBehaviour:
   positionLerp: 3
   rotationLerp: 3
   minRotationMultiplier: 0.3
-  highSpeedThreshold: 20
+  highSpeedThreshold: 5
+  currentVelocity: {x: 0, y: 0, z: 0}
+  currentAngularVelocity: {x: 0, y: 0, z: 0}
   driftIntensity: 0.05
   driftRotationIntensiy: 0.00001
 --- !u!114 &6199786891558961878

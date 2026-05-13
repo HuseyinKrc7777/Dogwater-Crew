@@ -187,7 +187,13 @@ namespace DogWater
                 if (!foundShip && !_handMode) ship = null;
             }
             else if(!_handMode)
-                ship = null;
+            {
+                //TODO gemi ataması geminin içindeki bir alanın içinde olunup olunmadığına göre yapılacak çünkü gemi hızlı
+                // sallanıyosa oyuncu kısa sürede havada kaldığı için gemiden bağımsız olup geri doğru gidiyor , bu durum istenen
+                // birdurum değildir. Alan geminin zeminlerinden birazcık yukarıda olacaktır. sallanma payı içermektedir.
+                //ship = null;
+                
+            }
         }
         private float lastShipYaw;
         private float yawOffset;
