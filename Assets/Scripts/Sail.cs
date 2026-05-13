@@ -118,7 +118,7 @@ public class Sail : NetworkBehaviour
 
         float angleOfAttack = Vector3.Angle(currentSailForward, wind.normalized);
 
-
+        //TODO itiş gücü daha açıya daha merhametli olacak ve rüzgara dik olmadığı sürece bir miktar itiş sağlıyacak
         float lift = Mathf.Sin(angleOfAttack * Mathf.Deg2Rad * 2) * liftCoefficient;
         float drag = Mathf.Max(0, Vector3.Dot(currentSailForward, wind.normalized)) * 0.5f;
 
