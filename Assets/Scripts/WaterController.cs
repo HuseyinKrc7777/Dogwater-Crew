@@ -11,6 +11,16 @@ public class WaterController : NetworkBehaviour
     public NetworkVariable<Vector4> directions;
     public NetworkVariable<Vector3> wind = new NetworkVariable<Vector3>(Vector3.forward, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public Vector3 editorWind;
+    private Transform followTransform ;
+    [SerializeField] private GameObject WaterChunks;
+    [SerializeField] private GameObject FillerChunks;
+    private void MoveChunks()
+    {
+        //TODO harekete göre waterchunks içindeki chunkların gidilen yöne göre olanının içinden block sular
+        //posta posta  (gidilen yere göre bir çizgi veya çarpraz ise 2 adet kesişen çizgi) şeklinde arkadan
+        //öne doğru gelecekler.
+    }
+    
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -23,16 +33,30 @@ public class WaterController : NetworkBehaviour
         {
             wind.Value = Vector3.forward;
         }
+
+        followTransform = GameObject.FindGameObjectWithTag("Ship").transform;
         if(!IsOwner)
             return;
     }
 
     // Update is called once per frame
     void Update()
-    {
+    {   
+        //TODO chunk hareket kondisyonu , geminin önceki chunk değişiklinde kaydedilen pozisyonundan belli
+        //bir miktarda uzaklaşması olabilir.
+        //hareket edilen yöne göre yaklaşılan ve uzaklaşılan parçaların tespit edilip ; 
+        // uzaklaşan parçaların yeni konumunun yaklaşılan parçaların konumu ve 
+        // parça büyüklüğüne göre hesaplanması gerekli.
+        //
+
+
         if(IsServer)
         {
             wind.Value = editorWind;
+        }
+        if(followTransform!=null)
+        {
+            FillerChunks.transform.position = new Vector3(followTransform.position.x,0,followTransform.position.z);
         }
         if(IsOwner)
         {

@@ -23,6 +23,10 @@ public class WindFlag : NetworkBehaviour
         if(transform.parent!=null)
         {
             forw = transform.parent.InverseTransformDirection(forw);
+            if(forw == Vector3.zero)
+            {
+                forw = Vector3.down;
+            }
         }
         Flag.transform.localRotation = Quaternion.LookRotation(forw);
         

@@ -173,6 +173,7 @@ namespace DogWater
 
             if (Grounded)
             {
+                /*
                 Collider[] colliders = Physics.OverlapSphere(spherePosition, GroundedRadius, GroundLayers);
                 bool foundShip = false;
                 foreach (var col in colliders)
@@ -185,15 +186,9 @@ namespace DogWater
                     }
                 }
                 if (!foundShip && !_handMode) ship = null;
+                */
             }
-            else if(!_handMode)
-            {
-                //TODO gemi ataması geminin içindeki bir alanın içinde olunup olunmadığına göre yapılacak çünkü gemi hızlı
-                // sallanıyosa oyuncu kısa sürede havada kaldığı için gemiden bağımsız olup geri doğru gidiyor , bu durum istenen
-                // birdurum değildir. Alan geminin zeminlerinden birazcık yukarıda olacaktır. sallanma payı içermektedir.
-                //ship = null;
-                
-            }
+            
         }
         private float lastShipYaw;
         private float yawOffset;
@@ -462,7 +457,7 @@ namespace DogWater
             _alignToShipRotationPitchAndRoll = false;
             _alignToShipRotationYaw = false;
             cameraRotationAllowed = true;
-
+            ship = null;
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
@@ -470,6 +465,36 @@ namespace DogWater
             if (lfAngle < -360f) lfAngle += 360f;
             if (lfAngle > 360f) lfAngle -= 360f;
             return Mathf.Clamp(lfAngle, lfMin, lfMax);
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if(other.CompareTag("Ship"))
+            {
+                ship = other.GetComponentInParent<Ship>();
+
+            }  
+        }
+
+        void OnTriggerStay(Collider other)
+        {
+            if(ship!=null)
+                return;
+            if(other.CompareTag("Ship"))
+            {
+                ship = other.GetComponentInParent<Ship>();
+
+            }  
+        }
+
+        void OnTriggerExit(Collider other)
+        {
+            if(other.CompareTag("Ship"))
+            {
+                if(!_handMode)
+                    ship = null;
+
+            }  
         }
     }
 }
