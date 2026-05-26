@@ -14,13 +14,6 @@ public class WaterController : NetworkBehaviour
     private Transform followTransform ;
     [SerializeField] private GameObject WaterChunks;
     [SerializeField] private GameObject FillerChunks;
-    private void MoveChunks()
-    {
-        //TODO harekete göre waterchunks içindeki chunkların gidilen yöne göre olanının içinden block sular
-        //posta posta  (gidilen yere göre bir çizgi veya çarpraz ise 2 adet kesişen çizgi) şeklinde arkadan
-        //öne doğru gelecekler.
-    }
-    
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

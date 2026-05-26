@@ -9,6 +9,7 @@ TagManager:
   - PlayerFollowCamera
   - Water
   - WaterController
+  - WaterBlock
   layers:
   - Default
   - TransparentFX
