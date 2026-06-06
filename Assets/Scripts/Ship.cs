@@ -9,9 +9,11 @@ public class Ship : NetworkBehaviour
     // Logic for rotation (if needed for the player's Move function)
     private Quaternion _lastFrameRotation;
     public Quaternion VisualRotationDelta { get; private set; }
-public float VerticalVelocity { get; private set; }
+    public float VerticalVelocity { get; private set; }
 
-public Wheel wheel;
+    public Wheel wheel;
+
+    public Anchor anchor;
 
     void Start()
     {
@@ -27,13 +29,13 @@ public Wheel wheel;
         }
         // Calculate exactly how much the VISUAL model moved this frame
         Vector3 currentPos = transform.position;
-    Quaternion currentRot = transform.rotation;
+        Quaternion currentRot = transform.rotation;
 
-    VisualDelta = currentPos - _lastFramePosition;
-    VisualRotationDelta = currentRot * Quaternion.Inverse(_lastFrameRotation);
+        VisualDelta = currentPos - _lastFramePosition;
+        VisualRotationDelta = currentRot * Quaternion.Inverse(_lastFrameRotation);
 
-    _lastFramePosition = currentPos;
-    _lastFrameRotation = currentRot;
+        _lastFramePosition = currentPos;
+        _lastFrameRotation = currentRot;
     }
 
 }

@@ -151,6 +151,16 @@ public class BoatMovement : NetworkBehaviour
             desiredVelocity.magnitude > currentVelocity.magnitude
             ? acceleration
             : deceleration;
+        
+        //buradaki kontrol değeri , konumun derinliği ile alaklıdır , bölgeden bölgeye değişecektir.
+        if(ship.anchor.releasedRopeAmount.Value > 70)
+        {
+            desiredVelocity  = Vector3.zero;
+        }
+        else if (ship.anchor.releasedRopeAmount.Value > 1)
+        {
+            accelRate -= accelRate / 4;
+        }
 
         currentVelocity = Vector3.MoveTowards(
             currentVelocity,

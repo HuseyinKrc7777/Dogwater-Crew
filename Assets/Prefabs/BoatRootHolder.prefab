@@ -116,6 +116,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ship
   ShowTopMostFoldoutHeaderGroup: 1
   wheel: {fileID: 4123916739027338565}
+  anchor: {fileID: 5492485562776103550}
 --- !u!114 &65854035236746906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -591,9 +592,13 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 3474757131
       objectReference: {fileID: 0}
+    - target: {fileID: 5124868714728881329, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
-      value: 13
+      value: 25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -621,6 +626,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2117569948228096588, guid: 4111baf309fecb9679462856534709cf, type: 3}
   m_PrefabInstance: {fileID: 6325513502374525903}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5492485562776103550 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2013539496091668913, guid: 4111baf309fecb9679462856534709cf, type: 3}
+  m_PrefabInstance: {fileID: 6325513502374525903}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5d9c28991410c7d1adae4ed78bbff50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!114 &5807671826321795255 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 526995670881276792, guid: 4111baf309fecb9679462856534709cf, type: 3}
