@@ -12,6 +12,12 @@ public class Sails : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        Wind = GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>().wind.Value;
+        GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>().wind.OnValueChanged+=OnWindChange;
+    }
+    public void OnWindChange(Vector3 oldValue , Vector3 newValue)
+    {
+        Wind = newValue;
     }
     public Vector3 GetTotalWindPush()
     {

@@ -5,6 +5,12 @@ public class RatLines : MonoBehaviour , IHandInput , IInteractable
 {
     FirstPersonController playerController;
     private bool holding = false;
+
+    public void OnButtonInput()
+    {
+        //throw new System.NotImplementedException();
+    }
+
     public void OnHandInput(float xValue, float yValue)
     {
         playerController._verticalVelocity+=yValue * 10;
@@ -14,6 +20,11 @@ public class RatLines : MonoBehaviour , IHandInput , IInteractable
     {
         playerController = player.controller;
         holding = true;
+    }
+
+    public void OnRightHandInput(float xValue, float yValue)
+    {
+        //throw new System.NotImplementedException();
     }
 
     public void OnUnInteract(Player player)

@@ -35,7 +35,7 @@ namespace DogWater
         public LayerMask GroundLayers;
 
         [Header("Ship Settings")]
-        [SerializeField] private Ship ship;
+        [SerializeField] public Ship ship;
         [Tooltip("If enabled, the player will tilt to match the ship's orientation (X and Z axis).")]
         [SerializeField] private bool _alignToShipRotationPitchAndRoll = false;
         [SerializeField] private bool _alignToShipRotationYaw = false;
@@ -173,6 +173,7 @@ namespace DogWater
 
             if (Grounded)
             {
+                /*
                 Collider[] colliders = Physics.OverlapSphere(spherePosition, GroundedRadius, GroundLayers);
                 bool foundShip = false;
                 foreach (var col in colliders)
@@ -185,9 +186,9 @@ namespace DogWater
                     }
                 }
                 if (!foundShip && !_handMode) ship = null;
+                */
             }
-            else if(!_handMode)
-                ship = null;
+            
         }
         private float lastShipYaw;
         private float yawOffset;
@@ -269,7 +270,7 @@ namespace DogWater
 
              
             Vector3 verticalMotion = Vector3.zero;
-            if (ship == null || _verticalVelocity > 0f)
+            if (!Grounded || _verticalVelocity > 0f)
             {
                 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
             }
@@ -344,6 +345,8 @@ namespace DogWater
             }
         }
         bool _isMouseClosed = false;
+        bool _isRightMouseClosed = false;
+
         IHandInput CurrentHandInput;
         IInteractable CurrentInteract;
         Vector2 startPos = Vector2.zero;
@@ -355,6 +358,14 @@ namespace DogWater
                 Vector2 currentPos = Mouse.current.position.value;
                 Vector2 value = (startPos - currentPos) / 1000;
                 CurrentHandInput.OnHandInput(value.x , value.y);
+                startPos = currentPos;
+            }
+
+            if (_isRightMouseClosed && CurrentHandInput != null)
+            {
+                Vector2 currentPos = Mouse.current.position.value;
+                Vector2 value = (startPos - currentPos) / 1000;
+                CurrentHandInput.OnRightHandInput(value.x , value.y);
                 startPos = currentPos;
             }
             if (_handMode)
@@ -372,6 +383,27 @@ namespace DogWater
 
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = false;
+                }
+
+                if (_input.rightMouseButton && !_isRightMouseClosed)
+                {
+                    Debug.LogError("Right Cursor Closed");
+                    Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
+                    _isRightMouseClosed = true;
+                    startPos = Mouse.current.position.value;
+                }
+                else if (!_input.rightMouseButton && _isRightMouseClosed)
+                {
+                    Debug.LogError("Right Cursor Open");
+
+                    Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
+                    _isRightMouseClosed = false;
+                }
+
+                if(_input.jump)
+                {
+                    CurrentHandInput.OnButtonInput();
+                    _input.jump = false;
                 }
             }
             if (_input.interact)
@@ -425,7 +457,7 @@ namespace DogWater
             _alignToShipRotationPitchAndRoll = false;
             _alignToShipRotationYaw = false;
             cameraRotationAllowed = true;
-
+            ship = null;
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
@@ -433,6 +465,36 @@ namespace DogWater
             if (lfAngle < -360f) lfAngle += 360f;
             if (lfAngle > 360f) lfAngle -= 360f;
             return Mathf.Clamp(lfAngle, lfMin, lfMax);
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if(other.CompareTag("Ship"))
+            {
+                ship = other.GetComponentInParent<Ship>();
+
+            }  
+        }
+
+        void OnTriggerStay(Collider other)
+        {
+            if(ship!=null)
+                return;
+            if(other.CompareTag("Ship"))
+            {
+                ship = other.GetComponentInParent<Ship>();
+
+            }  
+        }
+
+        void OnTriggerExit(Collider other)
+        {
+            if(other.CompareTag("Ship"))
+            {
+                if(!_handMode)
+                    ship = null;
+
+            }  
         }
     }
 }

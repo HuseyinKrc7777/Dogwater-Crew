@@ -20,7 +20,6 @@ public class BoatMovement : NetworkBehaviour
     [Tooltip("Maximum height the boat can lift above the water surface.")]
     public float maxPlaningLift = 0.8f;
     [Tooltip("Limits how much the boat can pitch up/down (X-axis) to prevent flipping.")]
-    public float maxPitchAngle = 15f;
 
     [Header("Effectors")]
     public Transform[] effectors;
@@ -30,7 +29,7 @@ public class BoatMovement : NetworkBehaviour
     public float rotationLerp = 3f;
     [Header("Advanced Tuning")]
     public float minRotationMultiplier = 0.3f;
-    public float highSpeedThreshold = 20f;
+    public float highSpeedThreshold = 5f;
 
     private Vector3[] effectorTargets;
     private Vector3 velocity;
@@ -38,6 +37,8 @@ public class BoatMovement : NetworkBehaviour
     private WaterController waterController;
     private Rigidbody rb;
     private Ship ship;
+    public Vector3 currentVelocity;
+    public Vector3 currentAngularVelocity;
 
     public override void OnNetworkSpawn()
     {
@@ -100,7 +101,7 @@ public class BoatMovement : NetworkBehaviour
 
         // --- SPEED BOAT LIFT (PLANING) ---
         // Calculate forward speed. Dot product ensures we only care about moving forward.
-        Vector3 currentVelocity = rb.linearVelocity;
+        currentVelocity = rb.linearVelocity;
         if (float.IsNaN(currentVelocity.x) || float.IsNaN(currentVelocity.y) || float.IsNaN(currentVelocity.z))
         {
             currentVelocity = Vector3.zero;
@@ -110,13 +111,12 @@ public class BoatMovement : NetworkBehaviour
         float dynamicLift = Mathf.Clamp(forwardSpeed * planingStrength, 0, maxPlaningLift);
 
         // --- POSITION ---
-        // Reduce objectDepth by dynamicLift to make the boat sit "higher"
         float currentBuoyancyOffset = objectDepth - dynamicLift;
 
         Vector3 currentPos = rb.position;
         if (float.IsNaN(currentPos.x) || float.IsNaN(currentPos.y) || float.IsNaN(currentPos.z))
         {
-            currentPos = transform.position; // Fallback
+            currentPos = transform.position; 
         }
 
         Vector3 targetPos = new Vector3(
@@ -133,103 +133,176 @@ public class BoatMovement : NetworkBehaviour
             velocity = Vector3.zero;
         }
 
-        // --- JUMP LOGIC (SMOOTHING BIAS) ---
-        float verticalDiff = targetPos.y - currentPos.y;
-        float adjustedLerp = positionLerp;
+     
+        Vector3 desiredDirection = (targetPos - currentPos);
 
-        // If boat is moving fast and the water drops (verticalDiff < 0), 
-        // slow down the "pull" to create air-time/jumping effect.
-        if (forwardSpeed > 5f && verticalDiff < 0)
+        if (desiredDirection.magnitude > 0.001f)
         {
-            adjustedLerp *= 0.3f; // Less aggressive following of the water's downward slope
+            desiredDirection.Normalize();
         }
 
-        Vector3 newPos = Vector3.SmoothDamp(
-            currentPos,
-            targetPos,
-            ref velocity,
-            1f / adjustedLerp,
-            Mathf.Infinity,
-            Time.fixedDeltaTime
+
+        float acceleration = 1f;
+        float deceleration = 0.5f;
+
+        Vector3 desiredVelocity = desiredDirection * (targetPos - currentPos).magnitude * 10;
+
+        float accelRate =
+            desiredVelocity.magnitude > currentVelocity.magnitude
+            ? acceleration
+            : deceleration;
+        
+        //buradaki kontrol değeri , konumun derinliği ile alaklıdır , bölgeden bölgeye değişecektir.
+        if(ship.anchor.releasedRopeAmount.Value > 70)
+        {
+            desiredVelocity  = Vector3.zero;
+        }
+        else if (ship.anchor.releasedRopeAmount.Value > 1)
+        {
+            accelRate -= accelRate / 4;
+        }
+
+        currentVelocity = Vector3.MoveTowards(
+            currentVelocity,
+            desiredVelocity,
+            accelRate * Time.fixedDeltaTime
         );
 
-        if (!float.IsNaN(newPos.x) && !float.IsNaN(newPos.y) && !float.IsNaN(newPos.z))
-        {
-            rb.MovePosition(newPos);
-        }
+        Vector3 newPos =
+            currentPos +
+            currentVelocity * Time.fixedDeltaTime;
 
-        // --- ROTATION ---
+        newPos = Vector3.Scale(new Vector3(1, 0, 1), newPos);
+
+        newPos = new Vector3(
+            newPos.x,
+            center.y - currentBuoyancyOffset,
+            newPos.z
+        );
+
+        rb.MovePosition(newPos);
+
         Quaternion currentRot = rb.rotation;
 
-        // --- 1. WAVE ALIGNMENT (PITCH + ROLL ONLY) ---
         Quaternion waveRot = Quaternion.FromToRotation(transform.up, normal) * currentRot;
 
-        // remove yaw from wave rotation so it doesn't fight rudder
         Vector3 waveAngles = waveRot.eulerAngles;
         waveRot = Quaternion.Euler(waveAngles.x, currentRot.eulerAngles.y, waveAngles.z);
 
 
-        // --- 2. RUDDER YAW (THIS IS THE ACTUAL TURNING) ---
         Vector3 rudderDir = ship.wheel.GetRudderDirection();
 
-        // flatten directions
         Vector3 flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
         Vector3 flatRudder = Vector3.ProjectOnPlane(rudderDir, Vector3.up).normalized;
 
-        // signed angle between forward and rudder
         float rudderAngle = Vector3.SignedAngle(flatForward, flatRudder, Vector3.up);
 
-        // speed-based turning (no speed = no turning)
-        
+
         float speedFactor = Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
 
-        // THIS VALUE CONTROLS TURN POWER (increase if still weak)
-        float turnSpeed = 120f;
+        float turnSpeed = 200f;
 
-        //TODO özellikle düşük hızlarda gemi neredeyse hiç dönemiyor. azıcık da olsa düşük hızlarda dönme daha kullanışlı hale getirilmeli
-        
+
         float yawDelta = rudderAngle * speedFactor * turnSpeed * Time.fixedDeltaTime;
 
-        float angularDamping = 2f; // tweak this
+        float angularDamping = 1f; 
 
-        yawDelta *= Mathf.Clamp01(forwardSpeed / highSpeedThreshold);  
-        yawDelta = Mathf.Lerp(yawDelta, 0f, angularDamping * Time.fixedDeltaTime);     
+        yawDelta *= Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
+        yawDelta = Mathf.Lerp(yawDelta, 0f, angularDamping * Time.fixedDeltaTime);
 
-        float minTurnSpeed = 1.0f;
+        float minTurnSpeed = 0.3f;
 
         if (forwardSpeed < minTurnSpeed)
         {
             yawDelta = 0f;
         }
 
-        // apply yaw separately
         Quaternion yawRot = Quaternion.Euler(0f, yawDelta, 0f);
 
 
-        // --- 3. COMBINE ---
         Quaternion targetRot = yawRot * waveRot;
 
-        // SPEED BOAT TWEAK: Clamp Pitch to stop the boat from flipping vertically
-        /*
-        Vector3 angles = targetRot.eulerAngles;
-        float pitch = angles.x;
-        if (pitch > 180) pitch -= 360;
-        pitch = Mathf.Clamp(pitch, -maxPitchAngle, maxPitchAngle);
-        targetRot = Quaternion.Euler(pitch, angles.y, angles.z);
+        float angularAccel = 120f;
 
-        float speedFactor = Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
+        Quaternion delta =
+            targetRot * Quaternion.Inverse(currentRot);
 
-        float currentRotLerp = Mathf.Lerp(rotationLerp, rotationLerp * minRotationMultiplier, speedFactor);
-        */
-        Quaternion newRot = Quaternion.Slerp(
-            currentRot,
-            targetRot,
-            rotationLerp * Time.fixedDeltaTime
-        );
+        delta.ToAngleAxis(out float angle, out Vector3 axis);
 
-        if (!float.IsNaN(newRot.x) && !float.IsNaN(newRot.y) && !float.IsNaN(newRot.z) && !float.IsNaN(newRot.w) && newRot != new Quaternion(0, 0, 0, 0))
+        if (angle > 180f)
         {
-            rb.MoveRotation(newRot);
+            angle -= 360f;
+        }
+
+        if (Mathf.Abs(angle) > 0.01f)
+        {
+            Vector3 desiredAngularVelocity =
+                axis.normalized *
+                angle *
+                Mathf.Deg2Rad;
+
+            currentAngularVelocity = Vector3.MoveTowards(
+                currentAngularVelocity,
+                desiredAngularVelocity,
+                angularAccel * Mathf.Deg2Rad * Time.fixedDeltaTime
+            );
+
+            Vector3 currentEuler = currentRot.eulerAngles;
+
+
+            Vector3 waveEuler = waveRot.eulerAngles;
+
+            float targetPitch = waveEuler.x;
+            float targetRoll = waveEuler.z;
+
+            float newPitch = Mathf.LerpAngle(
+                currentEuler.x,
+                targetPitch,
+                rotationLerp * Time.fixedDeltaTime
+            );
+
+            float newRoll = Mathf.LerpAngle(
+                currentEuler.z,
+                targetRoll,
+                rotationLerp * Time.fixedDeltaTime
+            );
+
+
+            float currentYaw = currentEuler.y;
+
+
+            float desiredYawVelocity =
+                yawDelta * Mathf.Deg2Rad;
+
+
+            currentAngularVelocity.y = Mathf.MoveTowards(
+                currentAngularVelocity.y,
+                desiredYawVelocity,
+                angularAccel * Time.fixedDeltaTime
+            );
+
+            float newYaw =
+                currentYaw +
+                currentAngularVelocity.y *
+                Mathf.Rad2Deg *
+                Time.fixedDeltaTime;
+
+            Quaternion finalRot = Quaternion.Euler(
+                newPitch,
+                newYaw,
+                newRoll
+            );
+
+            if (!float.IsNaN(finalRot.x) &&
+                !float.IsNaN(finalRot.y) &&
+                !float.IsNaN(finalRot.z) &&
+                !float.IsNaN(finalRot.w) &&
+                finalRot != new Quaternion(0, 0, 0, 0))
+            {
+                rb.MoveRotation(finalRot);
+            }
+
+
         }
 
     }

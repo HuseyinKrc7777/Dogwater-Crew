@@ -45,4 +45,14 @@ public class Rope : NetworkBehaviour , IInteractable , IHandInput
     {
         throw new System.NotImplementedException();
     }
+
+    public void OnRightHandInput(float xValue, float yValue)
+    {
+        //throw new System.NotImplementedException();
+    }
+
+    public void OnButtonInput()
+    {
+        //throw new System.NotImplementedException();
+    }
 }

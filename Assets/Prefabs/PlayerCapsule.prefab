@@ -196,6 +196,7 @@ GameObject:
   - component: {fileID: 1545417445730170441}
   - component: {fileID: 6270514582772493446}
   - component: {fileID: 8357779637139876747}
+  - component: {fileID: 6928918401587339918}
   m_Layer: 8
   m_Name: PlayerCapsule
   m_TagString: Player
@@ -291,7 +292,7 @@ MonoBehaviour:
   JumpTimeout: 0.1
   FallTimeout: 0.15
   Grounded: 1
-  GroundedOffset: -0.26
+  GroundedOffset: -0.3
   GroundedRadius: 0.5
   GroundLayers:
     serializedVersion: 2
@@ -302,9 +303,11 @@ MonoBehaviour:
   CinemachineCameraTarget: {fileID: 4135013735270702863}
   TopClamp: 89
   BottomClamp: -89
+  _verticalVelocity: 0
   yawSmoothTime: 0.08
   tiltLerpSpeed: 12
   moveInputEnabled: 1
+  WaveMotion: {x: 0, y: 0, z: 0}
   _handMode: 0
   cursorClosed: {fileID: 2800000, guid: 4cf01273b1dbb68818f6ba4a07fd708d, type: 3}
   cursorOpen: {fileID: 2800000, guid: b94b767e90e413239acfd1dc5a6470b2, type: 3}
@@ -524,3 +527,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f097cdae05b2b4049b7c744d69394bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  controller: {fileID: 0}
+--- !u!114 &6928918401587339918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848737228372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7a7372339e15d13d8a773247f111e0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  ShowTopMostFoldoutHeaderGroup: 1

@@ -57,12 +57,15 @@ Assets/
   BootstrapManager.cs
   ClientPlayerMove.cs
   FirstPersonController.cs
+  Flag.cs
   GerstnerWaveDisplacement.cs
   IHandInput.cs
   IInteractable.cs
   IslandSceneChanger.cs
   MainMenuUI.cs
+  Map.cs
   Player.cs
+  PlayerFloat.cs
   RatLines.cs
   Rope.cs
   Sail.cs

@@ -57,11 +57,24 @@ public class Wheel : NetworkBehaviour, IInteractable, IHandInput
         //TODO burda belki x ve y nin toplamı veya tutuş yerine göre x veya y daha ağırlıklı olacak şekilde olabilir
         //mesela önünden tutarsam sadece x , yanından tutarsan sadece y , ama yöne göre aynalanmış filan fişman öyle yani
         //belki olabilir ama gerek yok gibi bişey
-        RotateRudderRpc(yValue);
+        RotateRudderRpc(yValue * 3);
     }
 
     public void OnUnInteract(Player player)
     {
         throw new System.NotImplementedException();
+    }
+
+    public void OnRightHandInput(float xValue, float yValue)
+    {
+        //test için yapılmıştır , tamamlanmış ürünü temsil etmemektedir
+        RotateRudderRpc(xValue);
+
+    }
+
+    public void OnButtonInput()
+    {
+        Debug.Log("Ben de eklendim evet");
+        //throw new System.NotImplementedException();
     }
 }
