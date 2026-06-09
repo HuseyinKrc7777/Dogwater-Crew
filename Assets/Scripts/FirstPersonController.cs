@@ -351,6 +351,7 @@ namespace DogWater
         IInteractable CurrentInteract;
         Vector2 startPos = Vector2.zero;
 
+        private float handModeTimeoutCounter = 0.0f;
         private void Interact()
         {
             if (_isMouseClosed && CurrentHandInput != null)
@@ -422,6 +423,19 @@ namespace DogWater
                         EnterHandMode();
                     }
 
+                }
+                else if( _handMode)
+                {
+                    handModeTimeoutCounter += Time.deltaTime;
+                    if(handModeTimeoutCounter > 3)
+                    {
+                        ExitHandMode();
+                        CurrentInteract.OnUnInteract(GetComponent<Player>());
+                        CurrentInteract = null;
+                        CurrentHandInput = null;
+                        handModeTimeoutCounter = 0;
+                    }
+                    
                 }
 
             }

@@ -15,6 +15,12 @@ public class Ship : NetworkBehaviour
 
     public Anchor anchor;
 
+
+    public NetworkVariable<float> damage = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    public NetworkVariable<float> waterInsideTheShip = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+
     void Start()
     {
         _lastFramePosition = transform.position;
@@ -36,6 +42,15 @@ public class Ship : NetworkBehaviour
 
         _lastFramePosition = currentPos;
         _lastFrameRotation = currentRot;
+        
+        if(IsServer)
+        {
+             if(damage.Value > 0)
+            {
+                waterInsideTheShip.Value += Time.deltaTime * damage.Value;
+            }
+        }
+       
     }
 
 }
