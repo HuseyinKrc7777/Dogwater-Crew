@@ -153,7 +153,7 @@ public class Map : NetworkBehaviour, IHandInput
         map.Apply();
 
     }
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Everyone)]
     void EraseRpc(int x, int y)
     {
 
@@ -161,7 +161,7 @@ public class Map : NetworkBehaviour, IHandInput
         map.Apply();
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Everyone)]
     void EraseByArrayRpc(Vector2Int[] array)
     {
         foreach(Vector2Int pixel in array)
