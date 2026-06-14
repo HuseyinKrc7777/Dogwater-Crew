@@ -370,6 +370,7 @@ GameObject:
   - component: {fileID: 8019163083898211611}
   - component: {fileID: 3180766565377872494}
   - component: {fileID: 1978175466342397819}
+  - component: {fileID: 1324789730716965800}
   m_Layer: 0
   m_Name: BoatRootHolder
   m_TagString: Ship
@@ -410,7 +411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3991998473
+  GlobalObjectIdHash: 345906426
   InScenePlacedSourceGlobalObjectIdHash: 775600657
   DeferredDespawnTick: 0
   Ownership: 1
@@ -589,6 +590,27 @@ MonoBehaviour:
   UseRigidBodyForMotion: 1
   AutoUpdateKinematicState: 0
   AutoSetKinematicOnDespawn: 0
+--- !u!114 &1324789730716965800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7911ad84c8fc9a65b1786f27475f826, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlobalCoordinate
+  ShowTopMostFoldoutHeaderGroup: 1
+  latitude:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+  longtitude:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0

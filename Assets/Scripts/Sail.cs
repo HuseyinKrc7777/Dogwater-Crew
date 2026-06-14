@@ -130,7 +130,7 @@ public class Sail : NetworkBehaviour
         float forwardPush = Vector3.Dot(totalForceVector, transform.root.forward);
 
         float tightnessMultiplier = (100 - Mathf.Abs(_getTightness())) / 100;
-        return transform.root.forward * Mathf.Max(0, forwardPush) * wind.magnitude * sailArea.Value * maxForce * tightnessMultiplier;
+        return transform.root.forward * Mathf.Max(0, forwardPush) * Mathf.Abs(wind.magnitude) * sailArea.Value * maxForce * tightnessMultiplier;
     }
     public Quaternion GetWindRotation(Vector3 wind)
     {
