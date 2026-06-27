@@ -107,6 +107,7 @@ public class Sail : NetworkBehaviour
     }
     public Vector3 GetSailDirection()
     {
+        //return transform.TransformDirection(transform.forward);
         return transform.forward;
     }
     public Vector3 GetWindPush(Vector3 wind)
@@ -114,15 +115,16 @@ public class Sail : NetworkBehaviour
         if (sailArea.Value <= 0.1f) return Vector3.zero;
 
 
-        Vector3 currentSailForward = transform.TransformDirection(GetSailDirection());
+        Vector3 currentSailForward = GetSailDirection();
 
         float angleOfAttack = Vector3.Angle(currentSailForward, wind.normalized);
-        
 
-        //TODO itiş gücü daha açıya daha merhametli olacak ve rüzgara dik olmadığı sürece bir miktar itiş sağlıyacak
-        float lift = Mathf.Sin(angleOfAttack * Mathf.Deg2Rad * 2) * liftCoefficient;
+        if(angleOfAttack > 100)
+            return Vector3.zero;
+        if(angleOfAttack > 35)
+            angleOfAttack =  35 + (angleOfAttack-35) / 2f;
+        float lift = Mathf.Cos(angleOfAttack ) * liftCoefficient;
         float drag = Mathf.Max(0, Vector3.Dot(currentSailForward, wind.normalized)) * 0.5f;
-
 
         Vector3 sailNormal = Vector3.Cross(currentSailForward, Vector3.up);
         Vector3 totalForceVector = sailNormal * lift + currentSailForward * drag;
