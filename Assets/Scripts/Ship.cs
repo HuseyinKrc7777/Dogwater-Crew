@@ -53,7 +53,7 @@ public class Ship : NetworkBehaviour
         if(counter>=1.0f)
         {
             counter=0;
-            Debug.Log("Yeni pozisyon / düzenli log" + coordinate.latitude.Value  + " " +coordinate.longtitude.Value);
+            Debug.Log("Yeni pozisyon / düzenli log" + coordinate.latitude.Value  + " " +coordinate.longitude.Value);
         }
         else
             counter+=Time.deltaTime;
@@ -64,7 +64,7 @@ public class Ship : NetworkBehaviour
                 waterInsideTheShip.Value += Time.deltaTime * damage.Value;
             }
             float latitudeChangeValue = coordinate.LatitudeSecondLength(coordinate.latitude.Value);
-            float longtitudeChangeValue = coordinate.LatitudeSecondLength(coordinate.latitude.Value);
+            float longtitudeChangeValue = coordinate.LongitudeSecondLength(coordinate.latitude.Value);
             while(Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > latitudeChangeValue)
             {
                 if(transform.position.z - lastCoordinateChangePosition.z > 0)
@@ -74,7 +74,7 @@ public class Ship : NetworkBehaviour
                         data.Second++;
                     else
                         data.Second--;
-                    coordinate.ChangePosition(data,coordinate.longtitude.Value);
+                    coordinate.ChangePosition(data,coordinate.longitude.Value);
                     lastCoordinateChangePosition.z += latitudeChangeValue;
                 }
                 else
@@ -84,7 +84,7 @@ public class Ship : NetworkBehaviour
                         data.Second--;
                     else
                         data.Second++;
-                    coordinate.ChangePosition(data,coordinate.longtitude.Value);
+                    coordinate.ChangePosition(data,coordinate.longitude.Value);
                     lastCoordinateChangePosition.z -= latitudeChangeValue;
                 }
         
@@ -93,7 +93,7 @@ public class Ship : NetworkBehaviour
             {
                 if(transform.position.x - lastCoordinateChangePosition.x > 0)
                 {
-                    Coordinate data = coordinate.longtitude.Value;
+                    Coordinate data = coordinate.longitude.Value;
                     if(data.Direction == GlobalDirections.West)
                         data.Second++;
                     else
@@ -104,7 +104,7 @@ public class Ship : NetworkBehaviour
                 else
                 {
                     
-                    Coordinate data = coordinate.longtitude.Value;
+                    Coordinate data = coordinate.longitude.Value;
                     if(data.Direction==GlobalDirections.West)
                         data.Second--;
                     else
