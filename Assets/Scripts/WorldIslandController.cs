@@ -141,18 +141,6 @@ public class WorldIslandController : NetworkBehaviour
 
         Vector3 pos = dir * dist + shipCoordinate.transform.position;
         Quaternion rot = Quaternion.identity;
-
-        var op = InstantiateAsync<GameObject>(
-            island.prefab,
-            null,
-            pos,
-            rot);
-
-        GameObject instance = (await op)[0];
-
-        loadedIslands.Add(island);
-        island.instance = instance;
-
         SpawnIslandRpc(worldIslands.IndexOf(island), pos, rot);
     }
     [Rpc(SendTo.Everyone)]
