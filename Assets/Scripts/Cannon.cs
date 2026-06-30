@@ -89,4 +89,14 @@ public class Cannon : NetworkBehaviour, IHandInput
             netObj.Spawn();
         }
     }
+
+    public void OnRightHandInput(float xValue, float yValue)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void OnButtonInput()
+    {
+        throw new System.NotImplementedException();
+    }
 }

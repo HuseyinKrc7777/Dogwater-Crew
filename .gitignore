@@ -3,7 +3,11 @@
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
 *.md
+*.md.meta
 !README.md
+!README.md.meta
+
+
 .utmp/
 /[Ll]ibrary/
 /[Tt]emp/
