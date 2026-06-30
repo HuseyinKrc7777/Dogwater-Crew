@@ -1,165 +1,79 @@
+using System;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 
 public class GlobalCoordinate : NetworkBehaviour
 {
     //const int EarthRadius = 6367449;
     //test amaçlı dünya büyüklüğü küçüktür.
-    const int EarthRadius = 63;
-    public NetworkVariable<Coordinate> latitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public NetworkVariable<Coordinate> longtitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public Coordinate SwitchDirection(Coordinate coordinate)
-    {
-        if(coordinate.Direction == GlobalDirections.North || coordinate.Direction == GlobalDirections.East)
-        {
-            coordinate.Direction++;
-        }
-        else
-            coordinate.Direction--;
-        
-        if(coordinate.Degree < 0)
-            coordinate.Degree*=-1;
-
-
-        if(coordinate.Minute < 0)
-            coordinate.Minute*=-1;
-   
-
-        if(coordinate.Second < 0)
-            coordinate.Second*=-1;
-        
-        return coordinate;
-    }
-    public GlobalCoordinate(Coordinate latitude , Coordinate longtitude)
+    //TODO kordinat şeysi değiştirilecek
+    static int EarthRadius = 1500;
+    public NetworkVariable<LatitudeCoordinate> latitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<LongitudeCoordinate> longitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public GlobalCoordinate(LatitudeCoordinate latitude , LongitudeCoordinate longitude)
     {
         this.latitude.Value = latitude;
-        this.longtitude.Value = longtitude;
+        this.longitude.Value = longitude;
     }
 
     public GlobalCoordinate()
     {
-        Coordinate la = new()
+        LatitudeCoordinate la = new()
         {
-            Direction = GlobalDirections.North,
             Degree = 0,
             Minute = 0,
             Second = 0
         };
-        Coordinate lo = new()
+        LongitudeCoordinate lo = new()
         {
-            Direction = GlobalDirections.West,
             Degree = 0,
             Minute = 0,
             Second = 0
         };
         latitude.Value = la;
-        longtitude.Value = lo;
+        longitude.Value = lo;
     }
 
-    public float LongtitudeSecondLength(Coordinate northSouth)
+    public float LongitudeSecondLength(LatitudeCoordinate la)
     {
-        float degree = northSouth.Degree + northSouth.Minute / 60f + northSouth.Second / 3600f;
-        degree *= Mathf.Deg2Rad ;
+        float degree = la.GetDegree() * Mathf.Deg2Rad;
         return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) / 3600f);
     }
-    public float LatitudeSecondLength(Coordinate northSouth)
+    public float LatitudeSecondLength(LatitudeCoordinate la)
     {
-        float degree = northSouth.Degree + northSouth.Minute / 60f + northSouth.Second / 3600f;
-        float phi = degree * Mathf.Deg2Rad;
-        float baseRadius = 6367449; // reference Earth radius
+        float baseRadius = 6367449; 
         float scale = EarthRadius / baseRadius;
-
-        return (111132.95255f
-            - 559.84957f * Mathf.Cos(2f * phi)
-            + 1.17514f * Mathf.Cos(4f * phi)
-            - 0.00230f * Mathf.Cos(6f * phi) ) / 3600f * scale;
+        float baseLength = 110574; 
+        return baseLength / 3600f * scale;
     }
-    public void ChangePosition(Coordinate newLatitude , Coordinate newLongtitude)
+    public float CalculateDistanceBetweenTwoPoints(LatitudeCoordinate latitude1,LongitudeCoordinate longitude1 ,LatitudeCoordinate latitude2,LongitudeCoordinate longitude2)
     {
+        // kaynak : https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+        var dLat = Mathf.Deg2Rad *(latitude2.GetDegree()-latitude1.GetDegree());  // deg2rad below
+        var dLon = Mathf.Deg2Rad *(longitude2.GetDegree()-longitude1.GetDegree()); 
+        var a = 
+            Mathf.Sin(dLat/2) * Mathf.Sin(dLat/2) +
+            Mathf.Cos(Mathf.Deg2Rad * (latitude1.GetDegree())) * Mathf.Cos(Mathf.Deg2Rad * (latitude2.GetDegree())) * 
+            Mathf.Sin(dLon/2) * Mathf.Sin(dLon/2)
+            ; 
+        var c = 2 * Mathf.Atan2(Mathf.Sqrt(a), Mathf.Sqrt(1-a)); 
+        var d = EarthRadius * c; // Distance in km
+        return d;
         
-        Coordinate NorthSouthData = newLatitude;
-        Coordinate EastWestData = newLongtitude;
+    } 
 
-        int laVal = 3600 * NorthSouthData.Degree + 60 * NorthSouthData.Minute + NorthSouthData.Second; 
-        int loVal = 3600 * EastWestData.Degree + 60 * EastWestData.Minute + EastWestData.Second; 
+    public Vector3 CalculateDirectionBetweenTwoPoints(LatitudeCoordinate latitude1,LongitudeCoordinate longitude1 ,LatitudeCoordinate latitude2,LongitudeCoordinate longitude2)
+    {
+
+        float latRad = ((latitude1.GetDegree() + latitude2.GetDegree()) * 0.5f) * Mathf.Deg2Rad;
+
+        float x = (longitude2.GetDegree() - longitude1.GetDegree()) * Mathf.Cos(latRad);
         
-        if(laVal < 0)
-            NorthSouthData = SwitchDirection(NorthSouthData);
-        if(loVal < 0)
-            EastWestData = SwitchDirection(EastWestData);
-
-
-
-
-        while(NorthSouthData.Second >=60)
-        {
-            NorthSouthData.Minute++;
-            NorthSouthData.Second -= 60;
-        }
-        while(NorthSouthData.Minute >=60)
-        {
-            NorthSouthData.Degree++;
-            NorthSouthData.Minute -= 60;
-        }
-
-
-        while(EastWestData.Second >=60)
-        {
-            EastWestData.Minute++;
-            EastWestData.Second -= 60;
-        }
-        while(EastWestData.Minute >=60)
-        {
-            EastWestData.Degree++;
-            EastWestData.Minute -= 60;
-        }
-
-
-
-
-
-        while(EastWestData.Second<0)
-        {
-            EastWestData.Minute--;
-            EastWestData.Second+=60;
-        }
-        while(EastWestData.Minute<0)
-        {
-            EastWestData.Degree--;
-            EastWestData.Minute+=60;
-        }
-
-
-        while(NorthSouthData.Second<0)
-        {
-            NorthSouthData.Minute--;
-            NorthSouthData.Second+=60;
-        }
-        while(NorthSouthData.Minute<0)
-        {
-            NorthSouthData.Degree--;
-            NorthSouthData.Minute+=60;
-        }
-
-
-
-        if(EastWestData.Degree >= 180)
-        {
-            EastWestData = SwitchDirection(EastWestData);
-        }
-
-
+        float y = latitude2.GetDegree() - latitude1.GetDegree();
         
-
-        //kuzey-güney olarak 90 dan fazla gitmeyi düşünmediğimiz için
-        //ayarlamıyoruz etmiyoruz.
-
-        latitude.Value = NorthSouthData; 
-        longtitude.Value = EastWestData; 
+        return new Vector3(x,0 ,y).normalized;
         
-        //Debug.Log("Yeni pozisyon" + NorthSouthData  + " " +EastWestData);
-        
-    }
-
+    } 
 
 }
