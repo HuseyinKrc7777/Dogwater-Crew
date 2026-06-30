@@ -1304,7 +1304,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 22
+  m_VersionIndex: 28
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2111,7 +2111,7 @@ Transform:
   m_GameObject: {fileID: 7945812330272218734}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.01, y: 0.935, z: -0.0959}
+  m_LocalPosition: {x: 0.01, y: 1.161, z: -0.0959}
   m_LocalScale: {x: 0.061462812, y: 3.77, z: 0.023639543}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2605,6 +2605,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Anchor
       objectReference: {fileID: 0}
+    - target: {fileID: 1327033210920187792, guid: 0a35fde5566897ee68e9b13042b60ad8, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2058868175
+      objectReference: {fileID: 0}
     - target: {fileID: 4960943547108322933, guid: 0a35fde5566897ee68e9b13042b60ad8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2665,7 +2669,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -9912971345247413, guid: 673c5f03e9b4f74e586442b361385d40, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 3474757131
+      value: 4125362968
       objectReference: {fileID: 0}
     - target: {fileID: 1128671151701701233, guid: 673c5f03e9b4f74e586442b361385d40, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2775,7 +2779,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7942204617132686976, guid: 8f3de26943ad37cef8f31646989cb10e, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 2141039460
+      value: 4026632958
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

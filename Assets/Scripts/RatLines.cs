@@ -4,6 +4,7 @@ using UnityEngine;
 public class RatLines : MonoBehaviour , IHandInput , IInteractable
 {
     FirstPersonController playerController;
+    float maxSpeed = 10;
     private bool holding = false;
 
     public void OnButtonInput()
@@ -13,7 +14,8 @@ public class RatLines : MonoBehaviour , IHandInput , IInteractable
 
     public void OnHandInput(float xValue, float yValue)
     {
-        playerController._verticalVelocity+=yValue * 10;
+        if(playerController._verticalVelocity < maxSpeed)
+            playerController._verticalVelocity+=yValue * 10;
     }
 
     public void OnInteract(Player player)

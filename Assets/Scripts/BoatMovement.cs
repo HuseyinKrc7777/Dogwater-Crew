@@ -142,8 +142,8 @@ public class BoatMovement : NetworkBehaviour
         }
 
 
-        float acceleration = 1f;
-        float deceleration = 0.5f;
+        float acceleration = 0.40f;
+        float deceleration = 0.20f;
 
         Vector3 desiredVelocity = desiredDirection * (targetPos - currentPos).magnitude * 10;
 
@@ -198,14 +198,14 @@ public class BoatMovement : NetworkBehaviour
         float rudderAngle = Vector3.SignedAngle(flatForward, flatRudder, Vector3.up);
 
 
-        float speedFactor = Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
+        float speedFactor = 1; //Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
 
-        float turnSpeed = 200f;
+        float turnSpeed = 10f;
 
 
         float yawDelta = rudderAngle * speedFactor * turnSpeed * Time.fixedDeltaTime;
 
-        float angularDamping = 1f; 
+        float angularDamping = 0.2f; 
 
         yawDelta *= Mathf.Clamp01(forwardSpeed / highSpeedThreshold);
         yawDelta = Mathf.Lerp(yawDelta, 0f, angularDamping * Time.fixedDeltaTime);
@@ -214,7 +214,7 @@ public class BoatMovement : NetworkBehaviour
 
         if (forwardSpeed < minTurnSpeed)
         {
-            yawDelta = 0f;
+            yawDelta = 0.1f;
         }
 
         Quaternion yawRot = Quaternion.Euler(0f, yawDelta, 0f);
@@ -222,7 +222,7 @@ public class BoatMovement : NetworkBehaviour
 
         Quaternion targetRot = yawRot * waveRot;
 
-        float angularAccel = 120f;
+        float angularAccel = 60f;
 
         Quaternion delta =
             targetRot * Quaternion.Inverse(currentRot);
