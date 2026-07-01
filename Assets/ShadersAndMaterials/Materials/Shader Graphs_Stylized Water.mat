@@ -86,7 +86,7 @@ Material:
     - _Wave_Length: 6.4
     - _Wave_Speed: 0.56
     - _Wave_Steepness: 0.126
-    - _Wave_Time: 302.98007
+    - _Wave_Time: 48.06101
     m_Colors:
     - _Deep_Color: {r: 0, g: 0.3102526, b: 0.5943396, a: 0.36862746}
     - _Diffuse_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -98,10 +98,10 @@ Material:
     - _Shore_Color: {r: 0, g: 0, b: 0, a: 0}
     - _Specular_Color: {r: 1, g: 1, b: 1, a: 0.2901961}
     - _Surface_Foam_Color: {r: 1, g: 1, b: 1, a: 0.050980393}
-    - _Wave_Directions: {r: 6.59, g: 8.87, b: 2.69, a: -2.83}
-    - _Wave_Length: {r: 12, g: 0.19, b: 0.8, a: 2}
-    - _Wave_Speed: {r: 0.2, g: 0.24, b: 0.7, a: 0.57}
-    - _Wave_Steepness: {r: 0.1, g: 0.06, b: 0.03, a: 0.15}
+    - _Wave_Directions: {r: 0, g: 0, b: 0, a: 0}
+    - _Wave_Length: {r: 0, g: 0, b: 0, a: 0}
+    - _Wave_Speed: {r: 0, g: 0, b: 0, a: 0}
+    - _Wave_Steepness: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &6558234974639672788
