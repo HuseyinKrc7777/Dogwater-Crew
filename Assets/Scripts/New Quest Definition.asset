@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02a728b7d17198344a8db1cc8dfe441e, type: 3}
+  m_Name: New Quest Definition
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDefinition
+  questId: 1
+  title: "Kaptan Jack S\xF6yl\xFCyor ki"
+  description: "A noktas\u0131na gidin"
+  turnInTargetId: Kaptan Jack
+  visibleFromDay: 1
+  visibleUntilDay: 1
+  durationDays: 2
+  objectiveMode: 0
+  objectives:
+  - objectiveType: 0
+    targetId: A Point
+    description: "A ya gitme g\xF6revi"
+  reward:
+    rewardId: Gold
+    amount: 199
+    description: 
