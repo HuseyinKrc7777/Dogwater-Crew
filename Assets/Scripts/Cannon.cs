@@ -67,10 +67,10 @@ public class Cannon : NetworkBehaviour, IHandInput
         transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * 10f);
 
         // YALNIZCA bu topla etkileşimde olan (tutunan) oyuncu Space'e basınca ateşleyebilir
-        if (isInteracting && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        /*if (isInteracting && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             RequestFireRpc();
-        }
+        }*/
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -92,11 +92,11 @@ public class Cannon : NetworkBehaviour, IHandInput
 
     public void OnRightHandInput(float xValue, float yValue)
     {
-        throw new System.NotImplementedException();
+        //throw new System.NotImplementedException();
     }
 
     public void OnButtonInput()
     {
-        throw new System.NotImplementedException();
+        RequestFireRpc();
     }
 }

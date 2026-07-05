@@ -5410,7 +5410,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   cannonballPrefab: {fileID: 4934504865122602455, guid: 1df7ef0117323bd4792bf7776fad94cf, type: 3}
   spawnPoint: {fileID: 485057610}
-  fireForce: 20
+  fireForce: 50
   maxYaw: 0
   minPitch: -5
   maxPitch: 15
