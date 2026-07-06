@@ -25,7 +25,6 @@ public class WorldIslandController : NetworkBehaviour
 
     float counter = 0.0f;
     float timeout = 1.0f;
-    GlobalCoordinate shipCoordinate;
 
     public static WorldIslandController Instance { get; private set; }
 
@@ -43,12 +42,10 @@ public class WorldIslandController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (shipCoordinate == null)
-            shipCoordinate = GameObject.FindWithTag("Ship").GetComponent<GlobalCoordinate>();
-        CheckIslandsToSpawnOrDespawnThem();
+        //CheckIslandsToSpawnOrDespawnThem();
     }
 
-    void FixedUpdate()
+    /*void FixedUpdate()
     {
         if (!IsServer)
             return;
@@ -59,30 +56,29 @@ public class WorldIslandController : NetworkBehaviour
 
             counter = 0;
         }
-    }
-    public void CheckIslandsToSpawnOrDespawnThem()
+    }*/
+    public void CheckIslandsToSpawnOrDespawnThem(GlobalCoordinate shipCoordinate)
     {
         if (shipCoordinate == null)
-            shipCoordinate = GameObject.FindWithTag("Ship").GetComponent<GlobalCoordinate>();
-
+            return;
         List<WorldIsland> temp = loadedIslands.ToList<WorldIsland>();
         // gelecekte buraya her adanın her zaman konum tespiti değil de 
         // en yakın adaların cart curtu tutulup onun güncellenip ona göre bi performans
         // şeysi yapılabilir.
         foreach (WorldIsland island in temp)
         {
-            if (CheckIslandToUnLoad(island))
+            if (CheckIslandToUnLoad(island,shipCoordinate))
                 unLoadQueue.Add(island);
         }
         foreach (WorldIsland island in worldIslands)
         {
-            if (CheckIslandToLoad(island))
+            if (CheckIslandToLoad(island,shipCoordinate))
             {
                 if (!loadedIslands.Contains(island))
                     loadQueue.Add(island);
             }
         }
-        _ = LoadIslandList(loadQueue);
+        _ = LoadIslandList(loadQueue,shipCoordinate);
         UnloadIslandList(unLoadQueue);
         loadQueue.Clear();
         unLoadQueue.Clear();
@@ -90,10 +86,10 @@ public class WorldIslandController : NetworkBehaviour
 
     }
 
-    bool CheckIslandToLoad(WorldIsland island)
+    bool CheckIslandToLoad(WorldIsland island,GlobalCoordinate shipCoordinate)
     {
         if (shipCoordinate == null)
-            shipCoordinate = FindAnyObjectByType<GlobalCoordinate>();
+            return false;
         float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate.latitude.Value, shipCoordinate.longitude.Value, island.latitude, island.longitude);
         Debug.Log(dist);
         if (dist <= island.loadDistance)
@@ -102,10 +98,10 @@ public class WorldIslandController : NetworkBehaviour
             return false;
     }
 
-    bool CheckIslandToUnLoad(WorldIsland island)
+    bool CheckIslandToUnLoad(WorldIsland island,GlobalCoordinate shipCoordinate)
     {
         if (shipCoordinate == null)
-            shipCoordinate = FindAnyObjectByType<GlobalCoordinate>();
+            return false;
         float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate.latitude.Value, shipCoordinate.longitude.Value, island.latitude, island.longitude);
         Debug.Log(dist);
         if (dist >= island.loadDistance || Vector3.Distance(island.instance.transform.position, shipCoordinate.transform.position) >= island.loadDistance)
@@ -114,18 +110,18 @@ public class WorldIslandController : NetworkBehaviour
             return false;
     }
 
-    private async Task LoadIslandList(List<WorldIsland> islands)
+    private async Task LoadIslandList(List<WorldIsland> islands,GlobalCoordinate shipCoordinate)
     {
         var tasks = new List<Task>();
 
         foreach (WorldIsland island in islands)
         {
-            tasks.Add(LoadIsland(island));
+            tasks.Add(LoadIsland(island,shipCoordinate));
         }
 
         await Task.WhenAll(tasks);
     }
-    private async Task LoadIsland(WorldIsland island)
+    private async Task LoadIsland(WorldIsland island,GlobalCoordinate shipCoordinate)
     {
         float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(
             shipCoordinate.latitude.Value,

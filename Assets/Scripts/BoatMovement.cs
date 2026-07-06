@@ -46,7 +46,7 @@ public class BoatMovement : NetworkBehaviour
         if (!IsOwner) return;
         rb = GetComponent<Rigidbody>();
         effectorTargets = new Vector3[effectors.Length];
-        waterController = GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>();
+        waterController = WaterController.Instance;
         ship = GetComponent<Ship>();
     }
 
