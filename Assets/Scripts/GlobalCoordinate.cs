@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +19,16 @@ public class GlobalCoordinate : NetworkBehaviour
     }
     void Awake()
     {
-        WorldIslandController.Instance.shipCoordinate = this;
+      
+    }
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if(GetComponent<Ship>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
+        {
+            WorldIslandController.Instance.shipCoordinate = this;
+            WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+        }
     }
     public GlobalCoordinate()
     {

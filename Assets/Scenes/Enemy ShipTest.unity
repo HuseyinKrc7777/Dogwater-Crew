@@ -628,6 +628,10 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 345906426
       objectReference: {fileID: 0}
+    - target: {fileID: 6199786891558961878, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: whatKindOfShipIsThis
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7996313622169870490, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1732730425
@@ -1326,6 +1330,10 @@ PrefabInstance:
     - target: {fileID: 5026510532661582587, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 345906426
+      objectReference: {fileID: 0}
+    - target: {fileID: 6199786891558961878, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: whatKindOfShipIsThis
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7996313622169870490, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash

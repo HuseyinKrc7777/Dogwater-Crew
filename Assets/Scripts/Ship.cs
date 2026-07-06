@@ -20,7 +20,7 @@ public class Ship : NetworkBehaviour
     public NetworkVariable<float> waterInsideTheShip = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     GlobalCoordinate coordinate;
     Vector3 lastCoordinateChangePosition = Vector3.zero;
-    ShipKind whatKindOfShipIsThis = ShipKind.None;
+    [SerializeField] public ShipKind whatKindOfShipIsThis = ShipKind.None;
     void Start()
     {
         _lastFramePosition = transform.position;
@@ -34,8 +34,6 @@ public class Ship : NetworkBehaviour
     float counter = 0.0f;
     void Update()
     {
-        if (coordinate == null)
-            coordinate = new();
         if (Time.deltaTime > 0)
         {
             VerticalVelocity = (transform.position.y - _lastFramePosition.y) / Time.deltaTime;
