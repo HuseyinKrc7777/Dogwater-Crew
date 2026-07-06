@@ -371,6 +371,7 @@ GameObject:
   - component: {fileID: 3180766565377872494}
   - component: {fileID: 1978175466342397819}
   - component: {fileID: 1324789730716965800}
+  - component: {fileID: 6234907085645861672}
   m_Layer: 0
   m_Name: BoatRootHolder
   m_TagString: Ship
@@ -412,7 +413,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3991998473
+  GlobalObjectIdHash: 345906426
   InScenePlacedSourceGlobalObjectIdHash: 775600657
   DeferredDespawnTick: 0
   Ownership: 1
@@ -620,6 +621,18 @@ MonoBehaviour:
       Degree: 0
       Minute: 0
       Second: 0
+--- !u!114 &6234907085645861672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d3a9b2c29e12b4b98be3e4c896e0c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0
@@ -1069,6 +1082,14 @@ PrefabInstance:
     - target: {fileID: -7518295643791675585, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 117129796
+      objectReference: {fileID: 0}
+    - target: {fileID: 842930690829605118, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 842930690829605118, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.819
       objectReference: {fileID: 0}
     - target: {fileID: 5394199800705624522, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: m_Name

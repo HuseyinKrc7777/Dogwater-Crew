@@ -1,10 +1,16 @@
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
-
-public class Cannonball : NetworkBehaviour
+interface IDamageDealer
+{
+    float DamageAmount {get ; set;}
+}
+public class Cannonball : NetworkBehaviour , IDamageDealer
 {
     [Header("Settings")]
     [SerializeField] private float lifeTime = 5f;
+    [SerializeField] private float damageAmount;
+    public float DamageAmount { get{DespawnBall(); return damageAmount;} set => DamageAmount = value; }
 
     public override void OnNetworkSpawn()
     {

@@ -20,6 +20,7 @@ public class Ship : NetworkBehaviour
     public NetworkVariable<float> waterInsideTheShip = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     GlobalCoordinate coordinate;
     Vector3 lastCoordinateChangePosition = Vector3.zero;
+    ShipKind whatKindOfShipIsThis = ShipKind.None;
     void Start()
     {
         _lastFramePosition = transform.position;
@@ -116,8 +117,24 @@ public class Ship : NetworkBehaviour
         }
         else
             counter += Time.deltaTime;
-
-
+    }
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.GetComponent<IDamageDealer>() != null)
+        {
+            float damageValue = other.gameObject.GetComponent<IDamageDealer>().DamageAmount;
+            damage.Value += damageValue;
+            //burada hasar verilen yere göre bölgesel tamir edilebilir hasar spawnlanacak
+        }
     }
 
+}
+
+
+public enum ShipKind
+{
+    None,
+    PlayerControlled,
+    Enemy,
+    Neutral
 }

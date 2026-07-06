@@ -11,33 +11,15 @@ public class GlobalCoordinate : NetworkBehaviour
     static int EarthRadius = 1500;
     public NetworkVariable<LatitudeCoordinate> latitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<LongitudeCoordinate> longitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-    float counter = 0.0f;
-    float timeout = 1.0f;
-
-    void FixedUpdate()
-    {
-         if (!IsServer)
-            return;
-        counter += Time.deltaTime;
-        if (counter >= timeout)
-        {
-            WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem(this);
-
-            counter = 0;
-        }
-    }
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-        WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem(this);
-    }
     public GlobalCoordinate(LatitudeCoordinate latitude , LongitudeCoordinate longitude)
     {
         this.latitude.Value = latitude;
         this.longitude.Value = longitude;
     }
-
+    void Awake()
+    {
+        WorldIslandController.Instance.shipCoordinate = this;
+    }
     public GlobalCoordinate()
     {
         LatitudeCoordinate la = new()

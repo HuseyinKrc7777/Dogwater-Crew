@@ -28,6 +28,7 @@ public class WorldIslandController : NetworkBehaviour
 
     public static WorldIslandController Instance { get; private set; }
 
+    public GlobalCoordinate shipCoordinate;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -42,10 +43,10 @@ public class WorldIslandController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        //CheckIslandsToSpawnOrDespawnThem();
+        CheckIslandsToSpawnOrDespawnThem();
     }
 
-    /*void FixedUpdate()
+    void FixedUpdate()
     {
         if (!IsServer)
             return;
@@ -56,8 +57,8 @@ public class WorldIslandController : NetworkBehaviour
 
             counter = 0;
         }
-    }*/
-    public void CheckIslandsToSpawnOrDespawnThem(GlobalCoordinate shipCoordinate)
+    }
+    public void CheckIslandsToSpawnOrDespawnThem()
     {
         if (shipCoordinate == null)
             return;
@@ -67,18 +68,18 @@ public class WorldIslandController : NetworkBehaviour
         // şeysi yapılabilir.
         foreach (WorldIsland island in temp)
         {
-            if (CheckIslandToUnLoad(island,shipCoordinate))
+            if (CheckIslandToUnLoad(island))
                 unLoadQueue.Add(island);
         }
         foreach (WorldIsland island in worldIslands)
         {
-            if (CheckIslandToLoad(island,shipCoordinate))
+            if (CheckIslandToLoad(island))
             {
                 if (!loadedIslands.Contains(island))
                     loadQueue.Add(island);
             }
         }
-        _ = LoadIslandList(loadQueue,shipCoordinate);
+        _ = LoadIslandList(loadQueue);
         UnloadIslandList(unLoadQueue);
         loadQueue.Clear();
         unLoadQueue.Clear();
@@ -86,7 +87,7 @@ public class WorldIslandController : NetworkBehaviour
 
     }
 
-    bool CheckIslandToLoad(WorldIsland island,GlobalCoordinate shipCoordinate)
+    bool CheckIslandToLoad(WorldIsland island)
     {
         if (shipCoordinate == null)
             return false;
@@ -98,7 +99,7 @@ public class WorldIslandController : NetworkBehaviour
             return false;
     }
 
-    bool CheckIslandToUnLoad(WorldIsland island,GlobalCoordinate shipCoordinate)
+    bool CheckIslandToUnLoad(WorldIsland island)
     {
         if (shipCoordinate == null)
             return false;
@@ -110,18 +111,18 @@ public class WorldIslandController : NetworkBehaviour
             return false;
     }
 
-    private async Task LoadIslandList(List<WorldIsland> islands,GlobalCoordinate shipCoordinate)
+    private async Task LoadIslandList(List<WorldIsland> islands)
     {
         var tasks = new List<Task>();
 
         foreach (WorldIsland island in islands)
         {
-            tasks.Add(LoadIsland(island,shipCoordinate));
+            tasks.Add(LoadIsland(island));
         }
 
         await Task.WhenAll(tasks);
     }
-    private async Task LoadIsland(WorldIsland island,GlobalCoordinate shipCoordinate)
+    private async Task LoadIsland(WorldIsland island)
     {
         float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(
             shipCoordinate.latitude.Value,
