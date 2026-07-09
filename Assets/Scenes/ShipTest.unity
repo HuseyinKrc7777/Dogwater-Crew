@@ -1077,10 +1077,6 @@ PrefabInstance:
       propertyPath: FillerChunks
       value: 
       objectReference: {fileID: 1850844910}
-    - target: {fileID: 7934580933402193485, guid: ba5384eb0eb637b2a879dd8ed46904b3, type: 3}
-      propertyPath: WaterMaterial
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 8536474372167982082, guid: ba5384eb0eb637b2a879dd8ed46904b3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
