@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a78d146887eca1439a8a4a02fe54cc5, type: 3}
+  m_Name: QuestDataBase
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDatabase
+  templates:
+  - {fileID: 11400000, guid: 494776b8ba9c6ab48891d769daa6b879, type: 2}
+  - {fileID: 11400000, guid: a36b0e98d2191eb4d98c1f2f9e549821, type: 2}
+  - {fileID: 11400000, guid: 7a178e29c4c5c564a954e5de01b712d2, type: 2}
+  - {fileID: 11400000, guid: d0862d3329ae2034f8e4a75a6dc2f77c, type: 2}
+  npcNames:
+  - Hasan
+  - Enes
+  - "H\xFCso Komutan"
+  - Tek Bacak Osman
+  - "Yav\u015Fak Selami"
+  itemNames:
+  - Pusula
+  - Sigara
+  - Puro
+  - Revoler
+  locationNames: []
