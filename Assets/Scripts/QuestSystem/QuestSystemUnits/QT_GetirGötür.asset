@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestTemplate
   type: 1
   titleTemplate: "Yeti\u015Fin Babalar Bulam\u0131yorum"
-  descriptionTemplate: "{npcName} isimli t\xFCccar,\rkaybetti\u011Fi {itemName} adl\u0131
-    e\u015Fyay\u0131 geri istiyor. Getirene {gold} alt\u0131n verecek."
+  descriptionTemplate: "{npcName} isimli t\xFCccar {location} yak\u0131nlar\u0131nda
+    kaybetti\u011Fi {itemName} adl\u0131 e\u015Fyay\u0131 geri istiyor. Getirene
+    {gold} alt\u0131n verecek."
   minGold: 20
   maxGold: 60
   minDay: 1

@@ -28,4 +28,5 @@ MonoBehaviour:
   - Sigara
   - Puro
   - Revoler
-  locationNames: []
+  locationNames:
+  - "Deneme Adas\u0131"

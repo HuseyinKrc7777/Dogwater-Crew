@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 // Core of the quest system. The server owns every decision; clients only send request RPCs and
@@ -12,20 +13,6 @@ public class QuestManager : NetworkBehaviour
 {
     public static QuestManager Instance { get; private set; }
 
-    // An island quests may be sent to. Islands are loaded and unloaded by distance, so a quest must be
-    // able to target one that does not exist yet: this catalog is what the server picks from, and it
-    // stays valid whether the island is currently in the world or not.
-    [Serializable]
-    public class IslandDestination
-    {
-        [Tooltip("Must match the islandName on the QuestSpawnPoints inside that island's prefab, exactly.")]
-        public string islandName;
-
-        [Tooltip("Index into QuestDatabase.locationNames. -1 = unnamed. The only source of this island's " +
-                 "display name: the quest text is built while the island may still be unloaded.")]
-        public int locationNameIndex = -1;
-    }
-
     [Header("Data")]
     [SerializeField] private QuestDatabase database;
 
@@ -35,9 +22,10 @@ public class QuestManager : NetworkBehaviour
     [SerializeField] private GameObject questItemPrefab;
 
     [Header("Destinations")]
-    [Tooltip("Islands that quests may target. An island is never 'full': several quests can be sent to the " +
-             "same one, and their entities queue up until its spawn points are in the world.")]
-    [SerializeField] private IslandDestination[] islandDestinations;
+    [Tooltip("Islands that quests may be sent to. Drag in the same IslandDefinition assets the islands' " +
+             "triggers and spawn points use. An island is never 'full': several quests can target the same " +
+             "one, and their entities queue up until its spawn points are in the world.")]
+    [SerializeField] private IslandDefinition[] islandDestinations;
 
     [Header("Board Generation")]
     [Min(1)][SerializeField] private int minQuestsPerBoard = 6;
@@ -116,9 +104,11 @@ public class QuestManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        // Island prefabs are instantiated on every peer, so spawn points register on clients too.
+        // Island scenes are loaded on every peer, so spawn points register on clients too.
         // Only the server spawns anything, so only the server listens.
         if (!IsServer) return;
+
+        ValidateIslandDestinations();
 
         QuestSpawnPoint.Registered += HandleSpawnPointRegistered;
         QuestSpawnPoint.Deregistered += HandleSpawnPointDeregistered;
@@ -451,14 +441,14 @@ public class QuestManager : NetworkBehaviour
         {
             for (int i = 0; i < islandDestinations.Length; i++)
             {
-                IslandDestination island = islandDestinations[i];
-                if (island == null || string.IsNullOrEmpty(island.islandName)) continue;
+                IslandDefinition island = islandDestinations[i];
+                if (island == null || string.IsNullOrEmpty(island.SceneName)) continue;
 
                 destinationCandidates.Add(new QuestDestination
                 {
                     Point = null,
-                    IslandName = island.islandName,
-                    LocationNameIndex = island.locationNameIndex
+                    IslandName = island.SceneName,
+                    LocationNameIndex = island.LocationNameIndex
                 });
             }
         }
@@ -527,13 +517,46 @@ public class QuestManager : NetworkBehaviour
 
         for (int i = 0; i < islandDestinations.Length; i++)
         {
-            IslandDestination island = islandDestinations[i];
-            if (island == null || string.IsNullOrEmpty(island.islandName)) continue;
+            IslandDefinition island = islandDestinations[i];
+            if (island == null || string.IsNullOrEmpty(island.SceneName)) continue;
 
             count++;
         }
 
         return count;
+    }
+
+    // The island name can no longer be mistyped (it comes from the asset), but its display name still
+    // points into the database by index, and that can be left at -1 or aimed past the end of the pool.
+    // Both would only show up as a "???" in a quest text hours later, so they are reported at startup.
+    private void ValidateIslandDestinations()
+    {
+        if (islandDestinations == null || database == null) return;
+
+        for (int i = 0; i < islandDestinations.Length; i++)
+        {
+            IslandDefinition island = islandDestinations[i];
+
+            if (island == null)
+            {
+                Debug.LogWarning($"QuestManager: island destination {i} is empty.", this);
+                continue;
+            }
+
+            if (string.IsNullOrEmpty(island.SceneName))
+            {
+                Debug.LogError($"QuestManager: island definition '{island.name}' has no sceneName.", island);
+                continue;
+            }
+
+            if (island.LocationNameIndex < 0 || island.LocationNameIndex >= database.LocationNameCount)
+            {
+                Debug.LogWarning($"QuestManager: island '{island.name}' has locationNameIndex " +
+                                 $"{island.LocationNameIndex}, which is not a name in the database " +
+                                 $"({database.LocationNameCount} location names). Quests sent there will " +
+                                 "show \"???\" as their location.", island);
+            }
+        }
     }
 
     private static bool IsIslandLoaded(string islandName)
@@ -604,6 +627,16 @@ public class QuestManager : NetworkBehaviour
         }
 
         GameObject instance = Instantiate(prefab, point.transform.position, point.transform.rotation);
+
+        // Pin the entity to this manager's own scene (the ship's world) instead of trusting whichever
+        // scene happens to be active: Instantiate drops a parentless object into the ACTIVE scene, and an
+        // island scene can end up active. An entity living in the island's scene would be destroyed by
+        // Unity when that scene unloads - behind this manager's back, before it can despawn it and put the
+        // record back in the pending queue. Its position is unaffected; it still stands on the island.
+        if (instance.scene != gameObject.scene)
+        {
+            SceneManager.MoveGameObjectToScene(instance, gameObject.scene);
+        }
 
         if (!instance.TryGetComponent(out QuestEntity entity) || !instance.TryGetComponent(out NetworkObject networkObject))
         {
@@ -685,8 +718,8 @@ public class QuestManager : NetworkBehaviour
     }
 
     // A record whose island is not loaded is just waiting - normal, and not worth a log line. A record
-    // whose island IS loaded but has no free point of the right kind means the island prefab holds
-    // fewer QuestSpawnPoints than the quests sent to it, or its islandName does not match the catalog.
+    // whose island IS loaded but has no free point of the right kind means that island's scene holds
+    // fewer QuestSpawnPoints of that kind than the quests sent to it.
     private void WarnIfIslandIsLoadedButFull(QuestEntityRecord record)
     {
         if (!IsIslandLoaded(record.IslandName)) return;
@@ -694,7 +727,7 @@ public class QuestManager : NetworkBehaviour
 
         Debug.LogWarning($"QuestManager: island '{record.IslandName}' is loaded but has no free spawn point of the " +
                          $"required kind ({ToSpawnKind(record.Kind)}). Quest entities stay queued until one frees up - " +
-                         "add more QuestSpawnPoints to that island's prefab.");
+                         "add more QuestSpawnPoints to that island's scene.");
     }
 
     // An island finished loading: its spawn points just registered. Nothing else can turn a queued
