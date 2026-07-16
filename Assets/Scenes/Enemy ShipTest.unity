@@ -647,7 +647,7 @@ PrefabInstance:
       objectReference: {fileID: 1705478951}
     - target: {fileID: 2622713439418969914, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_VersionIndex
-      value: 55
+      value: 58
       objectReference: {fileID: 0}
     - target: {fileID: 3348350456318158277, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Name
@@ -664,6 +664,10 @@ PrefabInstance:
     - target: {fileID: 6199786891558961878, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: whatKindOfShipIsThis
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6234907085645861672, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: target_latitude.Degree
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 7116473224897262517, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
@@ -1293,7 +1297,7 @@ PrefabInstance:
       objectReference: {fileID: 118715271}
     - target: {fileID: 2622713439418969914, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_VersionIndex
-      value: 82
+      value: 85
       objectReference: {fileID: 0}
     - target: {fileID: 3348350456318158277, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Name

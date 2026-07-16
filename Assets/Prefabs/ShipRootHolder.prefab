@@ -414,7 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3991998473
+  GlobalObjectIdHash: 345906426
   InScenePlacedSourceGlobalObjectIdHash: 345906426
   DeferredDespawnTick: 0
   Ownership: 1
@@ -639,6 +639,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
   ship: {fileID: 6199786891558961878}
+  target_latitude:
+    Degree: 0
+    Minute: 0
+    Second: 0
+  target_longitude:
+    Degree: 0
+    Minute: 0
+    Second: 0
+  targetPos: {x: 0, y: 0, z: 0}
+  coordinate: {fileID: 1324789730716965800}
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0
