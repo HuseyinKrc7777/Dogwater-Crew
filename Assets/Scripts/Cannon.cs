@@ -9,7 +9,7 @@ public class Cannon : NetworkBehaviour, IHandInput
     [SerializeField] private Transform spawnPoint;
 
     [Header("Settings")]
-    [SerializeField] private float fireForce = 20f;
+    [SerializeField] private float fireForce = 100f;
     
     [Header("Rotation Settings")]
     [SerializeField] private float maxYaw = 15f;       // Sağa/sola maksimum dönme açısı
@@ -81,7 +81,9 @@ public class Cannon : NetworkBehaviour, IHandInput
         if (cannonballInstance.TryGetComponent<Rigidbody>(out Rigidbody rb))
         {
             // Namlunun baktığı yöne (spawnPoint.forward) doğru fırlat!
-            rb.linearVelocity = spawnPoint.forward * fireForce;
+            rb.linearVelocity = spawnPoint.forward * fireForce + GetComponentInParent<Ship>().gameObject.GetComponent<Rigidbody>().linearVelocity;
+            rb.angularVelocity =  GetComponentInParent<Ship>().gameObject.GetComponent<Rigidbody>().angularVelocity;
+        
         }
 
         if (cannonballInstance.TryGetComponent<NetworkObject>(out NetworkObject netObj))

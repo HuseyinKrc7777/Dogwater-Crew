@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -14,6 +15,8 @@ public class Ship : NetworkBehaviour
     public Wheel wheel;
 
     public Anchor anchor;
+    public List<Cannon> cannons;
+    public List<Sail> sailList;
 
     public NetworkVariable<float> damage = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -30,6 +33,14 @@ public class Ship : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        foreach(Sail sail in transform.GetComponentsInChildren<Sail>())
+        {
+            sailList.Add(sail);
+        }
+        foreach(Cannon cannon in transform.GetComponentsInChildren<Cannon>())
+        {
+            cannons.Add(cannon);
+        }
     }
     float counter = 0.0f;
     void Update()
@@ -125,6 +136,7 @@ public class Ship : NetworkBehaviour
             //burada hasar verilen yere göre bölgesel tamir edilebilir hasar spawnlanacak
         }
     }
+    
 
 }
 
@@ -134,5 +146,6 @@ public enum ShipKind
     None,
     PlayerControlled,
     Enemy,
-    Neutral
+    Neutral,
+    Friendly
 }
