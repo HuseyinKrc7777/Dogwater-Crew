@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public class Ship : NetworkBehaviour
 {
+    //TODO gemi ve gemi içindeki şeylerin modelleri ayarlandığında root dışında hiçbir obje network object olarak bulunmayacaktır.
+    //bu objelerin kontrol scriptleri root objede bulunacak ve bu obejeri referanslar ile kontrol edeceklerdir.
+    // kaynak =  https://discussions.unity.com/t/how-to-handle-spawning-nested-network-objects/1634399/2 
     private Vector3 _lastFramePosition;
     public Vector3 VisualDelta { get; private set; }
 
@@ -14,12 +18,15 @@ public class Ship : NetworkBehaviour
     public Wheel wheel;
 
     public Anchor anchor;
+    public List<Cannon> cannons;
+    public List<Sail> sailList;
 
     public NetworkVariable<float> damage = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public NetworkVariable<float> waterInsideTheShip = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     GlobalCoordinate coordinate;
     Vector3 lastCoordinateChangePosition = Vector3.zero;
+    [SerializeField] public ShipKind whatKindOfShipIsThis = ShipKind.None;
     void Start()
     {
         _lastFramePosition = transform.position;
@@ -29,12 +36,18 @@ public class Ship : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        foreach(Sail sail in transform.GetComponentsInChildren<Sail>())
+        {
+            sailList.Add(sail);
+        }
+        foreach(Cannon cannon in transform.GetComponentsInChildren<Cannon>())
+        {
+            cannons.Add(cannon);
+        }
     }
     float counter = 0.0f;
     void Update()
     {
-        if (coordinate == null)
-            coordinate = new();
         if (Time.deltaTime > 0)
         {
             VerticalVelocity = (transform.position.y - _lastFramePosition.y) / Time.deltaTime;
@@ -116,8 +129,26 @@ public class Ship : NetworkBehaviour
         }
         else
             counter += Time.deltaTime;
-
-
     }
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.GetComponent<IDamageDealer>() != null)
+        {
+            float damageValue = other.gameObject.GetComponent<IDamageDealer>().DamageAmount;
+            damage.Value += damageValue;
+            //burada hasar verilen yere göre bölgesel tamir edilebilir hasar spawnlanacak
+        }
+    }
+    
 
+}
+
+
+public enum ShipKind
+{
+    None,
+    PlayerControlled,
+    Enemy,
+    Neutral,
+    Friendly
 }
