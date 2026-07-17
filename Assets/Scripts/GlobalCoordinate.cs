@@ -24,10 +24,17 @@ public class GlobalCoordinate : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if(GetComponent<Ship>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
+        if(GetComponent<ShipAi>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
         {
             WorldIslandController.Instance.shipCoordinate = this;
-            WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+            NpcShipController.Instance.shipCoordinate = this;
+            if(IsServer)
+            {
+                WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+                NpcShipController.Instance.CheckShipsToSpawnOrDespawnThem();
+            }
+            
+
         }
     }
     public GlobalCoordinate()

@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Ship : NetworkBehaviour
 {
+    //TODO gemi ve gemi içindeki şeylerin modelleri ayarlandığında root dışında hiçbir obje network object olarak bulunmayacaktır.
+    //bu objelerin kontrol scriptleri root objede bulunacak ve bu obejeri referanslar ile kontrol edeceklerdir.
+    // kaynak =  https://discussions.unity.com/t/how-to-handle-spawning-nested-network-objects/1634399/2 
     private Vector3 _lastFramePosition;
     public Vector3 VisualDelta { get; private set; }
 

@@ -414,7 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 345906426
+  GlobalObjectIdHash: 3991998473
   InScenePlacedSourceGlobalObjectIdHash: 345906426
   DeferredDespawnTick: 0
   Ownership: 1
@@ -489,7 +489,6 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
-  whatKindOfShipIsThis: 1
 --- !u!114 &65854035236746906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -649,6 +648,8 @@ MonoBehaviour:
     Second: 0
   targetPos: {x: 0, y: 0, z: 0}
   coordinate: {fileID: 1324789730716965800}
+  targetDist: 0
+  whatKindOfShipIsThis: 0
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0
@@ -1205,14 +1206,6 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 4283693391
       objectReference: {fileID: 0}
-    - target: {fileID: 1299708190626537780, guid: 4111baf309fecb9679462856534709cf, type: 3}
-      propertyPath: SceneMigrationSynchronization
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1299708190626537780, guid: 4111baf309fecb9679462856534709cf, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 345906426
-      objectReference: {fileID: 0}
     - target: {fileID: 1883617206471221181, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_Name
       value: Boat
@@ -1221,29 +1214,13 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1250414247
       objectReference: {fileID: 0}
-    - target: {fileID: 2986233829023771541, guid: 4111baf309fecb9679462856534709cf, type: 3}
-      propertyPath: SceneMigrationSynchronization
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2986233829023771541, guid: 4111baf309fecb9679462856534709cf, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 345906426
-      objectReference: {fileID: 0}
     - target: {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3474757131
       objectReference: {fileID: 0}
-    - target: {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}
-      propertyPath: SceneMigrationSynchronization
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}
-      propertyPath: InScenePlacedSourceGlobalObjectIdHash
-      value: 345906426
-      objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
-      value: 43
+      value: 49
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

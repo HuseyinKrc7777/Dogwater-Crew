@@ -3,7 +3,12 @@ using Unity.Services.Matchmaker.Models;
 using Unity.VisualScripting;
 using UnityEngine;
 
-
+//TODO
+//gemi yapayzekasının moral ve motivasyonu ile alakalı -
+//bu hedef , davranış , kalite gibi değişik şeyler de olabilir temel şeyler de olabilir
+//ama bu geminin yapay zekasal herşeyini içerecek şekilde olmalıdır
+//- bir struct hazırlanıp
+//konfigirasyonun referansı ve paylaşılması olarak kullanılacaktır.
 public class ShipAi : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -12,7 +17,9 @@ public class ShipAi : NetworkBehaviour
     [SerializeField] public LongitudeCoordinate target_longitude = new();
     [SerializeField] private Vector3 targetPos;
     [SerializeField] private GlobalCoordinate coordinate;
-    [SerializeField] float targetDist;
+    [SerializeField] private float targetDist;
+    [SerializeField] public ShipKind whatKindOfShipIsThis = ShipKind.None;
+
     void Start()
     {
 
@@ -32,7 +39,7 @@ public class ShipAi : NetworkBehaviour
     {
         if(!IsServer)
             return;
-        if(ship.whatKindOfShipIsThis != ShipKind.None && ship.whatKindOfShipIsThis != ShipKind.PlayerControlled)
+        if(whatKindOfShipIsThis != ShipKind.None && whatKindOfShipIsThis != ShipKind.PlayerControlled)
         {
             Vector3 forw = WaterController.Instance.wind.Value.normalized;
 

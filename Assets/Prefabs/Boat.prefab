@@ -1304,7 +1304,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 28
+  m_VersionIndex: 46
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2607,7 +2607,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1327033210920187792, guid: 0a35fde5566897ee68e9b13042b60ad8, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 2058868175
+      value: 2092561601
+      objectReference: {fileID: 0}
+    - target: {fileID: 1327033210920187792, guid: 0a35fde5566897ee68e9b13042b60ad8, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1327033210920187792, guid: 0a35fde5566897ee68e9b13042b60ad8, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 345906426
       objectReference: {fileID: 0}
     - target: {fileID: 4960943547108322933, guid: 0a35fde5566897ee68e9b13042b60ad8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2669,7 +2677,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -9912971345247413, guid: 673c5f03e9b4f74e586442b361385d40, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 4125362968
+      value: 820929016
+      objectReference: {fileID: 0}
+    - target: {fileID: -9912971345247413, guid: 673c5f03e9b4f74e586442b361385d40, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -9912971345247413, guid: 673c5f03e9b4f74e586442b361385d40, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 345906426
       objectReference: {fileID: 0}
     - target: {fileID: 1128671151701701233, guid: 673c5f03e9b4f74e586442b361385d40, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2779,7 +2795,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7942204617132686976, guid: 8f3de26943ad37cef8f31646989cb10e, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 4026632958
+      value: 2141039460
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942204617132686976, guid: 8f3de26943ad37cef8f31646989cb10e, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942204617132686976, guid: 8f3de26943ad37cef8f31646989cb10e, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 345906426
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
