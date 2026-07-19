@@ -153,7 +153,7 @@ public class BoatMovement : NetworkBehaviour
             : deceleration;
         
         //buradaki kontrol değeri , konumun derinliği ile alaklıdır , bölgeden bölgeye değişecektir.
-        if(ship.anchor.releasedRopeAmount.Value > 70)
+        if(ship.anchor.IsFullyDeployed)
         {
             desiredVelocity  = Vector3.zero;
         }

@@ -789,6 +789,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IslandManager
   ShowTopMostFoldoutHeaderGroup: 1
+  anchor: {fileID: 6657447564000624037}
   shipReturnPoint: {fileID: 1805831283}
   teleportConfirmTimeoutSeconds: 3
   sceneEventRetrySeconds: 0.25
@@ -1560,6 +1561,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1174981344164072961, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
   m_PrefabInstance: {fileID: 6657447564000624035}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6657447564000624037 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5492485562776103550, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+  m_PrefabInstance: {fileID: 6657447564000624035}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5d9c28991410c7d1adae4ed78bbff50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1001 &8595091607731368520
 PrefabInstance:
   m_ObjectHideFlags: 0
