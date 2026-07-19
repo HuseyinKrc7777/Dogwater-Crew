@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58a89bad8479b614986c6393635fbe69, type: 3}
+  m_Name: "QT_GetirG\xF6t\xFCr"
+  m_EditorClassIdentifier: Assembly-CSharp::QuestTemplate
+  type: 1
+  titleTemplate: "Yeti\u015Fin Babalar Bulam\u0131yorum"
+  descriptionTemplate: "{npcName} isimli t\xFCccar {location} yak\u0131nlar\u0131nda
+    kaybetti\u011Fi {itemName} adl\u0131 e\u015Fyay\u0131 geri istiyor. Getirene
+    {gold} alt\u0131n verecek."
+  minGold: 20
+  maxGold: 60
+  minDay: 1
+  weight: 4
+  boardSelectable: 1
+  nextTemplate: {fileID: 0}
