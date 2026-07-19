@@ -9,7 +9,7 @@ public class Cannon : NetworkBehaviour, IHandInput
     [SerializeField] private Transform spawnPoint;
 
     [Header("Settings")]
-    [SerializeField] private float fireForce = 20f;
+    [SerializeField] private float fireForce = 100f;
     
     [Header("Rotation Settings")]
     [SerializeField] private float maxYaw = 15f;       // Sağa/sola maksimum dönme açısı
@@ -67,10 +67,10 @@ public class Cannon : NetworkBehaviour, IHandInput
         transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * 10f);
 
         // YALNIZCA bu topla etkileşimde olan (tutunan) oyuncu Space'e basınca ateşleyebilir
-        if (isInteracting && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        /*if (isInteracting && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             RequestFireRpc();
-        }
+        }*/
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -81,7 +81,9 @@ public class Cannon : NetworkBehaviour, IHandInput
         if (cannonballInstance.TryGetComponent<Rigidbody>(out Rigidbody rb))
         {
             // Namlunun baktığı yöne (spawnPoint.forward) doğru fırlat!
-            rb.linearVelocity = spawnPoint.forward * fireForce;
+            rb.linearVelocity = spawnPoint.forward * fireForce + GetComponentInParent<Ship>().gameObject.GetComponent<Rigidbody>().linearVelocity;
+            rb.angularVelocity =  GetComponentInParent<Ship>().gameObject.GetComponent<Rigidbody>().angularVelocity;
+        
         }
 
         if (cannonballInstance.TryGetComponent<NetworkObject>(out NetworkObject netObj))
@@ -92,11 +94,11 @@ public class Cannon : NetworkBehaviour, IHandInput
 
     public void OnRightHandInput(float xValue, float yValue)
     {
-        throw new System.NotImplementedException();
+        //throw new System.NotImplementedException();
     }
 
     public void OnButtonInput()
     {
-        throw new System.NotImplementedException();
+        RequestFireRpc();
     }
 }

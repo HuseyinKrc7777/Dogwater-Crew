@@ -9,8 +9,8 @@ public class WindFlag : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        Wind = GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>().wind.Value;
-        GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>().wind.OnValueChanged+=OnWindChange;
+        Wind = WaterController.Instance.wind.Value;
+        WaterController.Instance.wind.OnValueChanged+=OnWindChange;
   
     }
     public void OnWindChange(Vector3 oldValue , Vector3 newValue)

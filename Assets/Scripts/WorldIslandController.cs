@@ -17,18 +17,19 @@ public class WorldIsland
 [Serializable]
 public class WorldIslandController : NetworkBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    //TODO burasının tamamı baştan yazılacak
     public List<WorldIsland> worldIslands = new();
+    
     List<WorldIsland> loadedIslands = new();
     List<WorldIsland> loadQueue = new();
     List<WorldIsland> unLoadQueue = new();
 
     float counter = 0.0f;
     float timeout = 1.0f;
-    GlobalCoordinate shipCoordinate;
 
     public static WorldIslandController Instance { get; private set; }
 
+    public GlobalCoordinate shipCoordinate;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -43,8 +44,10 @@ public class WorldIslandController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (shipCoordinate == null)
-            shipCoordinate = GameObject.FindWithTag("Ship").GetComponent<GlobalCoordinate>();
+        //böyle bırakıldığında oyuna ilk girildiğinde yükleme mesafesinde bir
+        // ada varsa herkeste birazcık farklı konumda olacaktır.
+        // bunun olmaması için oyunda yüklü olan adaların indexleri ve pozisyon / rotasyonları tutulmalı liste halinde network variable olarak tutulmalı
+        // sonra burada spawn edilmeli.
         CheckIslandsToSpawnOrDespawnThem();
     }
 
@@ -63,12 +66,13 @@ public class WorldIslandController : NetworkBehaviour
     public void CheckIslandsToSpawnOrDespawnThem()
     {
         if (shipCoordinate == null)
-            shipCoordinate = GameObject.FindWithTag("Ship").GetComponent<GlobalCoordinate>();
-
+            return;
         List<WorldIsland> temp = loadedIslands.ToList<WorldIsland>();
-        // gelecekte buraya her adanın her zaman konum tespiti değil de 
+        // TODO gelecekte buraya her adanın her zaman konum tespiti değil de 
         // en yakın adaların cart curtu tutulup onun güncellenip ona göre bi performans
-        // şeysi yapılabilir.
+        // içinde index , pozisyon ve rotasyon bulunan bir struct
+        // NetworkList<> içinde bu struct olacak şekilde
+        // yapılabilir.
         foreach (WorldIsland island in temp)
         {
             if (CheckIslandToUnLoad(island))
@@ -93,9 +97,9 @@ public class WorldIslandController : NetworkBehaviour
     bool CheckIslandToLoad(WorldIsland island)
     {
         if (shipCoordinate == null)
-            shipCoordinate = FindAnyObjectByType<GlobalCoordinate>();
+            return false;
         float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate.latitude.Value, shipCoordinate.longitude.Value, island.latitude, island.longitude);
-        Debug.Log(dist);
+        //Debug.Log(dist);
         if (dist <= island.loadDistance)
             return true;
         else
@@ -105,9 +109,9 @@ public class WorldIslandController : NetworkBehaviour
     bool CheckIslandToUnLoad(WorldIsland island)
     {
         if (shipCoordinate == null)
-            shipCoordinate = FindAnyObjectByType<GlobalCoordinate>();
+            return false;
         float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate.latitude.Value, shipCoordinate.longitude.Value, island.latitude, island.longitude);
-        Debug.Log(dist);
+        //Debug.Log(dist);
         if (dist >= island.loadDistance || Vector3.Distance(island.instance.transform.position, shipCoordinate.transform.position) >= island.loadDistance)
             return true;
         else

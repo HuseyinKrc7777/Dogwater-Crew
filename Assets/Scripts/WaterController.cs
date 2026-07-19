@@ -14,6 +14,19 @@ public class WaterController : NetworkBehaviour
     private Transform followTransform ;
     [SerializeField] private GameObject WaterChunks;
     [SerializeField] private GameObject FillerChunks;
+
+     public static WaterController Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
