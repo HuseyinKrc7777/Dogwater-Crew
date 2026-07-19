@@ -197,6 +197,7 @@ GameObject:
   - component: {fileID: 6270514582772493446}
   - component: {fileID: 8357779637139876747}
   - component: {fileID: 6928918401587339918}
+  - component: {fileID: 1325688264397888995}
   m_Layer: 8
   m_Name: PlayerCapsule
   m_TagString: Player
@@ -257,7 +258,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3776343090
+  GlobalObjectIdHash: 3744462911
   InScenePlacedSourceGlobalObjectIdHash: 3744462911
   DeferredDespawnTick: 0
   Ownership: 1
@@ -307,7 +308,6 @@ MonoBehaviour:
   yawSmoothTime: 0.08
   tiltLerpSpeed: 12
   moveInputEnabled: 1
-  WaveMotion: {x: 0, y: 0, z: 0}
   _handMode: 0
   cursorClosed: {fileID: 2800000, guid: 4cf01273b1dbb68818f6ba4a07fd708d, type: 3}
   cursorOpen: {fileID: 2800000, guid: b94b767e90e413239acfd1dc5a6470b2, type: 3}
@@ -541,3 +541,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &1325688264397888995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848737228372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63913b17dd1906e40a54b70502d7ec5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerTeleporter
+  ShowTopMostFoldoutHeaderGroup: 1
+  characterController: {fileID: 8616685848737228382}
+  firstPersonController: {fileID: 8616685848737228371}
+  networkTransform: {fileID: 1545417445730170441}
