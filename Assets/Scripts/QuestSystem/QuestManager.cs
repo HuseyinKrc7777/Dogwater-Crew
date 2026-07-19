@@ -8,9 +8,11 @@ using Random = UnityEngine.Random;
 // Core of the quest system. The server owns every decision; clients only send request RPCs and
 // read the synchronized quest list.
 //
-// Not implemented yet (plan steps 6-7): expiry, quest chains.
+// Not implemented yet (plan step 7): quest chains.
 public class QuestManager : NetworkBehaviour
 {
+    private const float MaintenanceIntervalSeconds = 1f;
+
     public static QuestManager Instance { get; private set; }
 
     [Header("Data")]
@@ -36,12 +38,12 @@ public class QuestManager : NetworkBehaviour
     [Min(0f)][SerializeField] private float goldPerDayFactor = 0.1f;
 
     [Header("Lifetime")]
-    [Tooltip("Days a quest stays in the list before it expires. Expiry itself lands in a later step.")]
+    [Tooltip("Days a quest stays in the list before the server expires it and removes its entities.")]
     [Min(1)][SerializeField] private int expiryDays = 3;
 
     [Header("Debug")]
     [Tooltip("Server-side: prints the raw parameters of every generated quest. Development aid only.")]
-    [SerializeField] private bool logGeneration = true;
+    [SerializeField] private bool logGeneration = false;
 
     // Where one quest entity is supposed to end up. Either a persistent spawn point (exclusive: it is
     // taken the moment the entity stands on it) or an island (soft capacity: never taken).
@@ -83,10 +85,11 @@ public class QuestManager : NetworkBehaviour
     private readonly List<int> freeNpcNameIndices = new List<int>();
     private readonly HashSet<string> warnedIslands = new HashSet<string>();
     private int nextInstanceId = 1;
+    private float maintenanceTimer;
 
     public QuestDatabase Database => database;
     public NetworkList<QuestInstanceState> QuestStates => questStates;
-    public int ExpiryDays => expiryDays;
+    public int ExpiryDays => Mathf.Max(1, expiryDays);
     public int TotalQuestsCompleted => totalQuestsCompleted.Value;
 
     private void Awake()
@@ -104,9 +107,17 @@ public class QuestManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        maintenanceTimer = 0f;
+
         // Island scenes are loaded on every peer, so spawn points register on clients too.
         // Only the server spawns anything, so only the server listens.
         if (!IsServer) return;
+
+        if (GameDayClock.Instance == null)
+        {
+            Debug.LogError("QuestManager: no GameDayClock found. Quests cannot expire without the " +
+                           "server-authoritative current day.", this);
+        }
 
         ValidateIslandDestinations();
 
@@ -136,6 +147,58 @@ public class QuestManager : NetworkBehaviour
     {
         QuestSpawnPoint.Registered -= HandleSpawnPointRegistered;
         QuestSpawnPoint.Deregistered -= HandleSpawnPointDeregistered;
+    }
+
+    private void Update()
+    {
+        if (!IsServer || !IsSpawned) return;
+
+        maintenanceTimer += Time.deltaTime;
+        if (maintenanceTimer < MaintenanceIntervalSeconds) return;
+
+        // Preserve the sub-second remainder without replaying every missed interval after a long stall.
+        // Maintenance is state-based, so several catch-up sweeps would only inspect the same state.
+        maintenanceTimer %= MaintenanceIntervalSeconds;
+
+        RunServerMaintenance();
+    }
+
+    private void RunServerMaintenance()
+    {
+        GameDayClock clock = GameDayClock.Instance;
+
+        if (clock != null)
+        {
+            ExpireQuests(clock.CurrentDay);
+        }
+
+        // Step 5's periodic safety net shares this already-required maintenance tick. Keep it silent:
+        // a loaded island with too few spawn points is stable state, not a warning to repeat every second.
+        ResolvePendingSpawns(false);
+    }
+
+    private void ExpireQuests(int currentDay)
+    {
+        int expiredCount = 0;
+
+        // Removing from the end keeps every unread index valid while NetworkList.RemoveAt records and
+        // synchronizes each authoritative removal.
+        for (int i = questStates.Count - 1; i >= 0; i--)
+        {
+            QuestInstanceState state = questStates[i];
+            if (currentDay - state.CreatedDay < ExpiryDays) continue;
+
+            // Spawned entities are despawned; pending island records are simply removed. Both paths
+            // release their derived spawn-point occupancy. Expiry pays no gold and is not completion.
+            RemoveQuestEntities(state.InstanceId);
+            questStates.RemoveAt(i);
+            expiredCount++;
+        }
+
+        if (expiredCount > 0 && logGeneration)
+        {
+            Debug.Log($"QuestManager: expired {expiredCount} quest(s) on day {currentDay}.", this);
+        }
     }
 
     // ---------------------------------------------------------------- board request
@@ -687,14 +750,13 @@ public class QuestManager : NetworkBehaviour
     // ---------------------------------------------------------------- deferred island spawning
 
     // The only place a queued entity becomes a real object. Called whenever something could have made
-    // one spawnable: a fresh batch of quests, an island's spawn points registering, or a point freeing
-    // up because a quest moved on. There is deliberately no per-second poll - all three are events, so
-    // a tick would only re-check state that nothing has touched.
-    private void ResolvePendingSpawns()
+    // one spawnable: a fresh batch of quests, an island's spawn points registering, a point freeing up
+    // because a quest moved on, or the quiet maintenance safety sweep added alongside expiry.
+    private void ResolvePendingSpawns(bool logCapacityWarnings = true)
     {
         if (!IsServer) return;
 
-        warnedIslands.Clear();
+        if (logCapacityWarnings) warnedIslands.Clear();
 
         for (int i = 0; i < entityRecords.Count; i++)
         {
@@ -705,7 +767,7 @@ public class QuestManager : NetworkBehaviour
 
             if (point == null)
             {
-                WarnIfIslandIsLoadedButFull(record);
+                if (logCapacityWarnings) WarnIfIslandIsLoadedButFull(record);
                 continue;   // island simply is not loaded: keep waiting, that is the whole point
             }
 
