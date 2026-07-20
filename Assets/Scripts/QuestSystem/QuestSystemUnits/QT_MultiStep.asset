@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58a89bad8479b614986c6393635fbe69, type: 3}
+  m_Name: QT_MultiStep
+  m_EditorClassIdentifier: Assembly-CSharp::QuestTemplate
+  type: 2
+  titleTemplate: MultiStep Denemesi
+  descriptionTemplate: 
+  objectives:
+  - type: 0
+    titleTemplate: "Konu\u015F Gel"
+    descriptionTemplate: "{location} konumunda {npcName} ile konu\u015F."
+    keepNpcFromPrevious: 1
+  - type: 1
+    titleTemplate: Getir Gel
+    descriptionTemplate: "{location} konumundan {itemName} al ve {npcName} ki\u015Fisine
+      g\xF6t\xFCr."
+    keepNpcFromPrevious: 1
+  - type: 0
+    titleTemplate: "Konu\u015Fmay\u0131 bitir gel"
+    descriptionTemplate: "TalkTo: {npcName} ile tekrar konu\u015F."
+    keepNpcFromPrevious: 1
+  minGold: 100
+  maxGold: 120
+  minDay: 1
+  weight: 1
+  boardSelectable: 1
+  nextTemplate: {fileID: 0}

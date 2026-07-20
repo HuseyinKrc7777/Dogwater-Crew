@@ -5,10 +5,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-// Core of the quest system. The server owns every decision; clients only send request RPCs and
-// read the synchronized quest list.
-//
-// Not implemented yet (plan step 7): quest chains.
+// Server-authoritative quest generation, objective progression, entity lifecycle and rewards.
+// Clients only request interactions and rebuild text from synchronized integer state.
 public class QuestManager : NetworkBehaviour
 {
     private const float MaintenanceIntervalSeconds = 1f;
@@ -24,9 +22,7 @@ public class QuestManager : NetworkBehaviour
     [SerializeField] private GameObject questItemPrefab;
 
     [Header("Destinations")]
-    [Tooltip("Islands that quests may be sent to. Drag in the same IslandDefinition assets the islands' " +
-             "triggers and spawn points use. An island is never 'full': several quests can target the same " +
-             "one, and their entities queue up until its spawn points are in the world.")]
+    [Tooltip("Islands that quests may target. Island capacity stays soft: entities queue until a matching point is free.")]
     [SerializeField] private IslandDefinition[] islandDestinations;
 
     [Header("Board Generation")]
@@ -34,61 +30,66 @@ public class QuestManager : NetworkBehaviour
     [Min(1)][SerializeField] private int maxQuestsPerBoard = 8;
 
     [Header("Reward Scaling")]
-    [Tooltip("Gold grows by this fraction of the base roll for every in-game day that has passed.")]
+    [Tooltip("Gold grows by this fraction of the base roll for every elapsed in-game day.")]
     [Min(0f)][SerializeField] private float goldPerDayFactor = 0.1f;
 
     [Header("Lifetime")]
-    [Tooltip("Days a quest stays in the list before the server expires it and removes its entities.")]
+    [Tooltip("A multi-step quest shares this one lifetime across all objectives.")]
     [Min(1)][SerializeField] private int expiryDays = 3;
 
     [Header("Debug")]
-    [Tooltip("Server-side: prints the raw parameters of every generated quest. Development aid only.")]
     [SerializeField] private bool logGeneration = false;
 
-    // Where one quest entity is supposed to end up. Either a persistent spawn point (exclusive: it is
-    // taken the moment the entity stands on it) or an island (soft capacity: never taken).
     private struct QuestDestination
     {
-        public QuestSpawnPoint Point;   // null for an island destination
-        public string IslandName;       // empty for a persistent destination
+        public QuestSpawnPoint Point;
+        public string IslandName;
         public int LocationNameIndex;
     }
 
-    // Server-only. One record per entity a quest needs. The entity is either standing in the world
-    // (Instance != null) or waiting for its island to load (Instance == null: pending). Both states
-    // live in the same list on purpose - an island unloading just moves a record from one to the other.
+    // One assignment per objective. Future persistent points are reserved here before their entity
+    // is spawned, so every destination advertised in the quest log remains completable.
+    private class QuestObjectiveRuntime
+    {
+        public int QuestInstanceId;
+        public int ObjectiveIndex;
+        public QuestType Type;
+        public QuestDestination GiverDestination;
+        public QuestDestination ItemDestination;
+    }
+
+    // One record per entity required by the active objective. Pending island entity == Instance null.
     private class QuestEntityRecord
     {
         public int QuestInstanceId;
+        public int ObjectiveIndex;
         public QuestEntityKind Kind;
-        public string IslandName;        // empty => persistent destination, so it is never pending
-        public QuestSpawnPoint Point;    // null while pending
-        public NetworkObject Instance;   // null while pending
+        public string IslandName;
+        public QuestSpawnPoint Point;
+        public NetworkObject Instance;
     }
 
-    // Synchronized quest list. Server-write by default, readable by everyone, and late-join safe:
-    // a client that connects later receives the full list automatically.
-    // NGO disposes NetworkVariable/NetworkList fields itself in NetworkBehaviour.OnDestroy(),
-    // so this must not be disposed by hand.
     private NetworkList<QuestInstanceState> questStates = new NetworkList<QuestInstanceState>();
-
-    // A cheap stat for future progression work. Nothing consumes it yet.
+    private NetworkList<QuestObjectiveState> questObjectives = new NetworkList<QuestObjectiveState>();
     private NetworkVariable<int> totalQuestsCompleted = new NetworkVariable<int>(0);
 
-    // Server-only bookkeeping. Deliberately not networked: it is meaningless on clients. Clients only
-    // ever see spawned NetworkObjects, which is why late-join keeps working without extra code.
     private readonly Dictionary<int, int> lastGeneratedDayByBoard = new Dictionary<int, int>();
+    private readonly List<QuestObjectiveRuntime> objectiveRuntimes = new List<QuestObjectiveRuntime>();
     private readonly List<QuestEntityRecord> entityRecords = new List<QuestEntityRecord>();
     private readonly List<QuestTemplate> eligibleTemplates = new List<QuestTemplate>();
     private readonly List<QuestDestination> destinationCandidates = new List<QuestDestination>();
     private readonly List<int> usedNpcNamesInBatch = new List<int>();
     private readonly List<int> freeNpcNameIndices = new List<int>();
+    private readonly HashSet<int> invalidTemplateIndices = new HashSet<int>();
     private readonly HashSet<string> warnedIslands = new HashSet<string>();
+    private bool npcPrefabValid;
+    private bool itemPrefabValid;
     private int nextInstanceId = 1;
     private float maintenanceTimer;
 
     public QuestDatabase Database => database;
     public NetworkList<QuestInstanceState> QuestStates => questStates;
+    public NetworkList<QuestObjectiveState> QuestObjectives => questObjectives;
     public int ExpiryDays => Mathf.Max(1, expiryDays);
     public int TotalQuestsCompleted => totalQuestsCompleted.Value;
 
@@ -106,20 +107,18 @@ public class QuestManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-
         maintenanceTimer = 0f;
 
-        // Island scenes are loaded on every peer, so spawn points register on clients too.
-        // Only the server spawns anything, so only the server listens.
         if (!IsServer) return;
 
         if (GameDayClock.Instance == null)
         {
-            Debug.LogError("QuestManager: no GameDayClock found. Quests cannot expire without the " +
-                           "server-authoritative current day.", this);
+            Debug.LogError("QuestManager: no GameDayClock found. Quests cannot expire without the current day.", this);
         }
 
         ValidateIslandDestinations();
+        ValidateEntityPrefabs();
+        ValidateTemplates();
 
         QuestSpawnPoint.Registered += HandleSpawnPointRegistered;
         QuestSpawnPoint.Deregistered += HandleSpawnPointDeregistered;
@@ -128,18 +127,13 @@ public class QuestManager : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         UnsubscribeFromSpawnPoints();
-
         base.OnNetworkDespawn();
     }
 
     public override void OnDestroy()
     {
-        // A static event outlives this object: a listener that is never removed keeps a destroyed
-        // manager reachable. Unsubscribing twice is harmless, so do it here as well.
         UnsubscribeFromSpawnPoints();
-
         if (Instance == this) Instance = null;
-
         base.OnDestroy();
     }
 
@@ -156,24 +150,13 @@ public class QuestManager : NetworkBehaviour
         maintenanceTimer += Time.deltaTime;
         if (maintenanceTimer < MaintenanceIntervalSeconds) return;
 
-        // Preserve the sub-second remainder without replaying every missed interval after a long stall.
-        // Maintenance is state-based, so several catch-up sweeps would only inspect the same state.
         maintenanceTimer %= MaintenanceIntervalSeconds;
-
         RunServerMaintenance();
     }
 
     private void RunServerMaintenance()
     {
-        GameDayClock clock = GameDayClock.Instance;
-
-        if (clock != null)
-        {
-            ExpireQuests(clock.CurrentDay);
-        }
-
-        // Step 5's periodic safety net shares this already-required maintenance tick. Keep it silent:
-        // a loaded island with too few spawn points is stable state, not a warning to repeat every second.
+        if (GameDayClock.Instance != null) ExpireQuests(GameDayClock.Instance.CurrentDay);
         ResolvePendingSpawns(false);
     }
 
@@ -181,16 +164,13 @@ public class QuestManager : NetworkBehaviour
     {
         int expiredCount = 0;
 
-        // Removing from the end keeps every unread index valid while NetworkList.RemoveAt records and
-        // synchronizes each authoritative removal.
         for (int i = questStates.Count - 1; i >= 0; i--)
         {
             QuestInstanceState state = questStates[i];
             if (currentDay - state.CreatedDay < ExpiryDays) continue;
 
-            // Spawned entities are despawned; pending island records are simply removed. Both paths
-            // release their derived spawn-point occupancy. Expiry pays no gold and is not completion.
-            RemoveQuestEntities(state.InstanceId);
+            RemoveQuestRuntime(state.InstanceId);
+            RemoveObjectiveStates(state.InstanceId);
             questStates.RemoveAt(i);
             expiredCount++;
         }
@@ -201,10 +181,8 @@ public class QuestManager : NetworkBehaviour
         }
     }
 
-    // ---------------------------------------------------------------- board request
+    // ---------------------------------------------------------------- board generation
 
-    // Any client may ask a board for quests, so the invoke permission is explicit even though
-    // Everyone is the NGO default: this is the behaviour we depend on, not an accident.
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void RequestBoardQuestsRpc(int boardIndex)
     {
@@ -217,139 +195,162 @@ public class QuestManager : NetworkBehaviour
 
         if (database == null)
         {
-            Debug.LogError("QuestManager: no QuestDatabase assigned, cannot generate quests.");
+            Debug.LogError("QuestManager: no QuestDatabase assigned, cannot generate quests.", this);
             return;
         }
 
         int day = GameDayClock.Instance != null ? GameDayClock.Instance.CurrentDay : 1;
 
-        // One batch per board per in-game day. Re-reading a board simply shows the same notices.
         if (lastGeneratedDayByBoard.TryGetValue(boardIndex, out int lastDay) && lastDay == day)
         {
-            Debug.Log($"QuestManager: board {boardIndex} already generated quests on day {day}.");
+            Debug.Log($"QuestManager: board {boardIndex} already generated quests on day {day}.", this);
             return;
         }
 
         CollectEligibleTemplates(day);
-
         if (eligibleTemplates.Count == 0)
         {
-            Debug.LogWarning($"QuestManager: no eligible quest template for day {day}. " +
-                             "Check boardSelectable, minDay, and whether any destination exists " +
-                             "(a free persistent QuestSpawnPoint or an island destination).");
+            Debug.LogWarning($"QuestManager: no eligible quest template for day {day}. Check template setup and destinations.", this);
             return;
         }
 
         lastGeneratedDayByBoard[boardIndex] = day;
         usedNpcNamesInBatch.Clear();
 
-        int questCount = Random.Range(minQuestsPerBoard, Mathf.Max(minQuestsPerBoard, maxQuestsPerBoard) + 1);
+        int questCount = Random.Range(minQuestsPerBoard,
+            Mathf.Max(minQuestsPerBoard, maxQuestsPerBoard) + 1);
 
         if (logGeneration)
         {
-            Debug.Log($"QuestManager: day {day}, board {boardIndex}, generating up to {questCount} quests. " +
-                      $"Pools -> eligible templates: {eligibleTemplates.Count}, npcNames: {database.NpcNameCount}, " +
-                      $"itemNames: {database.ItemNameCount}, free persistent points: " +
-                      $"npc={CountFreePoints(QuestSpawnPoint.SpawnKind.Npc, string.Empty)}, " +
-                      $"item={CountFreePoints(QuestSpawnPoint.SpawnKind.Item, string.Empty)}, " +
-                      $"island destinations: {CountIslandDestinations()}");
+            Debug.Log($"QuestManager: day {day}, board {boardIndex}, generating up to {questCount} quests.", this);
         }
 
         for (int i = 0; i < questCount; i++)
         {
-            // Recomputed every slot: each spawned quest consumes persistent spawn points, which can
-            // make some templates impossible for the remaining slots.
             CollectEligibleTemplates(day);
             if (eligibleTemplates.Count == 0) break;
 
             QuestTemplate template = PickWeightedTemplate();
             if (template == null) continue;
 
-            TryCreateQuest(template, day);
+            TryCreateQuest(template, day, 0, -1, true);
         }
 
-        // Island-bound entities were only queued above. Drain the queue now: the target island may
-        // already be loaded, and then its NPC has to be standing there immediately, not on the next load.
         ResolvePendingSpawns();
     }
 
-    // ---------------------------------------------------------------- quest creation
-
-    private void TryCreateQuest(QuestTemplate template, int day)
+    private bool TryCreateQuest(QuestTemplate template, int day, int chainStepIndex,
+        int carriedNpcNameIndex, bool avoidBatchNpcRepeats)
     {
-        if (!TryPickDestinations(template, out QuestDestination giverDestination, out QuestDestination itemDestination))
+        if (template == null || database == null) return false;
+
+        int templateIndex = database.GetTemplateIndex(template);
+        if (templateIndex < 0 || invalidTemplateIndices.Contains(templateIndex)) return false;
+        if (!CanSatisfyTemplateDestinations(template)) return false;
+
+        int objectiveCount = template.ObjectiveCount;
+        int instanceId = nextInstanceId++;
+        List<QuestObjectiveState> newObjectives = new List<QuestObjectiveState>(objectiveCount);
+        List<QuestObjectiveRuntime> newRuntimes = new List<QuestObjectiveRuntime>(objectiveCount);
+        int previousNpcNameIndex = carriedNpcNameIndex;
+
+        for (int objectiveIndex = 0; objectiveIndex < objectiveCount; objectiveIndex++)
         {
-            return;
+            if (!template.TryGetObjective(objectiveIndex, out QuestType objectiveType, out _, out _,
+                    out bool keepNpcFromPrevious))
+            {
+                return false;
+            }
+
+            int npcNameIndex;
+            if (objectiveIndex == 0 && carriedNpcNameIndex >= 0)
+            {
+                npcNameIndex = carriedNpcNameIndex;
+            }
+            else if (objectiveIndex > 0 && keepNpcFromPrevious)
+            {
+                npcNameIndex = previousNpcNameIndex;
+            }
+            else
+            {
+                npcNameIndex = PickNpcNameIndex(avoidBatchNpcRepeats);
+            }
+
+            if (!TryPickObjectiveDestinations(objectiveType, instanceId,
+                    out QuestDestination giverDestination, out QuestDestination itemDestination))
+            {
+                return false;
+            }
+
+            QuestDestination shownDestination = RequiresItemEntity(objectiveType)
+                ? itemDestination
+                : giverDestination;
+
+            newObjectives.Add(new QuestObjectiveState
+            {
+                QuestInstanceId = instanceId,
+                ObjectiveIndex = objectiveIndex,
+                NpcNameIndex = npcNameIndex,
+                ItemNameIndex = RequiresItemEntity(objectiveType) ? PickIndex(database.ItemNameCount) : -1,
+                LocationNameIndex = shownDestination.LocationNameIndex,
+                Status = objectiveIndex == 0 ? QuestStatus.Active : QuestStatus.Locked
+            });
+
+            newRuntimes.Add(new QuestObjectiveRuntime
+            {
+                QuestInstanceId = instanceId,
+                ObjectiveIndex = objectiveIndex,
+                Type = objectiveType,
+                GiverDestination = giverDestination,
+                ItemDestination = itemDestination
+            });
+
+            previousNpcNameIndex = npcNameIndex;
         }
 
-        // The location shown to the player is the place they must travel to: the item's hiding place
-        // for FetchDeliver, the giver's place for TalkTo.
-        QuestDestination shownDestination = RequiresItemEntity(template.Type) ? itemDestination : giverDestination;
+        objectiveRuntimes.AddRange(newRuntimes);
 
-        QuestInstanceState state = CreateQuestState(template, day, shownDestination.LocationNameIndex);
-
-        // Nothing is reserved until an entity is actually placed, so a failure here needs no rollback
-        // beyond what PlaceQuestEntities does itself.
-        if (!PlaceQuestEntities(state.InstanceId, template, giverDestination, itemDestination))
+        if (!TryPlaceObjective(instanceId, 0))
         {
-            return;
+            RemoveQuestRuntime(instanceId);
+            return false;
         }
+
+        for (int i = 0; i < newObjectives.Count; i++) questObjectives.Add(newObjectives[i]);
+
+        QuestInstanceState state = new QuestInstanceState
+        {
+            InstanceId = instanceId,
+            TemplateIndex = templateIndex,
+            GoldReward = RollGold(template, day),
+            CreatedDay = day,
+            ChainStepIndex = chainStepIndex,
+            CurrentObjectiveIndex = 0,
+            ObjectiveCount = objectiveCount
+        };
 
         questStates.Add(state);
 
         if (logGeneration)
         {
-            Debug.Log($"QuestManager: quest #{state.InstanceId} -> templateIndex={state.TemplateIndex} " +
-                      $"({template.name}), npcNameIndex={state.NpcNameIndex}, itemNameIndex={state.ItemNameIndex}, " +
-                      $"locationNameIndex={state.LocationNameIndex}, gold={state.GoldReward}, " +
-                      $"giver -> {Describe(giverDestination)}" +
-                      (RequiresItemEntity(template.Type) ? $", item -> {Describe(itemDestination)}" : string.Empty));
-        }
-    }
-
-    private QuestInstanceState CreateQuestState(QuestTemplate template, int day, int locationNameIndex)
-    {
-        int itemNameIndex = -1;
-
-        // One switch per concern: adding a QuestType means visiting this switch, not hunting for
-        // scattered type checks.
-        switch (template.Type)
-        {
-            case QuestType.TalkTo:
-                break;
-            case QuestType.FetchDeliver:
-                itemNameIndex = PickIndex(database.ItemNameCount);
-                break;
-            default:
-                Debug.LogWarning($"QuestManager: unsupported quest type {template.Type} while filling parameters.");
-                break;
+            Debug.Log($"QuestManager: quest #{instanceId} -> template={template.name}, " +
+                      $"objectives={objectiveCount}, chainStep={chainStepIndex}, gold={state.GoldReward}.", this);
         }
 
-        return new QuestInstanceState
-        {
-            InstanceId = nextInstanceId++,
-            TemplateIndex = database.GetTemplateIndex(template),
-            NpcNameIndex = PickNpcNameIndex(),
-            ItemNameIndex = itemNameIndex,
-            LocationNameIndex = locationNameIndex,
-            GoldReward = RollGold(template, day),
-            CreatedDay = day,
-            ChainStepIndex = 0,
-            Status = QuestStatus.Active
-        };
+        return true;
     }
 
     private void CollectEligibleTemplates(int day)
     {
         eligibleTemplates.Clear();
+        if (database == null) return;
 
         for (int i = 0; i < database.TemplateCount; i++)
         {
             QuestTemplate template = database.GetTemplate(i);
-            if (template == null) continue;
-            if (!template.BoardSelectable) continue;   // chain follow-up links never appear on boards
-            if (template.MinDay > day) continue;
-            if (!CanSatisfyDestinations(template)) continue;
+            if (template == null || invalidTemplateIndices.Contains(i)) continue;
+            if (!template.BoardSelectable || template.MinDay > day) continue;
+            if (!CanSatisfyTemplateDestinations(template)) continue;
 
             eligibleTemplates.Add(template);
         }
@@ -364,14 +365,12 @@ public class QuestManager : NetworkBehaviour
             totalWeight += Mathf.Max(0f, eligibleTemplates[i].Weight);
         }
 
-        // Every weight is zero (or negative): fall back to a plain uniform pick.
         if (totalWeight <= 0f)
         {
             return eligibleTemplates[Random.Range(0, eligibleTemplates.Count)];
         }
 
         float roll = Random.Range(0f, totalWeight);
-
         for (int i = 0; i < eligibleTemplates.Count; i++)
         {
             roll -= Mathf.Max(0f, eligibleTemplates[i].Weight);
@@ -381,16 +380,15 @@ public class QuestManager : NetworkBehaviour
         return eligibleTemplates[eligibleTemplates.Count - 1];
     }
 
-    // Avoids repeating an NPC name inside one board batch; once the pool runs out, repeats are allowed.
-    private int PickNpcNameIndex()
+    private int PickNpcNameIndex(bool avoidBatchRepeats)
     {
         int count = database.NpcNameCount;
         if (count == 0) return -1;
+        if (!avoidBatchRepeats) return PickIndex(count);
 
         if (usedNpcNamesInBatch.Count >= count) usedNpcNamesInBatch.Clear();
 
         freeNpcNameIndices.Clear();
-
         for (int i = 0; i < count; i++)
         {
             if (!usedNpcNamesInBatch.Contains(i)) freeNpcNameIndices.Add(i);
@@ -398,7 +396,6 @@ public class QuestManager : NetworkBehaviour
 
         int picked = freeNpcNameIndices[Random.Range(0, freeNpcNameIndices.Count)];
         usedNpcNamesInBatch.Add(picked);
-
         return picked;
     }
 
@@ -406,7 +403,6 @@ public class QuestManager : NetworkBehaviour
     {
         int baseGold = Random.Range(template.MinGold, template.MaxGold + 1);
         float dayScale = 1f + (day - 1) * goldPerDayFactor;
-
         return Mathf.RoundToInt(baseGold * dayScale);
     }
 
@@ -415,12 +411,54 @@ public class QuestManager : NetworkBehaviour
         return count > 0 ? Random.Range(0, count) : -1;
     }
 
-    // ---------------------------------------------------------------- destinations
+    // ---------------------------------------------------------------- template validation
 
-    // The single place that maps a quest type to the entities it needs. Destination picking, spawning
-    // and the shown location all derive from it, so a new QuestType is taught here once instead of in
-    // three places. Returns false for a type this manager has no entity layout for - such a template
-    // is then never eligible, so it can never produce an uncompletable quest.
+    private void ValidateTemplates()
+    {
+        invalidTemplateIndices.Clear();
+        if (database == null) return;
+
+        for (int i = 0; i < database.TemplateCount; i++)
+        {
+            QuestTemplate template = database.GetTemplate(i);
+            if (template == null)
+            {
+                invalidTemplateIndices.Add(i);
+                Debug.LogWarning($"QuestManager: template entry {i} is empty.", this);
+                continue;
+            }
+
+            if (template.Type == QuestType.MultiStep && template.ObjectiveCount < 2)
+            {
+                invalidTemplateIndices.Add(i);
+                Debug.LogWarning($"QuestManager: multi-step template '{template.name}' needs at least two objectives.", template);
+                continue;
+            }
+
+            bool invalid = false;
+            for (int objectiveIndex = 0; objectiveIndex < template.ObjectiveCount; objectiveIndex++)
+            {
+                if (!template.TryGetObjective(objectiveIndex, out QuestType objectiveType, out _, out _, out _)
+                    || !TryGetRequiredEntities(objectiveType, out _))
+                {
+                    invalid = true;
+                    break;
+                }
+            }
+
+            if (invalid)
+            {
+                invalidTemplateIndices.Add(i);
+                Debug.LogWarning($"QuestManager: template '{template.name}' contains an unsupported or empty objective.", template);
+            }
+
+            if (template.NextTemplate != null && database.GetTemplateIndex(template.NextTemplate) < 0)
+            {
+                Debug.LogWarning($"QuestManager: nextTemplate on '{template.name}' is not present in QuestDatabase.", template);
+            }
+        }
+    }
+
     private static bool TryGetRequiredEntities(QuestType type, out bool needsItemEntity)
     {
         needsItemEntity = false;
@@ -433,64 +471,86 @@ public class QuestManager : NetworkBehaviour
                 needsItemEntity = true;
                 return true;
             default:
-                Debug.LogWarning($"QuestManager: unsupported quest type {type}; it has no entity layout.");
                 return false;
         }
     }
 
     private static bool RequiresItemEntity(QuestType type)
     {
-        TryGetRequiredEntities(type, out bool needsItemEntity);
-
-        return needsItemEntity;
+        return TryGetRequiredEntities(type, out bool needsItemEntity) && needsItemEntity;
     }
 
-    private bool CanSatisfyDestinations(QuestTemplate template)
+    private bool CanSatisfyTemplateDestinations(QuestTemplate template)
     {
-        if (!TryGetRequiredEntities(template.Type, out bool needsItem)) return false;
+        for (int i = 0; i < template.ObjectiveCount; i++)
+        {
+            if (!template.TryGetObjective(i, out QuestType objectiveType, out _, out _, out _)) return false;
+            if (!TryGetRequiredEntities(objectiveType, out bool needsItem)) return false;
+            if (!npcPrefabValid || (needsItem && !itemPrefabValid)) return false;
+            if (!HasDestination(QuestEntityKind.Giver)) return false;
+            if (needsItem && !HasDestination(QuestEntityKind.Item)) return false;
+        }
 
-        if (!HasDestination(QuestEntityKind.Giver)) return false;
-        if (needsItem && !HasDestination(QuestEntityKind.Item)) return false;
+        return true;
+    }
+
+    private void ValidateEntityPrefabs()
+    {
+        npcPrefabValid = ValidateEntityPrefab(questNpcPrefab, "NPC");
+        itemPrefabValid = ValidateEntityPrefab(questItemPrefab, "item");
+    }
+
+    private bool ValidateEntityPrefab(GameObject prefab, string label)
+    {
+        if (prefab == null)
+        {
+            Debug.LogError($"QuestManager: no quest {label} prefab assigned.", this);
+            return false;
+        }
+
+        if (!prefab.TryGetComponent(out QuestEntity _)
+            || !prefab.TryGetComponent(out NetworkObject _))
+        {
+            Debug.LogError($"QuestManager: quest {label} prefab '{prefab.name}' needs QuestEntity " +
+                           "and NetworkObject components.", prefab);
+            return false;
+        }
+
+        return true;
+    }
+
+    // ---------------------------------------------------------------- destinations and reservations
+
+    private bool TryPickObjectiveDestinations(QuestType type, int questInstanceId,
+        out QuestDestination giverDestination, out QuestDestination itemDestination)
+    {
+        giverDestination = default;
+        itemDestination = default;
+
+        if (!TryGetRequiredEntities(type, out bool needsItem)) return false;
+        if (!TryPickDestination(QuestEntityKind.Giver, questInstanceId, out giverDestination)) return false;
+        if (needsItem && !TryPickDestination(QuestEntityKind.Item, questInstanceId, out itemDestination)) return false;
 
         return true;
     }
 
     private bool HasDestination(QuestEntityKind kind)
     {
-        // An island is never full, so as soon as one is catalogued there is always somewhere to go.
         if (CountIslandDestinations() > 0) return true;
-
-        return FindFreePoint(ToSpawnKind(kind), string.Empty) != null;
+        return FindFreePersistentPoint(ToSpawnKind(kind), -1) != null;
     }
 
-    // Persistent points and islands compete as equals. No tuning knob: persistent points are consumed
-    // as quests take them while islands never are, so a batch drifts towards the islands by itself.
-    private bool TryPickDestinations(QuestTemplate template, out QuestDestination giverDestination, out QuestDestination itemDestination)
-    {
-        giverDestination = default;
-        itemDestination = default;
-
-        if (!TryGetRequiredEntities(template.Type, out bool needsItem)) return false;
-
-        if (!TryPickDestination(QuestEntityKind.Giver, out giverDestination)) return false;
-        if (needsItem && !TryPickDestination(QuestEntityKind.Item, out itemDestination)) return false;
-
-        // Nothing is occupied here: a destination is only taken once an entity is placed on it. The
-        // giver and the item never collide anyway - they need points of different kinds.
-        return true;
-    }
-
-    private bool TryPickDestination(QuestEntityKind kind, out QuestDestination destination)
+    private bool TryPickDestination(QuestEntityKind kind, int questInstanceId,
+        out QuestDestination destination)
     {
         destination = default;
         destinationCandidates.Clear();
-
         QuestSpawnPoint.SpawnKind spawnKind = ToSpawnKind(kind);
 
         for (int i = 0; i < QuestSpawnPoint.All.Count; i++)
         {
             QuestSpawnPoint point = QuestSpawnPoint.All[i];
-            if (!IsFreePoint(point, spawnKind, string.Empty)) continue;
+            if (!IsPersistentPointAvailable(point, spawnKind, questInstanceId)) continue;
 
             destinationCandidates.Add(new QuestDestination
             {
@@ -517,29 +577,59 @@ public class QuestManager : NetworkBehaviour
         }
 
         if (destinationCandidates.Count == 0) return false;
-
         destination = destinationCandidates[Random.Range(0, destinationCandidates.Count)];
+        return true;
+    }
+
+    private bool IsPersistentPointAvailable(QuestSpawnPoint point, QuestSpawnPoint.SpawnKind kind,
+        int requestingQuestInstanceId)
+    {
+        if (point == null || point.Kind != kind || !string.IsNullOrEmpty(point.IslandName)) return false;
+
+        for (int i = 0; i < objectiveRuntimes.Count; i++)
+        {
+            QuestObjectiveRuntime runtime = objectiveRuntimes[i];
+            if (runtime.QuestInstanceId == requestingQuestInstanceId) continue;
+            if (runtime.GiverDestination.Point == point || runtime.ItemDestination.Point == point) return false;
+        }
+
+        for (int i = 0; i < entityRecords.Count; i++)
+        {
+            QuestEntityRecord record = entityRecords[i];
+            if (record.QuestInstanceId == requestingQuestInstanceId) continue;
+            if (record.Point == point) return false;
+        }
 
         return true;
     }
 
-    // Generation may only ever pick points whose islandName is empty; island points are reachable
-    // exclusively through the catalog and the pending queue. That invariant is what guarantees no
-    // entity is ever left standing where an island used to be: everything on an island got there
-    // through a record that knows which island it belongs to.
-    private bool IsFreePoint(QuestSpawnPoint point, QuestSpawnPoint.SpawnKind spawnKind, string islandName)
+    private QuestSpawnPoint FindFreePersistentPoint(QuestSpawnPoint.SpawnKind kind, int questInstanceId)
     {
-        if (point == null) return false;
-        if (point.Kind != spawnKind) return false;
-        if (!string.Equals(point.IslandName, islandName, StringComparison.Ordinal)) return false;
+        for (int i = 0; i < QuestSpawnPoint.All.Count; i++)
+        {
+            QuestSpawnPoint point = QuestSpawnPoint.All[i];
+            if (IsPersistentPointAvailable(point, kind, questInstanceId)) return point;
+        }
 
-        return !IsOccupied(point);
+        return null;
     }
 
-    // Occupancy is derived, not stored: a point is taken when an entity record sits on it. One list is
-    // the single source of truth, so no second structure can fall out of sync with it. The lists hold
-    // a couple of dozen entries at most, and this only runs when a board is read or an island loads.
-    private bool IsOccupied(QuestSpawnPoint point)
+    private QuestSpawnPoint FindFreeIslandPoint(QuestSpawnPoint.SpawnKind kind, string islandName)
+    {
+        for (int i = 0; i < QuestSpawnPoint.All.Count; i++)
+        {
+            QuestSpawnPoint point = QuestSpawnPoint.All[i];
+            if (point == null || point.Kind != kind) continue;
+            if (!string.Equals(point.IslandName, islandName, StringComparison.Ordinal)) continue;
+            if (IsEntityPointOccupied(point)) continue;
+
+            return point;
+        }
+
+        return null;
+    }
+
+    private bool IsEntityPointOccupied(QuestSpawnPoint point)
     {
         for (int i = 0; i < entityRecords.Count; i++)
         {
@@ -549,49 +639,20 @@ public class QuestManager : NetworkBehaviour
         return false;
     }
 
-    private QuestSpawnPoint FindFreePoint(QuestSpawnPoint.SpawnKind spawnKind, string islandName)
-    {
-        for (int i = 0; i < QuestSpawnPoint.All.Count; i++)
-        {
-            QuestSpawnPoint point = QuestSpawnPoint.All[i];
-            if (IsFreePoint(point, spawnKind, islandName)) return point;
-        }
-
-        return null;
-    }
-
-    private int CountFreePoints(QuestSpawnPoint.SpawnKind spawnKind, string islandName)
-    {
-        int count = 0;
-
-        for (int i = 0; i < QuestSpawnPoint.All.Count; i++)
-        {
-            if (IsFreePoint(QuestSpawnPoint.All[i], spawnKind, islandName)) count++;
-        }
-
-        return count;
-    }
-
     private int CountIslandDestinations()
     {
         if (islandDestinations == null) return 0;
 
         int count = 0;
-
         for (int i = 0; i < islandDestinations.Length; i++)
         {
             IslandDefinition island = islandDestinations[i];
-            if (island == null || string.IsNullOrEmpty(island.SceneName)) continue;
-
-            count++;
+            if (island != null && !string.IsNullOrEmpty(island.SceneName)) count++;
         }
 
         return count;
     }
 
-    // The island name can no longer be mistyped (it comes from the asset), but its display name still
-    // points into the database by index, and that can be left at -1 or aimed past the end of the pool.
-    // Both would only show up as a "???" in a quest text hours later, so they are reported at startup.
     private void ValidateIslandDestinations()
     {
         if (islandDestinations == null || database == null) return;
@@ -599,7 +660,6 @@ public class QuestManager : NetworkBehaviour
         for (int i = 0; i < islandDestinations.Length; i++)
         {
             IslandDefinition island = islandDestinations[i];
-
             if (island == null)
             {
                 Debug.LogWarning($"QuestManager: island destination {i} is empty.", this);
@@ -614,10 +674,8 @@ public class QuestManager : NetworkBehaviour
 
             if (island.LocationNameIndex < 0 || island.LocationNameIndex >= database.LocationNameCount)
             {
-                Debug.LogWarning($"QuestManager: island '{island.name}' has locationNameIndex " +
-                                 $"{island.LocationNameIndex}, which is not a name in the database " +
-                                 $"({database.LocationNameCount} location names). Quests sent there will " +
-                                 "show \"???\" as their location.", island);
+                Debug.LogWarning($"QuestManager: island '{island.name}' has invalid locationNameIndex " +
+                                 $"{island.LocationNameIndex}; quests sent there show \"???\".", island);
             }
         }
     }
@@ -627,92 +685,96 @@ public class QuestManager : NetworkBehaviour
         for (int i = 0; i < QuestSpawnPoint.All.Count; i++)
         {
             QuestSpawnPoint point = QuestSpawnPoint.All[i];
-            if (point == null) continue;
-
-            if (string.Equals(point.IslandName, islandName, StringComparison.Ordinal)) return true;
+            if (point != null && string.Equals(point.IslandName, islandName, StringComparison.Ordinal))
+            {
+                return true;
+            }
         }
 
         return false;
     }
 
-    // ---------------------------------------------------------------- placing entities
+    // ---------------------------------------------------------------- objective entity placement
 
-    private bool PlaceQuestEntities(int questInstanceId, QuestTemplate template, QuestDestination giverDestination, QuestDestination itemDestination)
+    private bool TryPlaceObjective(int questInstanceId, int objectiveIndex)
     {
-        if (!TryGetRequiredEntities(template.Type, out bool needsItem)) return false;
+        QuestObjectiveRuntime runtime = FindObjectiveRuntime(questInstanceId, objectiveIndex);
+        if (runtime == null) return false;
 
-        if (!TryPlaceEntity(questInstanceId, QuestEntityKind.Giver, giverDestination)) return false;
+        if (!TryPlaceEntity(runtime, QuestEntityKind.Giver, runtime.GiverDestination)) return false;
 
-        if (needsItem && !TryPlaceEntity(questInstanceId, QuestEntityKind.Item, itemDestination))
+        if (RequiresItemEntity(runtime.Type)
+            && !TryPlaceEntity(runtime, QuestEntityKind.Item, runtime.ItemDestination))
         {
-            // Roll the giver back, spawned or merely queued: half a quest is worse than no quest.
-            RemoveQuestEntities(questInstanceId);
+            RemoveObjectiveEntities(questInstanceId, objectiveIndex);
             return false;
         }
 
         return true;
     }
 
-    private bool TryPlaceEntity(int questInstanceId, QuestEntityKind kind, QuestDestination destination)
+    private bool TryPlaceEntity(QuestObjectiveRuntime runtime, QuestEntityKind kind,
+        QuestDestination destination)
     {
         QuestEntityRecord record = new QuestEntityRecord
         {
-            QuestInstanceId = questInstanceId,
+            QuestInstanceId = runtime.QuestInstanceId,
+            ObjectiveIndex = runtime.ObjectiveIndex,
             Kind = kind,
             IslandName = destination.IslandName
         };
 
-        // An island destination instantiates nothing right now - the island may not even be in the
-        // world. The record waits in the queue and ResolvePendingSpawns() turns it into a real object
-        // as soon as a matching spawn point registers (immediately, if the island is already loaded).
         if (!string.IsNullOrEmpty(destination.IslandName))
         {
             entityRecords.Add(record);
             return true;
         }
 
-        NetworkObject instance = SpawnQuestEntity(GetPrefab(kind), destination.Point, questInstanceId, kind);
+        if (destination.Point == null || !destination.Point.isActiveAndEnabled)
+        {
+            Debug.LogError($"QuestManager: reserved persistent point is unavailable for quest " +
+                           $"#{runtime.QuestInstanceId}, objective {runtime.ObjectiveIndex}.", this);
+            return false;
+        }
+
+        NetworkObject instance = SpawnQuestEntity(GetPrefab(kind), destination.Point,
+            runtime.QuestInstanceId, runtime.ObjectiveIndex, kind);
         if (instance == null) return false;
 
         record.Point = destination.Point;
         record.Instance = instance;
         entityRecords.Add(record);
-
         return true;
     }
 
-    private NetworkObject SpawnQuestEntity(GameObject prefab, QuestSpawnPoint point, int questInstanceId, QuestEntityKind kind)
+    private NetworkObject SpawnQuestEntity(GameObject prefab, QuestSpawnPoint point, int questInstanceId,
+        int objectiveIndex, QuestEntityKind kind)
     {
-        if (prefab == null)
+        if (prefab == null || point == null)
         {
-            Debug.LogError($"QuestManager: no prefab assigned for quest entity kind {kind}.");
+            Debug.LogError($"QuestManager: missing prefab or spawn point for quest entity kind {kind}.", this);
             return null;
         }
 
         GameObject instance = Instantiate(prefab, point.transform.position, point.transform.rotation);
 
-        // Pin the entity to this manager's own scene (the ship's world) instead of trusting whichever
-        // scene happens to be active: Instantiate drops a parentless object into the ACTIVE scene, and an
-        // island scene can end up active. An entity living in the island's scene would be destroyed by
-        // Unity when that scene unloads - behind this manager's back, before it can despawn it and put the
-        // record back in the pending queue. Its position is unaffected; it still stands on the island.
+        // Instantiate during additive scene loading can put the object into the loading island scene.
+        // Pin it to the persistent manager scene so island unload cannot destroy it behind our back.
         if (instance.scene != gameObject.scene)
         {
             SceneManager.MoveGameObjectToScene(instance, gameObject.scene);
         }
 
-        if (!instance.TryGetComponent(out QuestEntity entity) || !instance.TryGetComponent(out NetworkObject networkObject))
+        if (!instance.TryGetComponent(out QuestEntity entity)
+            || !instance.TryGetComponent(out NetworkObject networkObject))
         {
-            Debug.LogError($"QuestManager: prefab '{prefab.name}' needs both QuestEntity and NetworkObject components.");
+            Debug.LogError($"QuestManager: prefab '{prefab.name}' needs QuestEntity and NetworkObject.", this);
             Destroy(instance);
             return null;
         }
 
-        // Hand the identity over before Spawn(); QuestEntity copies it into its NetworkVariables
-        // inside OnNetworkSpawn, which still happens before the spawn payload is serialized.
-        entity.ServerInitialize(questInstanceId, kind);
+        entity.ServerInitialize(questInstanceId, objectiveIndex, kind);
         networkObject.Spawn();
-
         return networkObject;
     }
 
@@ -722,107 +784,70 @@ public class QuestManager : NetworkBehaviour
         {
             case QuestEntityKind.Giver: return questNpcPrefab;
             case QuestEntityKind.Item: return questItemPrefab;
-            default:
-                Debug.LogWarning($"QuestManager: no prefab mapped for quest entity kind {kind}.");
-                return null;
+            default: return null;
         }
     }
 
     private static QuestSpawnPoint.SpawnKind ToSpawnKind(QuestEntityKind kind)
     {
-        switch (kind)
-        {
-            case QuestEntityKind.Giver: return QuestSpawnPoint.SpawnKind.Npc;
-            case QuestEntityKind.Item: return QuestSpawnPoint.SpawnKind.Item;
-            default:
-                Debug.LogWarning($"QuestManager: no spawn point kind mapped for quest entity kind {kind}.");
-                return QuestSpawnPoint.SpawnKind.Npc;
-        }
-    }
-
-    private static string Describe(QuestDestination destination)
-    {
-        return string.IsNullOrEmpty(destination.IslandName)
-            ? (destination.Point != null ? destination.Point.name : "none")
-            : $"island '{destination.IslandName}' (queued)";
+        return kind == QuestEntityKind.Item
+            ? QuestSpawnPoint.SpawnKind.Item
+            : QuestSpawnPoint.SpawnKind.Npc;
     }
 
     // ---------------------------------------------------------------- deferred island spawning
 
-    // The only place a queued entity becomes a real object. Called whenever something could have made
-    // one spawnable: a fresh batch of quests, an island's spawn points registering, a point freeing up
-    // because a quest moved on, or the quiet maintenance safety sweep added alongside expiry.
     private void ResolvePendingSpawns(bool logCapacityWarnings = true)
     {
         if (!IsServer) return;
-
         if (logCapacityWarnings) warnedIslands.Clear();
 
         for (int i = 0; i < entityRecords.Count; i++)
         {
             QuestEntityRecord record = entityRecords[i];
-            if (record.Instance != null) continue;   // already standing in the world
+            if (record.Instance != null) continue;
 
-            QuestSpawnPoint point = FindFreePoint(ToSpawnKind(record.Kind), record.IslandName);
-
+            QuestSpawnPoint point = FindFreeIslandPoint(ToSpawnKind(record.Kind), record.IslandName);
             if (point == null)
             {
                 if (logCapacityWarnings) WarnIfIslandIsLoadedButFull(record);
-                continue;   // island simply is not loaded: keep waiting, that is the whole point
+                continue;
             }
 
-            NetworkObject instance = SpawnQuestEntity(GetPrefab(record.Kind), point, record.QuestInstanceId, record.Kind);
-            if (instance == null) continue;   // setup error, already logged by SpawnQuestEntity
+            NetworkObject instance = SpawnQuestEntity(GetPrefab(record.Kind), point,
+                record.QuestInstanceId, record.ObjectiveIndex, record.Kind);
+            if (instance == null) continue;
 
             record.Point = point;
             record.Instance = instance;
         }
     }
 
-    // A record whose island is not loaded is just waiting - normal, and not worth a log line. A record
-    // whose island IS loaded but has no free point of the right kind means that island's scene holds
-    // fewer QuestSpawnPoints of that kind than the quests sent to it.
     private void WarnIfIslandIsLoadedButFull(QuestEntityRecord record)
     {
         if (!IsIslandLoaded(record.IslandName)) return;
-        if (!warnedIslands.Add(record.IslandName)) return;
+        string warningKey = $"{record.IslandName}:{record.Kind}";
+        if (!warnedIslands.Add(warningKey)) return;
 
-        Debug.LogWarning($"QuestManager: island '{record.IslandName}' is loaded but has no free spawn point of the " +
-                         $"required kind ({ToSpawnKind(record.Kind)}). Quest entities stay queued until one frees up - " +
-                         "add more QuestSpawnPoints to that island's scene.");
+        Debug.LogWarning($"QuestManager: island '{record.IslandName}' has no free " +
+                         $"{ToSpawnKind(record.Kind)} quest point. The entity stays queued.", this);
     }
 
-    // An island finished loading: its spawn points just registered. Nothing else can turn a queued
-    // record into an object, so this is where the queue drains.
     private void HandleSpawnPointRegistered(QuestSpawnPoint point)
     {
-        if (!IsSpawned) return;   // see HandleSpawnPointDeregistered: nothing to do outside a live session
-        if (point == null) return;
-        if (string.IsNullOrEmpty(point.IslandName)) return;   // a persistent point serves no queued record
-
+        if (!IsSpawned || point == null || string.IsNullOrEmpty(point.IslandName)) return;
         ResolvePendingSpawns();
     }
 
-    // An island is unloading: the ground under its quest entities is about to disappear, so they go
-    // back into the queue. The quest itself is untouched - it stays in the NetworkList and its
-    // entities reappear the next time the island loads (at whatever points are free then).
     private void HandleSpawnPointDeregistered(QuestSpawnPoint point)
     {
-        // Tearing the session down destroys every GameObject, which deregisters every spawn point in
-        // an undefined order - this manager may still be alive while they go. Despawning into a
-        // NetworkManager that is already shutting down only produces errors, and NGO cleans the
-        // entities up anyway, so once this manager is no longer spawned there is nothing to do here.
-        if (!IsSpawned) return;
-        if (point == null) return;
+        if (!IsSpawned || point == null) return;
 
         for (int i = 0; i < entityRecords.Count; i++)
         {
             QuestEntityRecord record = entityRecords[i];
             if (record.Point != point) continue;
 
-            // A persistent point that was merely disabled is a different story: its entity is an
-            // independent world object standing on ground that is still there, so it stays. Only the
-            // dead point reference is dropped, which also frees the point in the occupancy check.
             if (string.IsNullOrEmpty(record.IslandName))
             {
                 record.Point = null;
@@ -830,79 +855,208 @@ public class QuestManager : NetworkBehaviour
             }
 
             if (record.Instance != null && record.Instance.IsSpawned) record.Instance.Despawn(true);
-
             record.Instance = null;
             record.Point = null;
         }
+
+        if (string.IsNullOrEmpty(point.IslandName)) RepairFutureReservations(point);
     }
 
-    // ---------------------------------------------------------------- interaction & completion
+    private void RepairFutureReservations(QuestSpawnPoint disabledPoint)
+    {
+        List<int> questsToCancel = new List<int>();
 
-    // Called from QuestEntity's server RPC. Server-only.
+        for (int i = 0; i < objectiveRuntimes.Count; i++)
+        {
+            QuestObjectiveRuntime runtime = objectiveRuntimes[i];
+            int questIndex = FindQuestIndex(runtime.QuestInstanceId);
+            if (questIndex < 0 || runtime.ObjectiveIndex <= questStates[questIndex].CurrentObjectiveIndex) continue;
+
+            bool changed = false;
+
+            if (runtime.GiverDestination.Point == disabledPoint)
+            {
+                if (!TryPickDestination(QuestEntityKind.Giver, runtime.QuestInstanceId,
+                        out QuestDestination replacement))
+                {
+                    questsToCancel.Add(runtime.QuestInstanceId);
+                    continue;
+                }
+
+                runtime.GiverDestination = replacement;
+                changed = true;
+            }
+
+            if (RequiresItemEntity(runtime.Type) && runtime.ItemDestination.Point == disabledPoint)
+            {
+                if (!TryPickDestination(QuestEntityKind.Item, runtime.QuestInstanceId,
+                        out QuestDestination replacement))
+                {
+                    questsToCancel.Add(runtime.QuestInstanceId);
+                    continue;
+                }
+
+                runtime.ItemDestination = replacement;
+                changed = true;
+            }
+
+            if (changed) UpdateObjectiveLocation(runtime);
+        }
+
+        for (int i = 0; i < questsToCancel.Count; i++)
+        {
+            int questInstanceId = questsToCancel[i];
+            if (FindQuestIndex(questInstanceId) < 0) continue;
+
+            Debug.LogError($"QuestManager: cancelling quest #{questInstanceId}; a reserved persistent " +
+                           "point disappeared and no replacement destination exists.", this);
+            CancelQuest(questInstanceId);
+        }
+    }
+
+    private void UpdateObjectiveLocation(QuestObjectiveRuntime runtime)
+    {
+        int index = FindObjectiveStateIndex(runtime.QuestInstanceId, runtime.ObjectiveIndex);
+        if (index < 0) return;
+
+        QuestObjectiveState objective = questObjectives[index];
+        objective.LocationNameIndex = RequiresItemEntity(runtime.Type)
+            ? runtime.ItemDestination.LocationNameIndex
+            : runtime.GiverDestination.LocationNameIndex;
+        questObjectives[index] = objective;
+    }
+
+    // ---------------------------------------------------------------- interaction, objective progression and chains
+
     public void HandleEntityInteracted(QuestEntity entity)
     {
         if (!IsServer || entity == null) return;
 
-        int index = FindQuestIndex(entity.QuestInstanceId);
-        if (index < 0) return;   // quest already gone (finished or expired): ignore silently
+        int questIndex = FindQuestIndex(entity.QuestInstanceId);
+        if (questIndex < 0) return;
 
-        QuestInstanceState state = questStates[index];
-        QuestTemplate template = database != null ? database.GetTemplate(state.TemplateIndex) : null;
-        if (template == null) return;
+        QuestInstanceState quest = questStates[questIndex];
+        if (entity.ObjectiveIndex != quest.CurrentObjectiveIndex) return;
+
+        int objectiveStateIndex = FindObjectiveStateIndex(quest.InstanceId, quest.CurrentObjectiveIndex);
+        if (objectiveStateIndex < 0) return;
+
+        QuestObjectiveState objective = questObjectives[objectiveStateIndex];
+        QuestObjectiveRuntime runtime = FindObjectiveRuntime(quest.InstanceId, quest.CurrentObjectiveIndex);
+        if (runtime == null) return;
 
         switch (entity.Kind)
         {
             case QuestEntityKind.Item:
-                if (state.Status != QuestStatus.Active) return;
+                if (runtime.Type != QuestType.FetchDeliver || objective.Status != QuestStatus.Active) return;
 
-                state.Status = QuestStatus.ItemCollected;
-                questStates[index] = state;   // structs are copies: write the modified value back
-
+                objective.Status = QuestStatus.ItemCollected;
+                questObjectives[objectiveStateIndex] = objective;
                 RemoveEntity(entity.NetworkObject);
-
-                // Picking the item up gave its spawn point back, which may be exactly what a queued
-                // entity was waiting for.
                 ResolvePendingSpawns();
                 break;
 
             case QuestEntityKind.Giver:
-                if (!CanTurnIn(template, state)) return;
-
-                CompleteQuest(index, state);
+                if (!CanTurnIn(runtime.Type, objective.Status)) return;
+                CompleteObjective(questIndex, quest, objectiveStateIndex, objective);
                 break;
         }
     }
 
-    // Talking to the giver too early does nothing: the item has not been picked up yet.
-    private bool CanTurnIn(QuestTemplate template, QuestInstanceState state)
+    private static bool CanTurnIn(QuestType type, QuestStatus status)
     {
-        switch (template.Type)
+        switch (type)
         {
             case QuestType.TalkTo:
-                return state.Status == QuestStatus.Active;
+                return status == QuestStatus.Active;
             case QuestType.FetchDeliver:
-                return state.Status == QuestStatus.ItemCollected;
+                return status == QuestStatus.ItemCollected;
             default:
-                Debug.LogWarning($"QuestManager: unsupported quest type {template.Type} on turn-in.");
                 return false;
         }
     }
 
-    private void CompleteQuest(int index, QuestInstanceState state)
+    private void CompleteObjective(int questIndex, QuestInstanceState quest, int objectiveStateIndex,
+        QuestObjectiveState objective)
     {
-        if (CrewGold.Instance != null) CrewGold.Instance.AddGold(state.GoldReward);
+        int nextObjectiveIndex = quest.CurrentObjectiveIndex + 1;
+        if (nextObjectiveIndex >= quest.ObjectiveCount)
+        {
+            CompleteQuest(questIndex, quest, objective);
+            return;
+        }
 
-        totalQuestsCompleted.Value++;
+        int nextStateIndex = FindObjectiveStateIndex(quest.InstanceId, nextObjectiveIndex);
+        if (nextStateIndex < 0)
+        {
+            Debug.LogError($"QuestManager: missing synchronized state for objective {nextObjectiveIndex}.", this);
+            return;
+        }
 
-        RemoveQuestEntities(state.InstanceId);
+        // Place first, commit second. If a prefab/setup failure occurs, the current objective and its
+        // giver stay intact so the player can retry after the setup is corrected.
+        if (!TryPlaceObjective(quest.InstanceId, nextObjectiveIndex))
+        {
+            Debug.LogError($"QuestManager: could not activate objective {nextObjectiveIndex + 1} " +
+                           $"for quest #{quest.InstanceId}; current objective remains active.", this);
+            return;
+        }
 
-        questStates.RemoveAt(index);
+        RemoveObjectiveEntities(quest.InstanceId, quest.CurrentObjectiveIndex);
 
-        Debug.Log($"QuestManager: quest #{state.InstanceId} completed, {state.GoldReward} gold paid to the crew.");
+        objective.Status = QuestStatus.Completed;
+        questObjectives[objectiveStateIndex] = objective;
 
-        // The finished quest just released its spawn points: a queued entity may fit in one of them now.
+        QuestObjectiveState nextObjective = questObjectives[nextStateIndex];
+        nextObjective.Status = QuestStatus.Active;
+        questObjectives[nextStateIndex] = nextObjective;
+
+        quest.CurrentObjectiveIndex = nextObjectiveIndex;
+        questStates[questIndex] = quest;
+
         ResolvePendingSpawns();
     }
+
+    private void CompleteQuest(int questIndex, QuestInstanceState quest, QuestObjectiveState finalObjective)
+    {
+        QuestTemplate completedTemplate = database != null ? database.GetTemplate(quest.TemplateIndex) : null;
+        int carriedNpcNameIndex = finalObjective.NpcNameIndex;
+
+        if (CrewGold.Instance != null) CrewGold.Instance.AddGold(quest.GoldReward);
+        totalQuestsCompleted.Value++;
+
+        RemoveQuestRuntime(quest.InstanceId);
+        RemoveObjectiveStates(quest.InstanceId);
+        questStates.RemoveAt(questIndex);
+
+        Debug.Log($"QuestManager: quest #{quest.InstanceId} completed, {quest.GoldReward} gold paid to the crew.", this);
+
+        if (completedTemplate != null && completedTemplate.NextTemplate != null)
+        {
+            QuestTemplate nextTemplate = completedTemplate.NextTemplate;
+            int nextTemplateIndex = database.GetTemplateIndex(nextTemplate);
+
+            if (nextTemplateIndex < 0 || invalidTemplateIndices.Contains(nextTemplateIndex))
+            {
+                Debug.LogWarning($"QuestManager: chain after '{completedTemplate.name}' ended because " +
+                                 "nextTemplate is missing from the database or invalid.", completedTemplate);
+            }
+            else
+            {
+                int day = GameDayClock.Instance != null ? GameDayClock.Instance.CurrentDay : 1;
+                if (!TryCreateQuest(nextTemplate, day, quest.ChainStepIndex + 1,
+                        carriedNpcNameIndex, false))
+                {
+                    Debug.LogWarning($"QuestManager: chain after '{completedTemplate.name}' ended because " +
+                                     "the next quest could not reserve all required destinations.", completedTemplate);
+                }
+            }
+        }
+
+        ResolvePendingSpawns();
+    }
+
+    // ---------------------------------------------------------------- lookup and cleanup
 
     private int FindQuestIndex(int instanceId)
     {
@@ -914,23 +1068,56 @@ public class QuestManager : NetworkBehaviour
         return -1;
     }
 
-    // Removes one entity: despawns the object and drops its record, which frees its spawn point.
+    private int FindObjectiveStateIndex(int questInstanceId, int objectiveIndex)
+    {
+        for (int i = 0; i < questObjectives.Count; i++)
+        {
+            QuestObjectiveState state = questObjectives[i];
+            if (state.QuestInstanceId == questInstanceId && state.ObjectiveIndex == objectiveIndex) return i;
+        }
+
+        return -1;
+    }
+
+    private QuestObjectiveRuntime FindObjectiveRuntime(int questInstanceId, int objectiveIndex)
+    {
+        for (int i = 0; i < objectiveRuntimes.Count; i++)
+        {
+            QuestObjectiveRuntime runtime = objectiveRuntimes[i];
+            if (runtime.QuestInstanceId == questInstanceId && runtime.ObjectiveIndex == objectiveIndex)
+            {
+                return runtime;
+            }
+        }
+
+        return null;
+    }
+
     private void RemoveEntity(NetworkObject instance)
     {
         if (instance == null) return;
 
         for (int i = entityRecords.Count - 1; i >= 0; i--)
         {
-            if (entityRecords[i].Instance != instance) continue;
-
-            entityRecords.RemoveAt(i);
+            if (entityRecords[i].Instance == instance) entityRecords.RemoveAt(i);
         }
 
         if (instance.IsSpawned) instance.Despawn(true);
     }
 
-    // Drops every entity of a quest: spawned ones are despawned, queued ones just leave the queue.
-    private void RemoveQuestEntities(int questInstanceId)
+    private void RemoveObjectiveEntities(int questInstanceId, int objectiveIndex)
+    {
+        for (int i = entityRecords.Count - 1; i >= 0; i--)
+        {
+            QuestEntityRecord record = entityRecords[i];
+            if (record.QuestInstanceId != questInstanceId || record.ObjectiveIndex != objectiveIndex) continue;
+
+            if (record.Instance != null && record.Instance.IsSpawned) record.Instance.Despawn(true);
+            entityRecords.RemoveAt(i);
+        }
+    }
+
+    private void RemoveQuestRuntime(int questInstanceId)
     {
         for (int i = entityRecords.Count - 1; i >= 0; i--)
         {
@@ -938,8 +1125,31 @@ public class QuestManager : NetworkBehaviour
             if (record.QuestInstanceId != questInstanceId) continue;
 
             if (record.Instance != null && record.Instance.IsSpawned) record.Instance.Despawn(true);
-
             entityRecords.RemoveAt(i);
         }
+
+        for (int i = objectiveRuntimes.Count - 1; i >= 0; i--)
+        {
+            if (objectiveRuntimes[i].QuestInstanceId == questInstanceId) objectiveRuntimes.RemoveAt(i);
+        }
+    }
+
+    private void RemoveObjectiveStates(int questInstanceId)
+    {
+        for (int i = questObjectives.Count - 1; i >= 0; i--)
+        {
+            if (questObjectives[i].QuestInstanceId == questInstanceId) questObjectives.RemoveAt(i);
+        }
+    }
+
+    private void CancelQuest(int questInstanceId)
+    {
+        int questIndex = FindQuestIndex(questInstanceId);
+        if (questIndex < 0) return;
+
+        RemoveQuestRuntime(questInstanceId);
+        RemoveObjectiveStates(questInstanceId);
+        questStates.RemoveAt(questIndex);
+        ResolvePendingSpawns();
     }
 }

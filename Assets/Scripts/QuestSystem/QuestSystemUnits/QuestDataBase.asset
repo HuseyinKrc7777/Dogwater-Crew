@@ -15,8 +15,9 @@ MonoBehaviour:
   templates:
   - {fileID: 11400000, guid: 494776b8ba9c6ab48891d769daa6b879, type: 2}
   - {fileID: 11400000, guid: a36b0e98d2191eb4d98c1f2f9e549821, type: 2}
-  - {fileID: 11400000, guid: 7a178e29c4c5c564a954e5de01b712d2, type: 2}
   - {fileID: 11400000, guid: d0862d3329ae2034f8e4a75a6dc2f77c, type: 2}
+  - {fileID: 11400000, guid: 7a178e29c4c5c564a954e5de01b712d2, type: 2}
+  - {fileID: 11400000, guid: d82b714d76f11734b8902ea9bb2e8a7e, type: 2}
   npcNames:
   - Hasan
   - Enes
