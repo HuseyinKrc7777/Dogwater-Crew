@@ -6,15 +6,15 @@ public class Cannon : NetworkBehaviour, IHandInput
 {
     [Header("References")]
     [SerializeField] private GameObject cannonballPrefab;
-    [SerializeField] private Transform spawnPoint;
+    [SerializeField] public Transform spawnPoint;
 
     [Header("Settings")]
-    [SerializeField] private float fireForce = 100f;
+    [SerializeField] public float fireForce = 100f;
     
     [Header("Rotation Settings")]
     [SerializeField] private float maxYaw = 15f;       // Sağa/sola maksimum dönme açısı
-    [SerializeField] private float minPitch = -5f;     // Aşağı maksimum eğilme açısı
-    [SerializeField] private float maxPitch = 15f;     // Yukarı maksimum kalkma açısı
+    [SerializeField] public float minPitch = -5f;     // Aşağı maksimum eğilme açısı
+    [SerializeField] public float maxPitch = 15f;     // Yukarı maksimum kalkma açısı
     [SerializeField] private float manualRotationSpeed = 100f;
 
     // Herkesin göreceği senkronize açı değerleri

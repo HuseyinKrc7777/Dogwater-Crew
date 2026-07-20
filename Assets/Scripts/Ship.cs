@@ -26,7 +26,7 @@ public class Ship : NetworkBehaviour
     public NetworkVariable<float> waterInsideTheShip = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     GlobalCoordinate coordinate;
     Vector3 lastCoordinateChangePosition = Vector3.zero;
-    [SerializeField] public ShipKind whatKindOfShipIsThis = ShipKind.None;
+    static public Ship PlayerShip;
     void Start()
     {
         _lastFramePosition = transform.position;
@@ -44,6 +44,8 @@ public class Ship : NetworkBehaviour
         {
             cannons.Add(cannon);
         }
+        if(GetComponent<ShipAi>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
+            PlayerShip = this;
     }
     float counter = 0.0f;
     void Update()
