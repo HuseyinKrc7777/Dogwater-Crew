@@ -18,6 +18,11 @@ public class IslandManager : NetworkBehaviour
 {
     public static IslandManager Instance { get; private set; }
 
+    [Header("Anchor Gate")]
+    [Tooltip("The ship anchor whose authoritative rope amount controls island entry and recalls the crew " +
+             "before the ship starts moving again.")]
+    [SerializeField] private Anchor anchor;
+
     [Header("Return")]
     [Tooltip("Where a player lands when leaving an island. Put it on the ship's deck: it is read at the " +
              "moment of the teleport, so a crew that has sailed on is still found.")]
@@ -101,6 +106,16 @@ public class IslandManager : NetworkBehaviour
                            "return to, so leaving an island will be refused.", this);
         }
 
+        if (anchor == null)
+        {
+            Debug.LogError("IslandManager: anchor is not assigned. Island entry will be refused because " +
+                           "the server cannot verify that the ship is safely anchored.", this);
+        }
+        else
+        {
+            anchor.releasedRopeAmount.OnValueChanged += HandleAnchorRopeAmountChanged;
+        }
+
         NetworkManager.SceneManager.OnLoadEventCompleted += HandleLoadEventCompleted;
         NetworkManager.SceneManager.OnUnloadEventCompleted += HandleUnloadEventCompleted;
         NetworkManager.OnClientDisconnectCallback += HandleClientDisconnect;
@@ -148,6 +163,11 @@ public class IslandManager : NetworkBehaviour
             NetworkManager.OnClientDisconnectCallback -= HandleClientDisconnect;
         }
 
+        if (anchor != null)
+        {
+            anchor.releasedRopeAmount.OnValueChanged -= HandleAnchorRopeAmountChanged;
+        }
+
         subscribed = false;
     }
 
@@ -187,6 +207,10 @@ public class IslandManager : NetworkBehaviour
     private void EnterIsland(ulong clientId, string islandName)
     {
         if (!IsServer || !IsSpawned) return;
+
+        // The trigger only requests entry. The authoritative decision is made here from the server-owned
+        // anchor state, so a client cannot enter early by bypassing a local check.
+        if (anchor == null || shipReturnPoint == null || !anchor.IsFullyDeployed) return;
 
         if (string.IsNullOrEmpty(islandName))
         {
@@ -303,6 +327,75 @@ public class IslandManager : NetworkBehaviour
         SendPlayerToShip(clientId, islandName);
     }
 
+    // The ship starts moving again as soon as the rope leaves the fully-deployed range. Cancel anyone
+    // still waiting for an island load and send every player already on an island through the existing
+    // confirmed teleport path. Pending exits are left alone: they are already returning to the ship.
+    private void HandleAnchorRopeAmountChanged(float previousValue, float currentValue)
+    {
+        if (!IsServer || !IsSpawned) return;
+        if (previousValue <= Anchor.FullyDeployedRopeThreshold) return;
+        if (currentValue > Anchor.FullyDeployedRopeThreshold) return;
+        if (!HasCrewOnOrEnteringIsland()) return;
+
+        ShowAnchorRecallWarningRpc();
+        RecallCrewToShip();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ShowAnchorRecallWarningRpc()
+    {
+        Debug.LogWarning("Çapa kaldırılıyor! Adadaki mürettebat gemiye geri çağrılıyor.", this);
+    }
+
+    private bool HasCrewOnOrEnteringIsland()
+    {
+        foreach (List<ulong> entrants in entrantsByIsland.Values)
+        {
+            if (entrants.Count > 0) return true;
+        }
+
+        foreach (List<ulong> players in playersByIsland.Values)
+        {
+            if (players.Count > 0) return true;
+        }
+
+        return false;
+    }
+
+    private void RecallCrewToShip()
+    {
+        if (shipReturnPoint == null)
+        {
+            Debug.LogError("IslandManager: the anchor was raised while shipReturnPoint is not assigned. " +
+                           "Players on islands cannot be recalled safely.", this);
+            return;
+        }
+
+        foreach (KeyValuePair<string, List<ulong>> pair in entrantsByIsland)
+        {
+            if (pair.Value.Count == 0) continue;
+
+            pair.Value.Clear();
+            UnloadIslandIfEmpty(pair.Key);
+        }
+
+        foreach (KeyValuePair<string, List<ulong>> pair in playersByIsland)
+        {
+            List<ulong> players = pair.Value;
+
+            // Remove before sending so the pending-exit handshake becomes the only thing keeping the
+            // scene alive. Iterating backwards lets us mutate the list without allocating a copy.
+            for (int i = players.Count - 1; i >= 0; i--)
+            {
+                ulong clientId = players[i];
+                players.RemoveAt(i);
+                SendPlayerToShip(clientId, pair.Key);
+            }
+
+            UnloadIslandIfEmpty(pair.Key);
+        }
+    }
+
     // The island scene may only be unloaded once the player is off it. A teleport RPC and a scene event
     // are different Netcode messages and are not guaranteed to be applied in the order they were sent, so
     // the server does not assume: it waits for the owner to report that it landed. If that report never
@@ -310,16 +403,23 @@ public class IslandManager : NetworkBehaviour
     private void SendPlayerToShip(ulong clientId, string islandName)
     {
         int requestId = nextTeleportRequestId++;
+        pendingExits[requestId] = new PendingExit { ClientId = clientId, IslandName = islandName };
 
         if (!SendTeleport(clientId, shipReturnPoint.position, shipReturnPoint.eulerAngles.y, requestId))
         {
             // The player is gone (disconnected mid-request): no confirmation will ever arrive.
+            pendingExits.Remove(requestId);
             UnloadIslandIfEmpty(islandName);
             return;
         }
 
-        pendingExits[requestId] = new PendingExit { ClientId = clientId, IslandName = islandName };
-        StartCoroutine(ExitConfirmationTimeout(requestId));
+        // A host-owner can apply the teleport and confirm it immediately while SendTeleport is still on
+        // the stack. In that case HandleTeleportConfirmed has already removed the record and no timeout
+        // coroutine is needed. Remote clients leave the record in place until their confirmation arrives.
+        if (pendingExits.ContainsKey(requestId))
+        {
+            StartCoroutine(ExitConfirmationTimeout(requestId));
+        }
     }
 
     private IEnumerator ExitConfirmationTimeout(int requestId)
