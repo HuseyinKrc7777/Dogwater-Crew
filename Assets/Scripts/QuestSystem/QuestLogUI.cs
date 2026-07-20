@@ -3,10 +3,8 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
-// Text-only quest log. Deliberately minimal: no panels, no styling, no per-quest widgets - the
-// visual side of the UI is authored by hand in Unity.
-//
-// Rebuilds only on change events (list changed, gold changed, day rolled over), never per frame.
+// Text-only quest log. Both synchronized lists can change several times in one server operation,
+// so callbacks only mark the view dirty and Update rebuilds a consistent snapshot once per frame.
 public class QuestLogUI : MonoBehaviour
 {
     [Tooltip("Optional. Leave empty to run log-only while the UI is not built yet.")]
@@ -22,16 +20,30 @@ public class QuestLogUI : MonoBehaviour
     private QuestManager boundManager;
     private CrewGold boundGold;
     private GameDayClock boundClock;
+    private bool questListDirty;
 
     private void Update()
     {
-        // The quest system network-spawns after this UI's Start runs, so bind as soon as it shows up.
-        if (boundManager == null) TryBind();
+        if (boundManager == null)
+        {
+            TryBind();
+            return;
+        }
+
+        if (!questListDirty) return;
+
+        questListDirty = false;
+        RebuildQuestList();
     }
 
     private void OnDestroy()
     {
-        if (boundManager != null) boundManager.QuestStates.OnListChanged -= HandleQuestListChanged;
+        if (boundManager != null)
+        {
+            boundManager.QuestStates.OnListChanged -= HandleQuestListChanged;
+            boundManager.QuestObjectives.OnListChanged -= HandleObjectiveListChanged;
+        }
+
         if (boundGold != null) boundGold.OnGoldChanged -= HandleGoldChanged;
         if (boundClock != null) boundClock.OnDayChanged -= HandleDayChanged;
     }
@@ -43,6 +55,7 @@ public class QuestLogUI : MonoBehaviour
 
         boundManager = manager;
         boundManager.QuestStates.OnListChanged += HandleQuestListChanged;
+        boundManager.QuestObjectives.OnListChanged += HandleObjectiveListChanged;
 
         boundGold = CrewGold.Instance;
         if (boundGold != null) boundGold.OnGoldChanged += HandleGoldChanged;
@@ -50,14 +63,19 @@ public class QuestLogUI : MonoBehaviour
         boundClock = GameDayClock.Instance;
         if (boundClock != null) boundClock.OnDayChanged += HandleDayChanged;
 
-        // A late joiner receives the list before it can subscribe, so draw once on bind.
+        // Late joiners receive both lists before this component can subscribe.
         RebuildQuestList();
         RefreshGold();
     }
 
     private void HandleQuestListChanged(NetworkListEvent<QuestInstanceState> changeEvent)
     {
-        RebuildQuestList();
+        questListDirty = true;
+    }
+
+    private void HandleObjectiveListChanged(NetworkListEvent<QuestObjectiveState> changeEvent)
+    {
+        questListDirty = true;
     }
 
     private void HandleGoldChanged(int current)
@@ -65,10 +83,9 @@ public class QuestLogUI : MonoBehaviour
         RefreshGold();
     }
 
-    // Remaining-time labels are relative to the current day, so they need a redraw when it rolls over.
     private void HandleDayChanged(int current)
     {
-        RebuildQuestList();
+        questListDirty = true;
     }
 
     private void RebuildQuestList()
@@ -76,48 +93,95 @@ public class QuestLogUI : MonoBehaviour
         if (boundManager == null) return;
 
         QuestDatabase database = boundManager.Database;
-        NetworkList<QuestInstanceState> states = boundManager.QuestStates;
+        NetworkList<QuestInstanceState> quests = boundManager.QuestStates;
         int currentDay = boundClock != null ? boundClock.CurrentDay : 1;
 
         builder.Clear();
         builder.Append("--- Görevler (Gün ").Append(currentDay).AppendLine(") ---");
 
-        if (states.Count == 0)
+        if (quests.Count == 0) builder.AppendLine("Aktif görev yok.");
+
+        for (int i = 0; i < quests.Count; i++)
         {
-            builder.AppendLine("Aktif görev yok.");
-        }
+            QuestInstanceState quest = quests[i];
 
-        for (int i = 0; i < states.Count; i++)
-        {
-            QuestInstanceState state = states[i];
-
-            builder.Append('[').Append(GetStatusLabel(state.Status)).Append("] ");
-            builder.AppendLine(QuestTextBuilder.BuildTitle(database, state));
-            builder.AppendLine(QuestTextBuilder.BuildDescription(database, state));
-
-            if (state.ChainStepIndex > 0)
+            if (!TryGetObjective(quest.InstanceId, 0, out QuestObjectiveState firstObjective))
             {
-                builder.Append("Adım ").Append(state.ChainStepIndex + 1).AppendLine();
+                builder.AppendLine("[?] Görev verisi eksik.");
+                builder.AppendLine();
+                continue;
             }
 
-            int remainingDays = Mathf.Max(0, boundManager.ExpiryDays - (currentDay - state.CreatedDay));
-            builder.Append("Kalan süre: ").Append(remainingDays).AppendLine(" gün");
+            if (quest.ChainStepIndex > 0)
+            {
+                builder.Append("Zincir adımı: ").Append(quest.ChainStepIndex + 1).AppendLine();
+            }
 
+            if (quest.ObjectiveCount <= 1)
+            {
+                builder.Append('[').Append(GetStatusLabel(firstObjective.Status)).Append("] ");
+                builder.AppendLine(QuestTextBuilder.BuildObjectiveTitle(database, quest, firstObjective));
+                builder.AppendLine(QuestTextBuilder.BuildObjectiveDescription(database, quest, firstObjective));
+            }
+            else
+            {
+                builder.Append("[İster ").Append(quest.CurrentObjectiveIndex + 1).Append('/')
+                    .Append(quest.ObjectiveCount).Append("] ");
+                builder.AppendLine(QuestTextBuilder.BuildQuestTitle(database, quest, firstObjective));
+                builder.AppendLine(QuestTextBuilder.BuildQuestDescription(database, quest, firstObjective));
+
+                for (int objectiveIndex = 0; objectiveIndex < quest.ObjectiveCount; objectiveIndex++)
+                {
+                    if (!TryGetObjective(quest.InstanceId, objectiveIndex,
+                            out QuestObjectiveState objective))
+                    {
+                        builder.Append("  [?] İster ").Append(objectiveIndex + 1)
+                            .AppendLine(" verisi eksik.");
+                        continue;
+                    }
+
+                    builder.Append("  [").Append(GetStatusLabel(objective.Status)).Append("] İster ")
+                        .Append(objectiveIndex + 1).Append('/').Append(quest.ObjectiveCount).Append(": ");
+                    builder.AppendLine(QuestTextBuilder.BuildObjectiveTitle(database, quest, objective));
+                    builder.Append("  ").AppendLine(
+                        QuestTextBuilder.BuildObjectiveDescription(database, quest, objective));
+                }
+            }
+
+            int remainingDays = Mathf.Max(0,
+                boundManager.ExpiryDays - (currentDay - quest.CreatedDay));
+            builder.Append("Kalan süre: ").Append(remainingDays).AppendLine(" gün");
             builder.AppendLine();
         }
 
         Publish(questListText, builder.ToString());
     }
 
+    private bool TryGetObjective(int questInstanceId, int objectiveIndex,
+        out QuestObjectiveState objective)
+    {
+        NetworkList<QuestObjectiveState> objectives = boundManager.QuestObjectives;
+
+        for (int i = 0; i < objectives.Count; i++)
+        {
+            QuestObjectiveState candidate = objectives[i];
+            if (candidate.QuestInstanceId != questInstanceId
+                || candidate.ObjectiveIndex != objectiveIndex) continue;
+
+            objective = candidate;
+            return true;
+        }
+
+        objective = default;
+        return false;
+    }
+
     private void RefreshGold()
     {
         int current = boundGold != null ? boundGold.Current : 0;
-
         Publish(goldText, $"Altın: {current}");
     }
 
-    // The UI does not exist yet, so the same text goes to the Console while logToConsole is on.
-    // Both outputs are event-driven (list changed, gold changed, day rolled over), never per frame.
     private void Publish(TMP_Text target, string text)
     {
         if (target != null) target.text = text;
@@ -130,6 +194,8 @@ public class QuestLogUI : MonoBehaviour
         {
             case QuestStatus.Active: return "Aktif";
             case QuestStatus.ItemCollected: return "Eşya alındı";
+            case QuestStatus.Locked: return "Bekliyor";
+            case QuestStatus.Completed: return "Tamamlandı";
             default: return "?";
         }
     }
