@@ -16,6 +16,7 @@ MonoBehaviour:
   titleTemplate: "\xD6denmemi\u015F bir hesap"
   descriptionTemplate: "{npcName} adl\u0131 denizci, kendisiyle konu\u015Facak birini
     ar\u0131yor. Kar\u015F\u0131l\u0131\u011F\u0131nda {gold} alt\u0131n veriyor."
+  objectives: []
   minGold: 10
   maxGold: 30
   minDay: 1

@@ -11,21 +11,25 @@ public class QuestEntity : NetworkBehaviour, IHandInput
     // to the clients - so the values still ride along with the spawn payload and every client,
     // including late joiners, immediately knows what this object belongs to.
     private NetworkVariable<int> questInstanceId = new NetworkVariable<int>(0);
+    private NetworkVariable<int> objectiveIndex = new NetworkVariable<int>(0);
     private NetworkVariable<int> kind = new NetworkVariable<int>((int)QuestEntityKind.Giver);
 
     // Plain server-side fields, handed over between Instantiate and Spawn. Writing the
     // NetworkVariables directly at that point works, but NGO warns about it: the variable has not
     // been bound to its NetworkBehaviour yet, so it cannot mark itself dirty.
     private int pendingQuestInstanceId;
+    private int pendingObjectiveIndex;
     private QuestEntityKind pendingKind;
 
     public int QuestInstanceId => questInstanceId.Value;
+    public int ObjectiveIndex => objectiveIndex.Value;
     public QuestEntityKind Kind => (QuestEntityKind)kind.Value;
 
     // Server-only. Must be called after Instantiate and BEFORE NetworkObject.Spawn().
-    public void ServerInitialize(int instanceId, QuestEntityKind entityKind)
+    public void ServerInitialize(int instanceId, int questObjectiveIndex, QuestEntityKind entityKind)
     {
         pendingQuestInstanceId = instanceId;
+        pendingObjectiveIndex = questObjectiveIndex;
         pendingKind = entityKind;
     }
 
@@ -36,6 +40,7 @@ public class QuestEntity : NetworkBehaviour, IHandInput
         if (!IsServer) return;
 
         questInstanceId.Value = pendingQuestInstanceId;
+        objectiveIndex.Value = pendingObjectiveIndex;
         kind.Value = (int)pendingKind;
     }
 

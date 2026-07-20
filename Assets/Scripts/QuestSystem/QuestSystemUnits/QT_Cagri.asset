@@ -16,9 +16,10 @@ MonoBehaviour:
   titleTemplate: "Seni \xC7a\u011F\u0131ran Biri var."
   descriptionTemplate: "Bal\u0131k\xE7\u0131 {npcName} seni \xE7a\u011F\u0131r\u0131yor,
     gidene \xF6d\xFCl verecekmi\u015F. \xD6d\xFCl: {gold} alt\u0131n."
+  objectives: []
   minGold: 10
   maxGold: 40
   minDay: 1
   weight: 1
   boardSelectable: 1
-  nextTemplate: {fileID: 0}
+  nextTemplate: {fileID: 11400000, guid: d82b714d76f11734b8902ea9bb2e8a7e, type: 2}
