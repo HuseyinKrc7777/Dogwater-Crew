@@ -103,6 +103,7 @@ public class NpcShipController : NetworkBehaviour
     {
         Debug.Log("configuring");
         //TODO konfigurasyon structına geçildiğinde buarada birsürü şey yerine bir adet strcut verilecektir.
+        //TODO önceden silinen geminin , konum ve hedef bilgileri burada tekrar verilmeli
         GlobalCoordinate shipCoordinate = ship.instance.GetComponent<GlobalCoordinate>();
         ShipAi shipai = ship.instance.GetComponent<ShipAi>();
 
@@ -122,14 +123,7 @@ public class NpcShipController : NetworkBehaviour
             return;
         NetworkObject shipNetworkObject = ship.instance.GetComponent<NetworkObject>();
         //TODO kaliteli bir gemi modeline geçildiğinde burası düzenlenmesi gerek
-        /*
-        GameObject Boat = ship.instance.transform.Find("Boat").gameObject;
-        foreach (var childNetworkObject in Boat.GetComponentsInChildren<NetworkObject>())
-        {
-            if(childNetworkObject != shipNetworkObject)
-                childNetworkObject.Despawn();
-        }
-        */
+        //TODO silinen geminin konum ve hedef bilgilerinin , NpcShip verisinde tutulması gerek
         foreach (var childNetworkObject in ship.instance.GetComponentsInChildren<NetworkObject>())
         {
             if(childNetworkObject != shipNetworkObject)
