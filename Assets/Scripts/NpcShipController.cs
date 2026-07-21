@@ -9,8 +9,7 @@ public class NpcShip
 {
     public LatitudeCoordinate latitude;
     public LongitudeCoordinate longitude;
-    public LatitudeCoordinate target_latitude;
-    public LongitudeCoordinate target_longitude;
+    public List<position> targetPositions;
     public ShipKind shipKind;
     public NetworkObject prefab;
     public NetworkObject instance;
@@ -112,8 +111,7 @@ public class NpcShipController : NetworkBehaviour
 
         shipai.whatKindOfShipIsThis = ship.shipKind;
 
-        shipai.target_latitude = ship.target_latitude;
-        shipai.target_longitude = ship.target_longitude;
+        shipai.TravelPositions = ship.targetPositions;
 
     }
 
@@ -163,5 +161,16 @@ public class NpcShipController : NetworkBehaviour
         }
 
         //TODO spawnolmamış gemilerin yapay zekalarına göre potansiyel konumları burada güncellenebilir. 
+        /*
+        foreach(NpcShip ship in shipList)
+        {
+            if(ship.instance == null)
+            {
+                eser miktarda hedefine konumunu hedefine ilerlet ,
+                eğer hedefindeyse sonraki hedefe geç
+                mevcut hedefini tut ve spawnlandığında o hedefi ata
+            }
+        }
+        */
     }
 }

@@ -1007,6 +1007,42 @@ PrefabInstance:
       propertyPath: shipList.Array.data[3].target_latitude.Degree
       value: 15
       objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[0].latitude.Degree
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[1].latitude.Degree
+      value: -15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[2].latitude.Degree
+      value: -15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[3].latitude.Degree
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[0].longitude.Degree
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[1].longitude.Degree
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[2].longitude.Degree
+      value: -15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[3].longitude.Degree
+      value: -15
+      objectReference: {fileID: 0}
     - target: {fileID: 8510079139855024352, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: m_LocalPosition.x
       value: -376.04004
