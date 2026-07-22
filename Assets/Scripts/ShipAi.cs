@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using Unity.Multiplayer.Tools.NetStatsMonitor;
 using Unity.Netcode;
 using Unity.Services.Matchmaker.Models;
 using Unity.VisualScripting;
 using UnityEngine;
+using WebSocketSharp;
 
 //TODO
 //gemi yapayzekasının moral ve motivasyonu ile alakalı -
@@ -11,18 +13,23 @@ using UnityEngine;
 //ama bu geminin yapay zekasal herşeyini içerecek şekilde olmalıdır
 //- bir struct hazırlanıp
 //konfigirasyonun referansı ve paylaşılması olarak kullanılacaktır.
+
 public class ShipAi : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     [SerializeField] Ship ship;
-    [SerializeField] public LatitudeCoordinate target_latitude = new();
-    [SerializeField] public LongitudeCoordinate target_longitude = new();
+    [SerializeField] public GlobalCoordinate targetCoordinate;
     [SerializeField] private Vector3 targetPos;
     [SerializeField] private GlobalCoordinate coordinate;
     [SerializeField] private float targetDist;
     [SerializeField] public ShipKind whatKindOfShipIsThis = ShipKind.None;
     [SerializeField] public ShipState shipState = ShipState.Travel;
     [SerializeField] public Ship Target;
+    public List<GlobalCoordinate> TravelPositions;
+    [SerializeField] private int AttackDistance = 150;
+    [SerializeField] private int DetectionkDistance = 500;
+
+    public int TravelPositionCounter = 0;
     public enum ShipState
     {
         Travel,
@@ -39,8 +46,8 @@ public class ShipAi : NetworkBehaviour
         base.OnNetworkSpawn();
         if (!IsServer)
             return;
-        float targetDist = coordinate.CalculateDistanceBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
-        Vector3 targetDir = coordinate.CalculateDirectionBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
+        float targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate,targetCoordinate);
+        Vector3 targetDir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(coordinate,targetCoordinate);
         targetPos = targetDir * targetDist + transform.position;
     }
     private void ControlSails()
@@ -53,36 +60,18 @@ public class ShipAi : NetworkBehaviour
         {
             sail.transform.localRotation = Quaternion.LookRotation(forw);
         }
-        targetDist = coordinate.CalculateDistanceBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
-
-        if (targetDist < ship.GetComponent<Rigidbody>().linearVelocity.magnitude * 15)
-        {
-            foreach (Sail sail in ship.sailList)
-            {
-                if (sail.openRope.currentValue.Value > 0.1f)
-                    sail.openRope.currentValue.Value -= 0.1f;
-            }
-
-        }
-        else
-        {
-            foreach (Sail sail in ship.sailList)
-            {
-                if (sail.openRope.currentValue.Value < 0.9f)
-                    sail.openRope.currentValue.Value += 0.1f;
-            }
-        }
     }
 
     private void ControlShipRotation()
     {
         float multiplier = GetComponent<Rigidbody>().linearVelocity.magnitude;
-        if(multiplier < 0.1f)
+        if (multiplier < 0.1f)
             multiplier = 0;
         float RotationSpeed = 0.01f;
         if (shipState == ShipState.Travel || shipState == ShipState.Pursuit)
         {
-            Vector3 targetDir = coordinate.CalculateDirectionBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
+            //TODO burada rüzgara göre , hedefe gidilemiyorsa başka bir yol denenecek şekilde ayarlananbilir.
+            Vector3 targetDir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(coordinate, targetCoordinate);
             Quaternion targetRot = Quaternion.LookRotation(targetDir);
             transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRot, RotationSpeed * multiplier);
         }
@@ -111,8 +100,9 @@ public class ShipAi : NetworkBehaviour
     float counter = 0;
     private void FireCannons()
     {
-        Target =  Ship.PlayerShip;
-        shipState = ShipState.Attack;
+        
+        if(shipState != ShipState.Attack)
+            return;
         foreach (Cannon cannon in ship.cannons)
         {
             Vector3 target = Target.transform.position;
@@ -156,67 +146,90 @@ public class ShipAi : NetworkBehaviour
 
         return angle;
     }
-    public static List<Vector3> PredictTrajectory(
-    Vector3 startPosition,
-    Vector3 initialVelocity,
-    Vector3 gravity,
-    float totalTime,
-    float timeStep,
-    LayerMask collisionMask,
-    out RaycastHit hitInfo)
+    void ChangeTravelPosition()
     {
-        List<Vector3> points = new List<Vector3>();
+        targetCoordinate = TravelPositions[TravelPositionCounter];
+        
+        if (TravelPositionCounter < TravelPositions.Count)
+            TravelPositionCounter++;
+        else
+            TravelPositionCounter = 0;
+    }
+    void TravelControl()
+    {
+        if (shipState != ShipState.Travel)
+            return;
 
-        Vector3 previousPosition = startPosition;
-        points.Add(previousPosition);
-
-        hitInfo = default;
-
-        for (float t = timeStep; t <= totalTime; t += timeStep)
+        targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate,targetCoordinate);
+        /*ship.GetComponent<Rigidbody>().linearVelocity.magnitude * 15*/
+        if (targetDist < 5)
         {
-            Vector3 currentPosition =
-                startPosition +
-                initialVelocity * t +
-                0.5f * gravity * t * t;
-
-            Vector3 direction = currentPosition - previousPosition;
-            float distance = direction.magnitude;
-            float radius = 0.5f;
-
-            if (Physics.SphereCast(
-                    previousPosition,
-                    radius,
-                    direction.normalized,
-                    out hitInfo,
-                    distance,
-                    collisionMask))
-            {
-                points.Add(hitInfo.point);
-                return points;
-            }
-
-            points.Add(currentPosition);
-            previousPosition = currentPosition;
+            ChangeTravelPosition();
         }
 
-        return points;
+    }
+    void PursuitControl()
+    {
+        if (Target != null && shipState == ShipState.Pursuit)
+        {
+            targetCoordinate = Target.coordinate;
+        }
+    }
+    void ChangeState()
+    {
+        //TODOburaya oyuncu gemisinin tespiti yapılacak
+        if(Target == null && shipState == ShipState.Travel && whatKindOfShipIsThis==ShipKind.Enemy)
+        {
+            //TODOBurada npc ' ler arası savaş eklendiğinde değiştirilecek,
+            var ps = Ship.PlayerShip;
+            if (Vector3.Distance(ps.transform.position, transform.position) < DetectionkDistance)
+            {
+                Target = ps;
+            }
+        }
+        if (Target != null && shipState == ShipState.Travel && Vector3.Distance(Target.transform.position, transform.position) < DetectionkDistance)
+        {
+            shipState = ShipState.Pursuit;
+        }
+        if (shipState == ShipState.Pursuit && Vector3.Distance(Target.transform.position, transform.position) < AttackDistance)
+        {
+            shipState = ShipState.Attack;
+        }
+        else if (shipState == ShipState.Attack && Vector3.Distance(Target.transform.position, transform.position) > AttackDistance)
+        {
+            shipState = ShipState.Pursuit;
+        }
+        else if (shipState == ShipState.Pursuit && Vector3.Distance(Target.transform.position, transform.position) > DetectionkDistance)
+        {
+            Target = null;
+            shipState = ShipState.Travel;
+        }
     }
     void Update()
     {
         if (!IsServer)
             return;
-        if (whatKindOfShipIsThis != ShipKind.None && whatKindOfShipIsThis != ShipKind.PlayerControlled)
-        {
-            ControlSails();
-            ControlShipRotation();
-            if (counter < 0.5f)
-                counter += Time.deltaTime;
-            else
-            {
-                counter = 0;
-                FireCannons();
-            }
+        if (whatKindOfShipIsThis == ShipKind.None || whatKindOfShipIsThis == ShipKind.PlayerControlled)
+            return;
 
+        //TODO Yelken kontrolü her kare değil de birkaç saniyede bir çalıştırılabilir.
+        if (counter < 2f)
+            counter += Time.deltaTime;
+        else
+        {
+            counter = 0;
+
+            ChangeState();
+
+            FireCannons();
+            TravelControl();
+            PursuitControl();
+
+            ControlSails();
         }
+        ControlShipRotation();
+
+
+
     }
 }

@@ -72,47 +72,60 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
   worldIslands:
-  - latitude:
-      Degree: -3
-      Minute: 0
-      Second: 0
-    longitude:
-      Degree: 5
-      Minute: 0
-      Second: 0
+  - coordinate:
+      latitude:
+        Degree: 5
+        Minute: 0
+        Second: 0
+      longitude:
+        Degree: 5
+        Minute: 0
+        Second: 0
     prefab: {fileID: 7396092725242828362, guid: 0527d8218875927faaa7bddfe1a3307f, type: 3}
     instance: {fileID: 0}
     loadDistance: 900
-  - latitude:
-      Degree: 90
+  - coordinate:
+      latitude:
+        Degree: -5
+        Minute: 0
+        Second: 0
+      longitude:
+        Degree: -5
+        Minute: 0
+        Second: 0
+    prefab: {fileID: 7396092725242828362, guid: 35719773cca4b2a549918a6990d9e2b2, type: 3}
+    instance: {fileID: 0}
+    loadDistance: 900
+  - coordinate:
+      latitude:
+        Degree: 90
+        Minute: 0
+        Second: 0
+      longitude:
+        Degree: 0
+        Minute: 0
+        Second: 0
+    prefab: {fileID: 7396092725242828362, guid: 35719773cca4b2a549918a6990d9e2b2, type: 3}
+    instance: {fileID: 0}
+    loadDistance: 900
+  - coordinate:
+      latitude:
+        Degree: -90
+        Minute: 0
+        Second: 0
+      longitude:
+        Degree: 0
+        Minute: 0
+        Second: 0
+    prefab: {fileID: 7396092725242828362, guid: 0527d8218875927faaa7bddfe1a3307f, type: 3}
+    instance: {fileID: 0}
+    loadDistance: 900
+  shipCoordinate:
+    latitude:
+      Degree: 0
       Minute: 0
       Second: 0
     longitude:
       Degree: 0
       Minute: 0
       Second: 0
-    prefab: {fileID: 7396092725242828362, guid: 35719773cca4b2a549918a6990d9e2b2, type: 3}
-    instance: {fileID: 0}
-    loadDistance: 900
-  - latitude:
-      Degree: -90
-      Minute: 0
-      Second: 0
-    longitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
-    prefab: {fileID: 7396092725242828362, guid: 35719773cca4b2a549918a6990d9e2b2, type: 3}
-    instance: {fileID: 0}
-    loadDistance: 900
-  - latitude:
-      Degree: 5
-      Minute: 0
-      Second: 0
-    longitude:
-      Degree: -7
-      Minute: 5
-      Second: 3
-    prefab: {fileID: 7396092725242828362, guid: 0527d8218875927faaa7bddfe1a3307f, type: 3}
-    instance: {fileID: 0}
-    loadDistance: 900

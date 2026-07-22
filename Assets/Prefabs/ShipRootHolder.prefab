@@ -370,7 +370,6 @@ GameObject:
   - component: {fileID: 8019163083898211611}
   - component: {fileID: 3180766565377872494}
   - component: {fileID: 1978175466342397819}
-  - component: {fileID: 1324789730716965800}
   - component: {fileID: 6234907085645861672}
   m_Layer: 0
   m_Name: ShipRootHolder
@@ -414,7 +413,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3991998473
+  GlobalObjectIdHash: 345906426
   InScenePlacedSourceGlobalObjectIdHash: 345906426
   DeferredDespawnTick: 0
   Ownership: 1
@@ -489,6 +488,15 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  coordinate:
+    latitude:
+      Degree: 0
+      Minute: 0
+      Second: 0
+    longitude:
+      Degree: 0
+      Minute: 0
+      Second: 0
 --- !u!114 &65854035236746906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -595,35 +603,6 @@ MonoBehaviour:
   UseRigidBodyForMotion: 1
   AutoUpdateKinematicState: 0
   AutoSetKinematicOnDespawn: 0
---- !u!114 &1324789730716965800
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3348350456318158277}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7911ad84c8fc9a65b1786f27475f826, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GlobalCoordinate
-  ShowTopMostFoldoutHeaderGroup: 1
-  latitude:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue:
-      Degree: 0
-      Minute: 0
-      Second: 0
-  longitude:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue:
-      Degree: 0
-      Minute: 0
-      Second: 0
 --- !u!114 &6234907085645861672
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -638,18 +617,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
   ship: {fileID: 6199786891558961878}
-  target_latitude:
-    Degree: 0
-    Minute: 0
-    Second: 0
-  target_longitude:
-    Degree: 0
-    Minute: 0
-    Second: 0
+  targetCoordinate:
+    latitude:
+      Degree: 0
+      Minute: 0
+      Second: 0
+    longitude:
+      Degree: 0
+      Minute: 0
+      Second: 0
   targetPos: {x: 0, y: 0, z: 0}
-  coordinate: {fileID: 1324789730716965800}
+  coordinate:
+    latitude:
+      Degree: 0
+      Minute: 0
+      Second: 0
+    longitude:
+      Degree: 0
+      Minute: 0
+      Second: 0
   targetDist: 0
   whatKindOfShipIsThis: 0
+  shipState: 0
+  Target: {fileID: 0}
+  TravelPositions: []
+  AttackDistance: 150
+  DetectionkDistance: 500
+  TravelPositionCounter: 0
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0

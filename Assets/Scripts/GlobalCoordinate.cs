@@ -4,23 +4,24 @@ using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 
-public class GlobalCoordinate : NetworkBehaviour
+[Serializable]
+public class GlobalCoordinate : INetworkSerializable
 {
     //const int EarthRadius = 6367449;
     //test amaçlı dünya büyüklüğü küçüktür.
-    //TODO kordinat şeysi değiştirilecek
     static int EarthRadius = 1500;
-    public NetworkVariable<LatitudeCoordinate> latitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public NetworkVariable<LongitudeCoordinate> longitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public LatitudeCoordinate latitude;
+    public LongitudeCoordinate longitude;
     public GlobalCoordinate(LatitudeCoordinate latitude , LongitudeCoordinate longitude)
     {
-        this.latitude.Value = latitude;
-        this.longitude.Value = longitude;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
     void Awake()
     {
       
     }
+    /*
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -36,39 +37,28 @@ public class GlobalCoordinate : NetworkBehaviour
             
 
         }
-    }
-    public GlobalCoordinate()
-    {
-        LatitudeCoordinate la = new()
-        {
-            Degree = 0,
-            Minute = 0,
-            Second = 0
-        };
-        LongitudeCoordinate lo = new()
-        {
-            Degree = 0,
-            Minute = 0,
-            Second = 0
-        };
-        latitude.Value = la;
-        longitude.Value = lo;
-    }
+    }*/
+    
 
-    public float LongitudeSecondLength(LatitudeCoordinate la)
+    public static float LongitudeSecondLength(LatitudeCoordinate la)
     {
         float degree = la.GetDegree() * Mathf.Deg2Rad;
         return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) / 3600f);
     }
-    public float LatitudeSecondLength(LatitudeCoordinate la)
+    public static float LatitudeSecondLength(LatitudeCoordinate la)
     {
         float baseRadius = 6367449; 
         float scale = EarthRadius / baseRadius;
         float baseLength = 110574; 
         return baseLength / 3600f * scale;
     }
-    public float CalculateDistanceBetweenTwoPoints(LatitudeCoordinate latitude1,LongitudeCoordinate longitude1 ,LatitudeCoordinate latitude2,LongitudeCoordinate longitude2)
+    public static float CalculateDistanceBetweenTwoPoints(GlobalCoordinate coordinate1,GlobalCoordinate coordinate2)
     {
+        LatitudeCoordinate latitude1 = coordinate1.latitude;
+        LongitudeCoordinate longitude1 = coordinate1.longitude;
+
+        LatitudeCoordinate latitude2 = coordinate2.latitude;
+        LongitudeCoordinate longitude2 = coordinate2.longitude;
         // kaynak : https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
         var dLat = Mathf.Deg2Rad *(latitude2.GetDegree()-latitude1.GetDegree());  // deg2rad below
         var dLon = Mathf.Deg2Rad *(longitude2.GetDegree()-longitude1.GetDegree()); 
@@ -83,8 +73,13 @@ public class GlobalCoordinate : NetworkBehaviour
         
     } 
 
-    public Vector3 CalculateDirectionBetweenTwoPoints(LatitudeCoordinate latitude1,LongitudeCoordinate longitude1 ,LatitudeCoordinate latitude2,LongitudeCoordinate longitude2)
+    public static Vector3 CalculateDirectionBetweenTwoPoints(GlobalCoordinate coordinate1,GlobalCoordinate coordinate2)
     {
+        LatitudeCoordinate latitude1 = coordinate1.latitude;
+        LongitudeCoordinate longitude1 = coordinate1.longitude;
+        
+        LatitudeCoordinate latitude2 = coordinate2.latitude;
+        LongitudeCoordinate longitude2 = coordinate2.longitude;
 
         float latRad = ((latitude1.GetDegree() + latitude2.GetDegree()) * 0.5f) * Mathf.Deg2Rad;
 
@@ -94,6 +89,12 @@ public class GlobalCoordinate : NetworkBehaviour
         
         return new Vector3(x,0 ,y).normalized;
         
-    } 
+    }
 
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref latitude);
+        serializer.SerializeValue(ref longitude);
+
+    }
 }

@@ -9,8 +9,7 @@ using Unity.Collections;
 [Serializable]
 public class WorldIsland
 {
-    public LatitudeCoordinate latitude;
-    public LongitudeCoordinate longitude;
+    public GlobalCoordinate coordinate;
     public GameObject prefab;
     public GameObject instance;
     public int loadDistance = 900;
@@ -48,9 +47,7 @@ public class WorldIslandController : NetworkBehaviour
     float counter = 0.0f;
     float timeout = 1.0f;
 
-    public static WorldIslandController Instance { get; private set; }
-
-    public GlobalCoordinate shipCoordinate;
+    public static WorldIslandController Instance { get; private set; } 
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -85,8 +82,7 @@ public class WorldIslandController : NetworkBehaviour
     }
     public void CheckIslandsToSpawnOrDespawnThem()
     {
-        if (shipCoordinate == null)
-            return;
+        GlobalCoordinate shipCoordinate = Ship.PlayerShip.coordinate;
         // TODO gelecekte buraya her adanın her zaman konum tespiti değil de 
         // en yakın adaların cart curtu tutulup onun güncellenip ona göre bi performans
         // içinde index , pozisyon ve rotasyon bulunan bir struct
@@ -94,7 +90,7 @@ public class WorldIslandController : NetworkBehaviour
         // yapılabilir.
         foreach (WorldIsland island in worldIslands)
         {
-            if (shipCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate.latitude.Value, shipCoordinate.longitude.Value, island.latitude, island.longitude) < island.loadDistance)
+            if (GlobalCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate,island.coordinate) < island.loadDistance)
             {
                 if(island.instance!=null)
                     continue;
@@ -109,19 +105,15 @@ public class WorldIslandController : NetworkBehaviour
 
     private async Task LoadIsland(WorldIsland island)
     {
-        float dist = shipCoordinate.CalculateDistanceBetweenTwoPoints(
-            shipCoordinate.latitude.Value,
-            shipCoordinate.longitude.Value,
-            island.latitude,
-            island.longitude);
+        //TODO editörde test ederken bazen adalar farklı alanlarda spawn oluyor , çözmek lazım olabilir ilerde tekrar kendini gösterirse
+        GlobalCoordinate shipCoordinate = Ship.PlayerShip.coordinate;
+        Vector3 shipPos = Ship.PlayerShip.transform.position;
 
-        Vector3 dir = shipCoordinate.CalculateDirectionBetweenTwoPoints(
-            shipCoordinate.latitude.Value,
-            shipCoordinate.longitude.Value,
-            island.latitude,
-            island.longitude);
+        float dist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(shipCoordinate,island.coordinate);
 
-        Vector3 pos = dir * dist + shipCoordinate.transform.position;
+        Vector3 dir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(shipCoordinate,island.coordinate);
+
+        Vector3 pos = dir * dist + shipPos;
         Quaternion rot = Quaternion.identity;
         
         IslandSpawnData data;

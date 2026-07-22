@@ -24,14 +24,17 @@ public class Ship : NetworkBehaviour
     public NetworkVariable<float> damage = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public NetworkVariable<float> waterInsideTheShip = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    GlobalCoordinate coordinate;
+    public GlobalCoordinate coordinate;
     Vector3 lastCoordinateChangePosition = Vector3.zero;
     static public Ship PlayerShip;
     void Start()
     {
         _lastFramePosition = transform.position;
         _lastFrameRotation = transform.rotation;
-        coordinate = GetComponent<GlobalCoordinate>();
+    }
+    void Awake()
+    {
+        lastCoordinateChangePosition = transform.position;
     }
     public override void OnNetworkSpawn()
     {
@@ -45,7 +48,11 @@ public class Ship : NetworkBehaviour
             cannons.Add(cannon);
         }
         if(GetComponent<ShipAi>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
+        {
             PlayerShip = this;
+            NpcShipController.Instance.CheckShipsToSpawnOrDespawnThem();
+            WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+        }
     }
     float counter = 0.0f;
     void Update()
@@ -77,56 +84,59 @@ public class Ship : NetworkBehaviour
             {
                 waterInsideTheShip.Value += Time.deltaTime * damage.Value;
             }
-            var la = coordinate.latitude.Value;
-            var lo = coordinate.longitude.Value;
-            while (Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > coordinate.LatitudeSecondLength(la))
+            if(coordinate==null)
+                return;
+            var la = coordinate.latitude;
+            var lo = coordinate.longitude;
+            while (Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > GlobalCoordinate.LatitudeSecondLength(la))
             {
                 float value = transform.position.z - lastCoordinateChangePosition.z;
                 int multiplier = value > 0 ? 1 : -1;
 
-                if (value >= coordinate.LatitudeSecondLength(la) * 3600)
+                if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 3600)
                 {
                     la.AddDegree(1 * multiplier);
-                    lastCoordinateChangePosition.z += coordinate.LatitudeSecondLength(la) * 3600 * multiplier;
+                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * 3600 * multiplier;
                 }
-                else if (value >= coordinate.LatitudeSecondLength(la) * 60)
+                else if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 60)
                 {
                     la.AddMinute(1 * multiplier);
-                    lastCoordinateChangePosition.z += coordinate.LatitudeSecondLength(la) * 60 * multiplier;
+                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * 60 * multiplier;
                 }
                 else
                 {
                     la.AddSecond(1 * multiplier);
-                    lastCoordinateChangePosition.z += coordinate.LatitudeSecondLength(la) * multiplier;
+                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * multiplier;
                 }
 
             }
-            while (Mathf.Abs(lastCoordinateChangePosition.x - transform.position.x) > coordinate.LongitudeSecondLength(la))
+            while (Mathf.Abs(lastCoordinateChangePosition.x - transform.position.x) > GlobalCoordinate .LongitudeSecondLength(la))
+
             {
                 float value = transform.position.x - lastCoordinateChangePosition.x;
                 int multiplier = value > 0 ? 1 : -1;
 
-                if (value >= coordinate.LatitudeSecondLength(la) * 3600)
+                if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 3600)
                 {
                     lo.AddDegree(1 * multiplier);
-                    lastCoordinateChangePosition.x += coordinate.LatitudeSecondLength(la) * 3600 * multiplier;
+                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * 3600 * multiplier;
                 }
-                else if (value >= coordinate.LatitudeSecondLength(la) * 60)
+                else if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 60)
                 {
                     lo.AddMinute(1 * multiplier);
-                    lastCoordinateChangePosition.x += coordinate.LatitudeSecondLength(la) * 60 * multiplier;
+                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * 60 * multiplier;
                 }
                 else
                 {
                     lo.AddSecond(1 * multiplier);
-                    lastCoordinateChangePosition.x += coordinate.LatitudeSecondLength(la) * multiplier;
+                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * multiplier;
                 }
             }
             counter = 0;
-            coordinate.latitude.Value = la;
-            coordinate.longitude.Value = lo;
+            coordinate.latitude = la;
+            coordinate.longitude = lo;
 
-            Debug.Log("Yeni pozisyon / düzenli log" + coordinate.latitude.Value + " " + coordinate.longitude.Value);
+            Debug.Log("Yeni pozisyon / düzenli log" + coordinate.latitude + " " + coordinate.longitude);
 
         }
         else
