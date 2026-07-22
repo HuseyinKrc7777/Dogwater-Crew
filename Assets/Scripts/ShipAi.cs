@@ -13,26 +13,19 @@ using WebSocketSharp;
 //ama bu geminin yapay zekasal herşeyini içerecek şekilde olmalıdır
 //- bir struct hazırlanıp
 //konfigirasyonun referansı ve paylaşılması olarak kullanılacaktır.
-[Serializable]
-public struct position
-{
-    public LatitudeCoordinate latitude;
-    public LongitudeCoordinate longitude;
-}
 
 public class ShipAi : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     [SerializeField] Ship ship;
-    [SerializeField] public LatitudeCoordinate target_latitude;
-    [SerializeField] public LongitudeCoordinate target_longitude;
+    [SerializeField] public GlobalCoordinate targetCoordinate;
     [SerializeField] private Vector3 targetPos;
     [SerializeField] private GlobalCoordinate coordinate;
     [SerializeField] private float targetDist;
     [SerializeField] public ShipKind whatKindOfShipIsThis = ShipKind.None;
     [SerializeField] public ShipState shipState = ShipState.Travel;
     [SerializeField] public Ship Target;
-    public List<position> TravelPositions;
+    public List<GlobalCoordinate> TravelPositions;
     [SerializeField] private int AttackDistance = 150;
     [SerializeField] private int DetectionkDistance = 500;
 
@@ -53,8 +46,8 @@ public class ShipAi : NetworkBehaviour
         base.OnNetworkSpawn();
         if (!IsServer)
             return;
-        float targetDist = coordinate.CalculateDistanceBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
-        Vector3 targetDir = coordinate.CalculateDirectionBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
+        float targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate,targetCoordinate);
+        Vector3 targetDir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(coordinate,targetCoordinate);
         targetPos = targetDir * targetDist + transform.position;
     }
     private void ControlSails()
@@ -78,7 +71,7 @@ public class ShipAi : NetworkBehaviour
         if (shipState == ShipState.Travel || shipState == ShipState.Pursuit)
         {
             //TODO burada rüzgara göre , hedefe gidilemiyorsa başka bir yol denenecek şekilde ayarlananbilir.
-            Vector3 targetDir = coordinate.CalculateDirectionBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
+            Vector3 targetDir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(coordinate, targetCoordinate);
             Quaternion targetRot = Quaternion.LookRotation(targetDir);
             transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRot, RotationSpeed * multiplier);
         }
@@ -155,8 +148,8 @@ public class ShipAi : NetworkBehaviour
     }
     void ChangeTravelPosition()
     {
-        target_latitude = TravelPositions[TravelPositionCounter].latitude;
-        target_longitude = TravelPositions[TravelPositionCounter].longitude;
+        targetCoordinate = TravelPositions[TravelPositionCounter];
+        
         if (TravelPositionCounter < TravelPositions.Count)
             TravelPositionCounter++;
         else
@@ -167,7 +160,7 @@ public class ShipAi : NetworkBehaviour
         if (shipState != ShipState.Travel)
             return;
 
-        targetDist = coordinate.CalculateDistanceBetweenTwoPoints(coordinate.latitude.Value, coordinate.longitude.Value, target_latitude, target_longitude);
+        targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate,targetCoordinate);
         /*ship.GetComponent<Rigidbody>().linearVelocity.magnitude * 15*/
         if (targetDist < 5)
         {
@@ -179,10 +172,7 @@ public class ShipAi : NetworkBehaviour
     {
         if (Target != null && shipState == ShipState.Pursuit)
         {
-            var t = Target.GetComponent<GlobalCoordinate>();
-            target_latitude = t.latitude.Value;
-            target_longitude = t.longitude.Value;
-
+            targetCoordinate = Target.coordinate;
         }
     }
     void ChangeState()
