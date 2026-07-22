@@ -36,7 +36,7 @@ public class ShipAi : NetworkBehaviour
     [SerializeField] private int AttackDistance = 150;
     [SerializeField] private int DetectionkDistance = 500;
 
-    int TravelPositionCounter = 0;
+    public int TravelPositionCounter = 0;
     public enum ShipState
     {
         Travel,

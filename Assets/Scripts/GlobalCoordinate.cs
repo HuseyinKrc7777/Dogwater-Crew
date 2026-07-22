@@ -8,7 +8,6 @@ public class GlobalCoordinate : NetworkBehaviour
 {
     //const int EarthRadius = 6367449;
     //test amaçlı dünya büyüklüğü küçüktür.
-    //TODO kordinat şeysi değiştirilecek
     static int EarthRadius = 1500;
     public NetworkVariable<LatitudeCoordinate> latitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<LongitudeCoordinate> longitude = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);

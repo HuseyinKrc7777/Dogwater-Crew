@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 [Serializable]
@@ -13,6 +14,7 @@ public class NpcShip
     public ShipKind shipKind;
     public NetworkObject prefab;
     public NetworkObject instance;
+    public int TravelPositionCounter = 0;
     public int loadDistance = 900;
     //TODO Shipai da kullanılacak olan konfigürsayon şeysi de burada yer alacaktır.
 }
@@ -76,7 +78,7 @@ public class NpcShipController : NetworkBehaviour
 
     async void SpawnShip(NpcShip ship, Vector3 position, Quaternion rotation)
     {
-        Debug.Log("spawning");
+        Debug.Log("spawning in "+position +" coordinates : " +ship.latitude + " , "+ship.longitude);
         
         var op = InstantiateAsync<NetworkObject>(
         ship.prefab,
@@ -97,7 +99,7 @@ public class NpcShipController : NetworkBehaviour
      
         
         configureShip(ref ship);
-        //TODO başka ayarlar yapılacaksa burada clientlara rpc gönderilmesi lazım olabilir
+        //TODO client tarafında etkili başka ayarlar yapılacaksa burada clientlara rpc gönderilmesi lazım olabilir
     }
     public void configureShip(ref NpcShip ship)
     {
@@ -114,6 +116,20 @@ public class NpcShipController : NetworkBehaviour
 
         shipai.TravelPositions = ship.targetPositions;
 
+        ship.instance.GetComponent<GlobalCoordinate>().latitude.Value = ship.latitude;
+        ship.instance.GetComponent<GlobalCoordinate>().longitude.Value = ship.longitude;
+        ship.instance.GetComponent<ShipAi>().TravelPositionCounter = ship.TravelPositionCounter;
+
+
+    }
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        foreach(NpcShip ship in shipList)
+        {
+            if(ship.instance!=null)
+                UnloadShip(ship);
+        }
     }
 
 
@@ -121,6 +137,9 @@ public class NpcShipController : NetworkBehaviour
     {
         if(ship.instance == null)
             return;
+        ship.latitude = ship.instance.GetComponent<GlobalCoordinate>().latitude.Value;
+        ship.longitude = ship.instance.GetComponent<GlobalCoordinate>().longitude.Value;
+        ship.TravelPositionCounter = ship.instance.GetComponent<ShipAi>().TravelPositionCounter;
         NetworkObject shipNetworkObject = ship.instance.GetComponent<NetworkObject>();
         //TODO kaliteli bir gemi modeline geçildiğinde burası düzenlenmesi gerek
         //TODO silinen geminin konum ve hedef bilgilerinin , NpcShip verisinde tutulması gerek
@@ -138,7 +157,7 @@ public class NpcShipController : NetworkBehaviour
     {
 
     }
-
+    
     void FixedUpdate()
     {
         if(!IsServer)
@@ -152,19 +171,23 @@ public class NpcShipController : NetworkBehaviour
         {
             counter=0;
             CheckShipsToSpawnOrDespawnThem();
+
+            /* //TODO pasif gemi hareketi
+            foreach(NpcShip ship in shipList)
+            {
+                if(ship.instance == null)
+                {
+                    position targetPos = ship.targetPositions[ship.TravelPositionCounter];
+                    //TODO hareket belki geminin yelkenlerinin hızına göre ayarlanabilir
+                    // hesaplanan birime göre konumdaki oynaması gereken kordinatlar hesaplanıp ona göre eklenebilir.
+                   
+                }
+            }
+            */
         }
 
-        //TODO spawnolmamış gemilerin yapay zekalarına göre potansiyel konumları burada güncellenebilir. 
-        /*
-        foreach(NpcShip ship in shipList)
-        {
-            if(ship.instance == null)
-            {
-                eser miktarda hedefine konumunu hedefine ilerlet ,
-                eğer hedefindeyse sonraki hedefe geç
-                mevcut hedefini tut ve spawnlandığında o hedefi ata
-            }
-        }
-        */
+        
+        
+        
     }
 }
