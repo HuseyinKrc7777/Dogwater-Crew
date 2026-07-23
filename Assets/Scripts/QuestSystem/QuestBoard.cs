@@ -12,6 +12,7 @@ public class QuestBoard : MonoBehaviour, IHandInput
 {
     [Tooltip("Must be unique across EVERY board in the game, island scenes included. The server tracks " +
              "the once-per-day generation limit per index and does not care which scene a board lives in.")]
+    [Min(0)]
     [SerializeField] private int boardIndex;
 
     // Boards live in island scenes that are authored separately and loaded at runtime, so two of them
@@ -23,6 +24,11 @@ public class QuestBoard : MonoBehaviour, IHandInput
     private void OnEnable()
     {
         if (All.Contains(this)) return;
+
+        if (boardIndex < 0)
+        {
+            Debug.LogError($"QuestBoard '{name}' has invalid boardIndex {boardIndex}. Use zero or a positive value.", this);
+        }
 
         WarnOnDuplicateIndex();
         All.Add(this);
@@ -50,6 +56,12 @@ public class QuestBoard : MonoBehaviour, IHandInput
 
     public void OnInteract(Player player)
     {
+        if (boardIndex < 0)
+        {
+            Debug.LogWarning($"QuestBoard '{name}' cannot generate quests until its boardIndex is zero or positive.", this);
+            return;
+        }
+
         if (QuestManager.Instance == null)
         {
             Debug.LogWarning("QuestBoard: no QuestManager found in the scene.");

@@ -896,7 +896,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameDayClock
   ShowTopMostFoldoutHeaderGroup: 1
-  dayLengthSeconds: 40
+  dayLengthSeconds: 600
 --- !u!114 &981859751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -916,7 +916,7 @@ MonoBehaviour:
   islandDestinations:
   - {fileID: 11400000, guid: 1ac2c65c99359304998772aaa092f991, type: 2}
   minQuestsPerBoard: 1
-  maxQuestsPerBoard: 1
+  maxQuestsPerBoard: 6
   goldPerDayFactor: 0.1
   expiryDays: 1
   logGeneration: 1
