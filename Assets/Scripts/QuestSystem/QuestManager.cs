@@ -111,11 +111,8 @@ public class QuestManager : NetworkBehaviour
 
         if (!IsServer) return;
 
-        if (GameDayClock.Instance == null)
-        {
-            Debug.LogError("QuestManager: no GameDayClock found. Quests cannot expire without the current day.", this);
-        }
-
+        ValidateRequiredServices();
+        ValidateDatabasePools();
         ValidateIslandDestinations();
         ValidateEntityPrefabs();
         ValidateTemplates();
@@ -193,13 +190,25 @@ public class QuestManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        if (boardIndex < 0)
+        {
+            Debug.LogWarning($"QuestManager: rejected invalid boardIndex {boardIndex}.", this);
+            return;
+        }
+
         if (database == null)
         {
             Debug.LogError("QuestManager: no QuestDatabase assigned, cannot generate quests.", this);
             return;
         }
 
-        int day = GameDayClock.Instance != null ? GameDayClock.Instance.CurrentDay : 1;
+        if (!RequiredServicesAvailable())
+        {
+            Debug.LogError("QuestManager: quests cannot be generated without spawned GameDayClock and CrewGold components.", this);
+            return;
+        }
+
+        int day = GameDayClock.Instance.CurrentDay;
 
         if (lastGeneratedDayByBoard.TryGetValue(boardIndex, out int lastDay) && lastDay == day)
         {
@@ -418,6 +427,8 @@ public class QuestManager : NetworkBehaviour
         invalidTemplateIndices.Clear();
         if (database == null) return;
 
+        Dictionary<QuestTemplate, int> firstIndexByTemplate = new Dictionary<QuestTemplate, int>();
+
         for (int i = 0; i < database.TemplateCount; i++)
         {
             QuestTemplate template = database.GetTemplate(i);
@@ -427,6 +438,16 @@ public class QuestManager : NetworkBehaviour
                 Debug.LogWarning($"QuestManager: template entry {i} is empty.", this);
                 continue;
             }
+
+            if (firstIndexByTemplate.TryGetValue(template, out int firstIndex))
+            {
+                invalidTemplateIndices.Add(i);
+                Debug.LogWarning($"QuestManager: template '{template.name}' is listed more than once in " +
+                                 $"QuestDatabase (indices {firstIndex} and {i}). The duplicate entry is ignored.", template);
+                continue;
+            }
+
+            firstIndexByTemplate.Add(template, i);
 
             if (template.Type == QuestType.MultiStep && template.ObjectiveCount < 2)
             {
@@ -457,6 +478,52 @@ public class QuestManager : NetworkBehaviour
                 Debug.LogWarning($"QuestManager: nextTemplate on '{template.name}' is not present in QuestDatabase.", template);
             }
         }
+
+        ValidateChainCycles();
+    }
+
+    private void ValidateChainCycles()
+    {
+        for (int startIndex = 0; startIndex < database.TemplateCount; startIndex++)
+        {
+            if (invalidTemplateIndices.Contains(startIndex)) continue;
+
+            List<int> path = new List<int>();
+            Dictionary<int, int> pathPositionByTemplate = new Dictionary<int, int>();
+            int currentIndex = startIndex;
+
+            while (currentIndex >= 0 && currentIndex < database.TemplateCount)
+            {
+                if (invalidTemplateIndices.Contains(currentIndex)) break;
+
+                if (pathPositionByTemplate.TryGetValue(currentIndex, out int cycleStart))
+                {
+                    List<string> cycleNames = new List<string>();
+                    for (int i = cycleStart; i < path.Count; i++)
+                    {
+                        int cycleIndex = path[i];
+                        invalidTemplateIndices.Add(cycleIndex);
+
+                        QuestTemplate cycleTemplate = database.GetTemplate(cycleIndex);
+                        cycleNames.Add(cycleTemplate != null ? cycleTemplate.name : $"index {cycleIndex}");
+                    }
+
+                    cycleNames.Add(cycleNames[0]);
+                    Debug.LogError($"QuestManager: quest chain cycle detected: " +
+                                   $"{string.Join(" -> ", cycleNames)}. Templates in the cycle are disabled.", this);
+                    break;
+                }
+
+                pathPositionByTemplate.Add(currentIndex, path.Count);
+                path.Add(currentIndex);
+
+                QuestTemplate currentTemplate = database.GetTemplate(currentIndex);
+                if (currentTemplate == null || currentTemplate.NextTemplate == null) break;
+
+                currentIndex = database.GetTemplateIndex(currentTemplate.NextTemplate);
+                if (currentIndex < 0) break;
+            }
+        }
     }
 
     private static bool TryGetRequiredEntities(QuestType type, out bool needsItemEntity)
@@ -482,10 +549,13 @@ public class QuestManager : NetworkBehaviour
 
     private bool CanSatisfyTemplateDestinations(QuestTemplate template)
     {
+        if (database == null || database.NpcNameCount == 0) return false;
+
         for (int i = 0; i < template.ObjectiveCount; i++)
         {
             if (!template.TryGetObjective(i, out QuestType objectiveType, out _, out _, out _)) return false;
             if (!TryGetRequiredEntities(objectiveType, out bool needsItem)) return false;
+            if (needsItem && database.ItemNameCount == 0) return false;
             if (!npcPrefabValid || (needsItem && !itemPrefabValid)) return false;
             if (!HasDestination(QuestEntityKind.Giver)) return false;
             if (needsItem && !HasDestination(QuestEntityKind.Item)) return false;
@@ -516,7 +586,94 @@ public class QuestManager : NetworkBehaviour
             return false;
         }
 
+        if (!prefab.TryGetComponent(out Collider _))
+        {
+            Debug.LogError($"QuestManager: quest {label} prefab '{prefab.name}' needs a Collider on the same " +
+                           "GameObject as QuestEntity so the interaction raycast can reach it.", prefab);
+            return false;
+        }
+
+        if (NetworkManager == null || NetworkManager.NetworkConfig == null
+            || NetworkManager.NetworkConfig.Prefabs == null
+            || !NetworkManager.NetworkConfig.Prefabs.Contains(prefab))
+        {
+            Debug.LogError($"QuestManager: quest {label} prefab '{prefab.name}' is not registered in " +
+                           "NetworkManager's Network Prefabs list.", prefab);
+            return false;
+        }
+
         return true;
+    }
+
+    private void ValidateRequiredServices()
+    {
+        if (database == null)
+        {
+            Debug.LogError("QuestManager: no QuestDatabase assigned. Quest generation is disabled.", this);
+        }
+
+        if (GameDayClock.Instance == null || !GameDayClock.Instance.IsSpawned)
+        {
+            Debug.LogError("QuestManager: no spawned GameDayClock found. Quest generation and expiry are disabled.", this);
+        }
+
+        if (CrewGold.Instance == null || !CrewGold.Instance.IsSpawned)
+        {
+            Debug.LogError("QuestManager: no spawned CrewGold found. Quest generation is disabled so rewards cannot be lost.", this);
+        }
+    }
+
+    private bool RequiredServicesAvailable()
+    {
+        return GameDayClock.Instance != null
+            && GameDayClock.Instance.IsSpawned
+            && CrewGold.Instance != null
+            && CrewGold.Instance.IsSpawned;
+    }
+
+    private void ValidateDatabasePools()
+    {
+        if (database == null) return;
+
+        if (database.TemplateCount == 0)
+        {
+            Debug.LogError("QuestManager: QuestDatabase has no templates. No quest can be generated.", database);
+        }
+
+        if (database.NpcNameCount == 0)
+        {
+            Debug.LogError("QuestManager: QuestDatabase has no NPC names. No quest can be generated.", database);
+        }
+
+        if (database.ItemNameCount == 0 && DatabaseUsesItemObjectives())
+        {
+            Debug.LogWarning("QuestManager: QuestDatabase has no item names. FetchDeliver objectives cannot be generated.", database);
+        }
+
+        if (database.LocationNameCount == 0)
+        {
+            Debug.LogWarning("QuestManager: QuestDatabase has no location names. {location} placeholders will render as ???.", database);
+        }
+    }
+
+    private bool DatabaseUsesItemObjectives()
+    {
+        for (int templateIndex = 0; templateIndex < database.TemplateCount; templateIndex++)
+        {
+            QuestTemplate template = database.GetTemplate(templateIndex);
+            if (template == null) continue;
+
+            for (int objectiveIndex = 0; objectiveIndex < template.ObjectiveCount; objectiveIndex++)
+            {
+                if (template.TryGetObjective(objectiveIndex, out QuestType type, out _, out _, out _)
+                    && RequiresItemEntity(type))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // ---------------------------------------------------------------- destinations and reservations
@@ -1019,10 +1176,17 @@ public class QuestManager : NetworkBehaviour
 
     private void CompleteQuest(int questIndex, QuestInstanceState quest, QuestObjectiveState finalObjective)
     {
+        if (CrewGold.Instance == null || !CrewGold.Instance.IsSpawned)
+        {
+            Debug.LogError($"QuestManager: quest #{quest.InstanceId} reached its final objective, but no spawned " +
+                           "CrewGold exists. The quest remains active so its reward is not lost.", this);
+            return;
+        }
+
         QuestTemplate completedTemplate = database != null ? database.GetTemplate(quest.TemplateIndex) : null;
         int carriedNpcNameIndex = finalObjective.NpcNameIndex;
 
-        if (CrewGold.Instance != null) CrewGold.Instance.AddGold(quest.GoldReward);
+        CrewGold.Instance.AddGold(quest.GoldReward);
         totalQuestsCompleted.Value++;
 
         RemoveQuestRuntime(quest.InstanceId);
@@ -1043,8 +1207,13 @@ public class QuestManager : NetworkBehaviour
             }
             else
             {
-                int day = GameDayClock.Instance != null ? GameDayClock.Instance.CurrentDay : 1;
-                if (!TryCreateQuest(nextTemplate, day, quest.ChainStepIndex + 1,
+                if (GameDayClock.Instance == null || !GameDayClock.Instance.IsSpawned)
+                {
+                    Debug.LogWarning($"QuestManager: chain after '{completedTemplate.name}' ended because " +
+                                     "no spawned GameDayClock exists.", completedTemplate);
+                }
+                else if (!TryCreateQuest(nextTemplate, GameDayClock.Instance.CurrentDay,
+                        quest.ChainStepIndex + 1,
                         carriedNpcNameIndex, false))
                 {
                     Debug.LogWarning($"QuestManager: chain after '{completedTemplate.name}' ended because " +
