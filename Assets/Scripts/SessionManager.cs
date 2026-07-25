@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-
 public class SessionManager : MonoBehaviour
 {
+    [SerializeField] String SceneToOpen;
+
     [HideInInspector] // UI'dan gelen IP'yi tutacak, Editör'de görmemize gerek yok
     public string serverIP = "127.0.0.1";
 
@@ -28,7 +29,7 @@ public class SessionManager : MonoBehaviour
                 Debug.Log("<color=green>Host Başlatıldı! Gelen oyuncular bekleniyor...</color>");
 
                 // Oyuna geçiş yap
-                NetworkManager.Singleton.SceneManager.LoadScene("Enemy ShipTest", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene(SceneToOpen, LoadSceneMode.Single);
             }
             else
             {

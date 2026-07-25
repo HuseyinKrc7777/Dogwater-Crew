@@ -4,66 +4,74 @@ using JetBrains.Annotations;
 using Unity.Netcode;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-
-public interface ICoordinate : INetworkSerializable
-{
-    abstract public float GetDegree();
-    abstract public float GetMinute();
-    abstract public float GetSecond();
-    abstract public void AddSecond(int second);
-    abstract public void AddMinute(int second);
-    abstract public void AddDegree(int second);
-
-    abstract public string ToString();
-
-}
 [Serializable]
-public struct LatitudeCoordinate : ICoordinate
+public abstract class Coordinate 
 {
     public int Degree;
     public int Minute;
     public int Second;
     public float GetDegree()
     {
-        return Degree + Minute / 60.0f + Second / 3600.0f;
+        int sign = Degree < 0 || Minute < 0 || Second < 0 ? -1 : 1;
+
+        return sign * (
+            Mathf.Abs(Degree) +
+            Mathf.Abs(Minute) / 60f +
+            Mathf.Abs(Second) / 3600f
+        );
     }
     public float GetMinute()
     {
-        return Degree * 60.0f + Minute + Second / 60.0f;
+        return Degree * 60 + Minute + Second / 60.0f;
     }
-    public float GetSecond()
+    public int GetSecond()
     {
-        return Degree * 3600.0f + Minute * 60.0f + Second;
+        return Degree * 3600 + Minute * 60 + Second;
     }
-
     public void AddSecond(int second)
     {
-        Second += second;
-        int multiplier = second > 0 ? 1 : -1;
-        while (Second > 60 || Second < -60)
-        {
-            Minute += multiplier;
-            Second -= 60 * multiplier;
-        }
-        while (Minute > 60 || Minute < -60)
-        {
-            Degree += multiplier;
-            Minute -= 60 * multiplier;
-        }
+        SetFromTotalSeconds(GetSecond() + second);
     }
+
     public void AddMinute(int minute)
     {
-        Minute += minute;
-        int multiplier = minute > 0 ? 1 : -1;
-        while (Minute > 60 || Minute < -60)
-        {
-            Degree += multiplier;
-            Minute -= 60 * multiplier;
-        }
+        SetFromTotalSeconds(GetSecond() + minute * 60);
     }
+
     public void AddDegree(int degree)
     {
-        Degree += degree;
+        SetFromTotalSeconds(GetSecond() + degree * 3600);
+    }
+    protected virtual void SetFromTotalSeconds(int totalSeconds)
+    {
+        int sign = totalSeconds < 0 ? -1 : 1;
+
+        int abs = Mathf.Abs(totalSeconds);
+
+        Degree = abs / 3600;
+        Minute = abs % 3600 / 60;
+        Second = abs % 60;
+
+        Degree *= sign;
+        Minute *= sign;
+        Second *= sign;
+    }
+
+    
+    public override string ToString()
+    {
+        return $": {Degree}° {Minute}' {Second}\" ";
+    }
+
+}
+[Serializable]
+public class LatitudeCoordinate : Coordinate ,INetworkSerializable
+{
+   
+    protected override void SetFromTotalSeconds(int totalSeconds)
+    {
+        totalSeconds = Mathf.Clamp(totalSeconds,-90*60*60,90*60*60);
+        base.SetFromTotalSeconds(totalSeconds);
     }
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
         where T : IReaderWriter
@@ -72,70 +80,27 @@ public struct LatitudeCoordinate : ICoordinate
         serializer.SerializeValue(ref Minute);
         serializer.SerializeValue(ref Second);
     }
-    public override string ToString()
-    {
-        return $" Latittude : {Degree}° {Minute}' {Second}\" ";
-    }
+    
 }
 
 [Serializable]
-public struct LongitudeCoordinate : ICoordinate
+public class LongitudeCoordinate : Coordinate , INetworkSerializable
 {
-    public int Degree;
-    public int Minute;
-    public int Second;
-    public float GetDegree()
-    {
-        return Degree + Minute / 60.0f + Second / 3600.0f;
-    }
-    public float GetMinute()
-    {
-        return Degree * 60.0f + Minute + Second / 60.0f;
-    }
-    public float GetSecond()
-    {
-        return Degree * 3600.0f + Minute * 60.0f + Second;
-    }
-    public void AddSecond(int second)
-    {
-        Second += second;
-        int multiplier = second > 0 ? 1 : -1;
-        while (Second > 60 || Second < -60)
-        {
-            Minute += multiplier;
-            Second -= 60 * multiplier;
-        }
-        while (Minute > 60 || Minute < -60)
-        {
 
-            Degree += multiplier;
-            Minute -= 60 * multiplier;
-        }
-        if (Degree > 180 || Degree < -180)
-            switchDirection();
-    }
-    public void AddMinute(int minute)
+    protected override void SetFromTotalSeconds(int totalSeconds)
     {
-        Minute += minute;
-        int multiplier = minute > 0 ? 1 : -1;
-
-        while (Minute > 60 || Minute < -60)
-        {
-            Degree += multiplier;
-            Minute -= 60 * multiplier;
-        }
-        if (Degree > 180 || Degree < -180)
-            switchDirection();
-    }
-    public void AddDegree(int degree)
-    {
-        Degree += degree;
-        if (Degree > 180 || Degree < -180)
-            switchDirection();
+        base.SetFromTotalSeconds(totalSeconds);
+        NormalizeDegree();
     }
 
+    private void NormalizeDegree()
+    {
+        while (Degree >= 180)
+            Degree -= 360;
 
-
+        while (Degree < -180)
+            Degree += 360;
+    }
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
         where T : IReaderWriter
     {
@@ -143,19 +108,5 @@ public struct LongitudeCoordinate : ICoordinate
         serializer.SerializeValue(ref Minute);
         serializer.SerializeValue(ref Second);
     }
-    public override string ToString()
-    {
-        return $"Longtitude : {Degree}° {Minute}' {Second}\" ";
-    }
 
-    private void switchDirection()
-    {
-        int InnerMultiplier = Degree > 0 ? 1 : -1;
-        int extraDegree = Degree - 180 * InnerMultiplier;
-        int extraMinute = Minute;
-        int extraSecond = Degree;
-        Degree = -180 * InnerMultiplier;
-        AddSecond(extraDegree * 3600 + extraMinute * 60 + extraSecond);
-
-    }
 }

@@ -1910,6 +1910,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7224747b5dc7167984bb9302b341394, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionManager
+  SceneToOpen: SunTest
   serverIP: 127.0.0.1
   serverPort: 7777
 --- !u!1660057539 &9223372036854775807

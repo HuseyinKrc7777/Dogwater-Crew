@@ -45,12 +45,36 @@ public class GlobalCoordinate : INetworkSerializable
         float degree = la.GetDegree() * Mathf.Deg2Rad;
         return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) / 3600f);
     }
+    public static float LongitudeMinuteLength(LatitudeCoordinate la)
+    {
+        float degree = la.GetDegree() * Mathf.Deg2Rad;
+        return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) / 60f);
+    }
+    public static float LongitudeDegreeLength(LatitudeCoordinate la)
+    {
+        float degree = la.GetDegree() * Mathf.Deg2Rad;
+        return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) );
+    }
     public static float LatitudeSecondLength(LatitudeCoordinate la)
     {
         float baseRadius = 6367449; 
         float scale = EarthRadius / baseRadius;
         float baseLength = 110574; 
         return baseLength / 3600f * scale;
+    }
+     public static float LatitudeMinuteLength(LatitudeCoordinate la)
+    {
+        float baseRadius = 6367449; 
+        float scale = EarthRadius / baseRadius;
+        float baseLength = 110574; 
+        return baseLength / 60 * scale;
+    }
+     public static float LatitudeDegreeLength(LatitudeCoordinate la)
+    {
+        float baseRadius = 6367449; 
+        float scale = EarthRadius / baseRadius;
+        float baseLength = 110574; 
+        return baseLength * scale;
     }
     public static float CalculateDistanceBetweenTwoPoints(GlobalCoordinate coordinate1,GlobalCoordinate coordinate2)
     {

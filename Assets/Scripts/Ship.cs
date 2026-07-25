@@ -88,48 +88,64 @@ public class Ship : NetworkBehaviour
                 return;
             var la = coordinate.latitude;
             var lo = coordinate.longitude;
-            while (Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > GlobalCoordinate.LatitudeSecondLength(la))
+            if (Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > GlobalCoordinate.LatitudeSecondLength(coordinate.latitude))
             {
                 float value = transform.position.z - lastCoordinateChangePosition.z;
                 int multiplier = value > 0 ? 1 : -1;
+                
+                if (Mathf.Abs(value) >= GlobalCoordinate.LatitudeDegreeLength(coordinate.latitude))
+                {
+                    int d = Mathf.FloorToInt(Mathf.Abs(value) / GlobalCoordinate.LatitudeDegreeLength(coordinate.latitude));
+                    la.AddDegree(d * multiplier);
+                    value = Mathf.Abs(value) % GlobalCoordinate.LatitudeDegreeLength(coordinate.latitude) * Mathf.Sign(value);
+                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeDegreeLength(coordinate.latitude) * multiplier *d;
+                }
+                if (Mathf.Abs(value) >= GlobalCoordinate.LatitudeMinuteLength(coordinate.latitude))
+                {
+                    int m = Mathf.FloorToInt(Mathf.Abs(value) / GlobalCoordinate.LatitudeMinuteLength(coordinate.latitude));
+                    value = Mathf.Abs(value) % GlobalCoordinate.LatitudeMinuteLength(coordinate.latitude) * Mathf.Sign(value);
+                    la.AddMinute(m * multiplier);
+                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeMinuteLength(coordinate.latitude) * multiplier *m;
+                }
+                if(Mathf.Abs(value) >= GlobalCoordinate.LatitudeSecondLength(coordinate.latitude))
+                {
+                    int s = Mathf.FloorToInt(Mathf.Abs(value) / GlobalCoordinate.LatitudeSecondLength(coordinate.latitude));
+                    value = Mathf.Abs(value) % GlobalCoordinate.LatitudeSecondLength(coordinate.latitude) * Mathf.Sign(value);
+                    la.AddSecond(s * multiplier);
+                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(coordinate.latitude) * multiplier *s;
 
-                if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 3600)
-                {
-                    la.AddDegree(1 * multiplier);
-                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * 3600 * multiplier;
                 }
-                else if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 60)
-                {
-                    la.AddMinute(1 * multiplier);
-                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * 60 * multiplier;
-                }
-                else
-                {
-                    la.AddSecond(1 * multiplier);
-                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * multiplier;
-                }
+
+                if((la.Degree >= 90 || la.Degree<=-90 )&& la.Minute!=0 &&la.Second!=0)
+                    la = coordinate.latitude;
 
             }
-            while (Mathf.Abs(lastCoordinateChangePosition.x - transform.position.x) > GlobalCoordinate .LongitudeSecondLength(la))
-
+            if (Mathf.Abs(lastCoordinateChangePosition.x - transform.position.x) > GlobalCoordinate .LongitudeSecondLength(coordinate.latitude))
             {
                 float value = transform.position.x - lastCoordinateChangePosition.x;
                 int multiplier = value > 0 ? 1 : -1;
 
-                if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 3600)
+                if (Mathf.Abs(value) >= GlobalCoordinate.LongitudeDegreeLength(coordinate.latitude))
                 {
-                    lo.AddDegree(1 * multiplier);
-                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * 3600 * multiplier;
+                    int d = Mathf.FloorToInt(Mathf.Abs(value) / GlobalCoordinate.LongitudeDegreeLength(coordinate.latitude));
+                    lo.AddDegree(d * multiplier);
+                    value = Mathf.Abs(value) % GlobalCoordinate.LongitudeDegreeLength(coordinate.latitude) * Mathf.Sign(value);
+                    lastCoordinateChangePosition.x += GlobalCoordinate.LongitudeDegreeLength(coordinate.latitude) * multiplier *d;
                 }
-                else if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 60)
+                if (Mathf.Abs(value) >= GlobalCoordinate.LongitudeMinuteLength(coordinate.latitude))
                 {
-                    lo.AddMinute(1 * multiplier);
-                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * 60 * multiplier;
+                    int m = Mathf.FloorToInt(Mathf.Abs(value) / GlobalCoordinate.LongitudeMinuteLength(coordinate.latitude));
+                    value = Mathf.Abs(value) % GlobalCoordinate.LongitudeMinuteLength(coordinate.latitude) * Mathf.Sign(value);
+                    lo.AddMinute(m * multiplier);
+                    lastCoordinateChangePosition.x += GlobalCoordinate.LongitudeMinuteLength(coordinate.latitude) * multiplier *m;
                 }
-                else
+                if(Mathf.Abs(value) >= GlobalCoordinate.LongitudeSecondLength(coordinate.latitude))
                 {
-                    lo.AddSecond(1 * multiplier);
-                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * multiplier;
+                    int s = Mathf.FloorToInt(Mathf.Abs(value) / GlobalCoordinate.LongitudeSecondLength(coordinate.latitude));
+                    value = Mathf.Abs(value) % GlobalCoordinate.LongitudeSecondLength(coordinate.latitude) * Mathf.Sign(value);
+                    lo.AddSecond(s * multiplier);
+                    lastCoordinateChangePosition.x += GlobalCoordinate.LongitudeSecondLength(coordinate.latitude) * multiplier *s;
+
                 }
             }
             counter = 0;

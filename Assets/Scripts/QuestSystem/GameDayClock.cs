@@ -10,14 +10,14 @@ public class GameDayClock : NetworkBehaviour
     public static GameDayClock Instance { get; private set; }
 
     [Tooltip("Real seconds per in-game day.")]
-    [Min(1f)][SerializeField] private float dayLengthSeconds = 600f;
+    [Min(1f)][SerializeField] public float dayLengthSeconds = 600f;
 
     private NetworkVariable<int> currentDay = new NetworkVariable<int>(
         1,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
-    private float dayTimer;
+    public float dayTimer;
 
     public int CurrentDay => currentDay.Value;
 
