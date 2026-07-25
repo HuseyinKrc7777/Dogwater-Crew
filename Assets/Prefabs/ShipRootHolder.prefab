@@ -445,7 +445,7 @@ MonoBehaviour:
   directions: {x: 0, y: 0, z: 0, w: 0}
   sails: {fileID: 8019163083898211611}
   strength: 1
-  objectDepth: 4
+  objectDepth: 2
   planingStrength: 0.2
   maxPlaningLift: 0.8
   effectors:
@@ -1092,7 +1092,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -7518295643791675585, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 117129796
+      value: 4027277819
       objectReference: {fileID: 0}
     - target: {fileID: 5394199800705624522, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: m_Name
@@ -1198,7 +1198,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1299708190626537780, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 4283693391
+      value: 3460417379
       objectReference: {fileID: 0}
     - target: {fileID: 1883617206471221181, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_Name
@@ -1206,11 +1206,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2986233829023771541, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 1250414247
+      value: 4218234241
       objectReference: {fileID: 0}
     - target: {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 3474757131
+      value: 4033393554
       objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
@@ -1289,7 +1289,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -7518295643791675585, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 3703971505
+      value: 2402883839
       objectReference: {fileID: 0}
     - target: {fileID: 5394199800705624522, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: m_Name
