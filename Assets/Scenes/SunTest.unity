@@ -638,7 +638,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -1214,6 +1214,30 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
       propertyPath: worldIslands.Array.data[3].coordinate.longitude.Degree
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[0].coordinate.latitude.data.Degree
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[1].coordinate.latitude.data.Degree
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[2].coordinate.latitude.data.Degree
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[3].coordinate.latitude.data.Degree
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[0].coordinate.longitude.data.Degree
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[3].coordinate.longitude.data.Degree
       value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 8182424364631549180, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}

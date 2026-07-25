@@ -5,11 +5,13 @@ using Unity.Netcode;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 [Serializable]
-public abstract class Coordinate 
+public struct CoordinateData
 {
+    //İnsan okunabilirliği için 3 değer tutuluyor , eğer performans sorun çıkarırsa sadece saniye tutmaya geçilebilir 
     public int Degree;
     public int Minute;
     public int Second;
+
     public float GetDegree()
     {
         int sign = Degree < 0 || Minute < 0 || Second < 0 ? -1 : 1;
@@ -20,29 +22,13 @@ public abstract class Coordinate
             Mathf.Abs(Second) / 3600f
         );
     }
-    public float GetMinute()
-    {
-        return Degree * 60 + Minute + Second / 60.0f;
-    }
+
     public int GetSecond()
     {
         return Degree * 3600 + Minute * 60 + Second;
     }
-    public void AddSecond(int second)
-    {
-        SetFromTotalSeconds(GetSecond() + second);
-    }
 
-    public void AddMinute(int minute)
-    {
-        SetFromTotalSeconds(GetSecond() + minute * 60);
-    }
-
-    public void AddDegree(int degree)
-    {
-        SetFromTotalSeconds(GetSecond() + degree * 3600);
-    }
-    protected virtual void SetFromTotalSeconds(int totalSeconds)
+    public void SetFromTotalSeconds(int totalSeconds)
     {
         int sign = totalSeconds < 0 ? -1 : 1;
 
@@ -57,56 +43,98 @@ public abstract class Coordinate
         Second *= sign;
     }
 
+    public void AddSecond(int second)
+    {
+        SetFromTotalSeconds(GetSecond() + second);
+    }
+
+    public void AddMinute(int minute)
+    {
+        SetFromTotalSeconds(GetSecond() + minute * 60);
+    }
+
+    public void AddDegree(int degree)
+    {
+        SetFromTotalSeconds(GetSecond() + degree * 3600);
+    }
+    public override string ToString()
+    {
+        return $"{Degree}° {Mathf.Abs(Minute):00}' {Mathf.Abs(Second):00}\"";
+    }
+}
+[Serializable]
+public struct LatitudeCoordinate : INetworkSerializable
+{
+    public CoordinateData data;
+
+    public float GetDegree() => data.GetDegree();
+
+    public void AddSecond(int value)
+    {
+        data.AddSecond(value);
+
+        int seconds = data.GetSecond();
+        seconds = Mathf.Clamp(seconds, -90 * 60 * 60, 90 * 60 * 60);
+
+        data.SetFromTotalSeconds(seconds);
+    }
+
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer)
+        where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref data.Degree);
+        serializer.SerializeValue(ref data.Minute);
+        serializer.SerializeValue(ref data.Second);
+    }
     
     public override string ToString()
     {
-        return $": {Degree}° {Minute}' {Second}\" ";
+        return data.ToString();
     }
-
 }
 [Serializable]
-public class LatitudeCoordinate : Coordinate ,INetworkSerializable
+public struct LongitudeCoordinate : INetworkSerializable
 {
-   
-    protected override void SetFromTotalSeconds(int totalSeconds)
+    public CoordinateData data;
+
+    public float GetDegree() => data.GetDegree();
+
+    public void AddSecond(int value)
     {
-        totalSeconds = Mathf.Clamp(totalSeconds,-90*60*60,90*60*60);
-        base.SetFromTotalSeconds(totalSeconds);
+        data.AddSecond(value);
+
+        Normalize();
     }
+
+
+    private void Normalize()
+    {
+        int seconds = data.GetSecond();
+
+        while (seconds >= 180 * 3600)
+            seconds -= 360 * 3600;
+
+        while (seconds < -180 * 3600)
+            seconds += 360 * 3600;
+
+        data.SetFromTotalSeconds(seconds);
+    }
+
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
         where T : IReaderWriter
     {
-        serializer.SerializeValue(ref Degree);
-        serializer.SerializeValue(ref Minute);
-        serializer.SerializeValue(ref Second);
+        serializer.SerializeValue(ref data.Degree);
+        serializer.SerializeValue(ref data.Minute);
+        serializer.SerializeValue(ref data.Second);
+    }
+
+    public override string ToString()
+    {
+        return data.ToString();
     }
     
 }
 
-[Serializable]
-public class LongitudeCoordinate : Coordinate , INetworkSerializable
-{
 
-    protected override void SetFromTotalSeconds(int totalSeconds)
-    {
-        base.SetFromTotalSeconds(totalSeconds);
-        NormalizeDegree();
-    }
-
-    private void NormalizeDegree()
-    {
-        while (Degree >= 180)
-            Degree -= 360;
-
-        while (Degree < -180)
-            Degree += 360;
-    }
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer)
-        where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref Degree);
-        serializer.SerializeValue(ref Minute);
-        serializer.SerializeValue(ref Second);
-    }
-
-}
