@@ -7,18 +7,27 @@ public class PlayerFloat : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     FirstPersonController controller;
     private WaterController waterController;
+
+    private void Awake()
+    {
+        controller = GetComponent<FirstPersonController>();
+    }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        controller = GetComponent<FirstPersonController>();
-        waterController = GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>();
-
+        TryCacheWaterController();
     }
+
     // Update is called once per frame
     void Update()
     {
-        if(waterController==null)
-            waterController = GameObject.FindGameObjectWithTag("WaterController").GetComponent<WaterController>();
+        if (!IsSpawned || !IsOwner)
+            return;
+
+        if (waterController == null && !TryCacheWaterController())
+            return;
+
         Vector4 steepness = waterController.steepness.Value;
         Vector4 wavelength = waterController.wavelength.Value;
         Vector4 speed = waterController.speed.Value;
@@ -45,6 +54,14 @@ public class PlayerFloat : NetworkBehaviour
         }
         
     }
+
+    private bool TryCacheWaterController()
+    {
+        GameObject waterControllerObject = GameObject.FindGameObjectWithTag("WaterController");
+        return waterControllerObject != null
+            && waterControllerObject.TryGetComponent(out waterController);
+    }
+
     private Vector3 velocity;
 
 }

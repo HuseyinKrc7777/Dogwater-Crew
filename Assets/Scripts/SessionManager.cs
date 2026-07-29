@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
@@ -7,6 +8,13 @@ using Unity.Netcode.Transports.UTP;
 
 public class SessionManager : MonoBehaviour
 {
+#if UNITY_EDITOR
+    [SerializeField] private UnityEditor.SceneAsset gameplaySceneAsset;
+#endif
+    [SerializeField, HideInInspector] private string gameplayScenePath;
+
+    public static string GameplaySceneName { get; private set; } = string.Empty;
+
     [HideInInspector] // UI'dan gelen IP'yi tutacak, Editör'de görmemize gerek yok
     public string serverIP = "127.0.0.1";
 
@@ -15,11 +23,28 @@ public class SessionManager : MonoBehaviour
 
     private Coroutine _rttCoroutine;
 
+    private void Awake()
+    {
+        GameplaySceneName = Path.GetFileNameWithoutExtension(gameplayScenePath);
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        gameplayScenePath = gameplaySceneAsset != null
+            ? UnityEditor.AssetDatabase.GetAssetPath(gameplaySceneAsset)
+            : string.Empty;
+    }
+#endif
+
     // Host olma metodu (Senin PC'n)
     public void CreateSession()
     {
         try
         {
+            if (!TryGetGameplaySceneName(out string gameplaySceneName))
+                return;
+
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             transport.SetConnectionData("0.0.0.0", serverPort); // 0.0.0.0 = "Gelen tüm IP'leri kabul et"
 
@@ -28,7 +53,7 @@ public class SessionManager : MonoBehaviour
                 Debug.Log("<color=green>Host Başlatıldı! Gelen oyuncular bekleniyor...</color>");
 
                 // Oyuna geçiş yap
-                NetworkManager.Singleton.SceneManager.LoadScene("Enemy ShipTest", LoadSceneMode.Single);
+                NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
             }
             else
             {
@@ -46,6 +71,9 @@ public class SessionManager : MonoBehaviour
     {
         try
         {
+            if (!TryGetGameplaySceneName(out _))
+                return;
+
             serverIP = targetIP; // UI'dan gelen IP'yi kaydet
 
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -68,6 +96,27 @@ public class SessionManager : MonoBehaviour
         {
             Debug.LogException(e);
         }
+    }
+
+    private bool TryGetGameplaySceneName(out string sceneName)
+    {
+        sceneName = Path.GetFileNameWithoutExtension(gameplayScenePath);
+        GameplaySceneName = sceneName;
+
+        if (string.IsNullOrEmpty(gameplayScenePath) || string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("SessionManager requires a gameplay scene assigned in the Inspector.");
+            return false;
+        }
+
+        if (SceneUtility.GetBuildIndexByScenePath(gameplayScenePath) < 0)
+        {
+            Debug.LogError(
+                $"Gameplay scene is not included in the active Build Profile: {gameplayScenePath}");
+            return false;
+        }
+
+        return true;
     }
 
     // Ping / RTT Ölçücü
