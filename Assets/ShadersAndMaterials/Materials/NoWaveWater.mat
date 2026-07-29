@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_Stylized Water
+  m_Name: NoWaveWater
   m_Shader: {fileID: -6465566751694194690, guid: d9be20e5d4ac04a7f8c7bfd1c4330a4f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -53,7 +53,7 @@ Material:
     m_Floats:
     - WORLD_SPACE_UV: 1
     - _CurveAmount: 0.2
-    - _CurveEnabled: 0
+    - _CurveEnabled: 1
     - _Depth_Fade_Distance: 2.45
     - _Foam_Blend: 1
     - _Horizon_Distance: 12.5
@@ -88,8 +88,8 @@ Material:
     - _Wave_Length: 6.4
     - _Wave_Speed: 0.56
     - _Wave_Steepness: 0.126
-    - _Wave_Time: 950.0667
-    - _WavesDisabled: 0
+    - _Wave_Time: 68.30908
+    - _WavesDisabled: 1
     m_Colors:
     - _Deep_Color: {r: 0, g: 0.3102526, b: 0.5943396, a: 0.36862746}
     - _Diffuse_Color: {r: 1, g: 0, b: 0, a: 1}

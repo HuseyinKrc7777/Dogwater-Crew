@@ -14,8 +14,8 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 1
-  m_FogColor: {r: 0.84549654, g: 0.9433962, b: 0.9433962, a: 1}
+  m_Fog: 0
+  m_FogColor: {r: 0.035510845, g: 0.084021255, b: 0.5377358, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.001
   m_LinearFogStart: 351.9
@@ -687,6 +687,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 702689318fae3a5cc9334967d5e45754, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SunController
+  ShowTopMostFoldoutHeaderGroup: 1
   _Sun: {fileID: 498099419}
   _Moon: {fileID: 744418225}
 --- !u!114 &1584633952
@@ -992,6 +993,10 @@ PrefabInstance:
     - target: {fileID: 3530318069628017292, guid: 7c1f2923653f8e78786fc4912fb572c2, type: 3}
       propertyPath: m_Name
       value: FillerChunks
+      objectReference: {fileID: 0}
+    - target: {fileID: 3530318069628017292, guid: 7c1f2923653f8e78786fc4912fb572c2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1423,7 +1428,7 @@ PrefabInstance:
       objectReference: {fileID: 118715271}
     - target: {fileID: 2327212271389144359, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 1291697751
+      value: 4150008402
       objectReference: {fileID: 0}
     - target: {fileID: 2622713439418969914, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Mesh
@@ -1439,11 +1444,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4012628305966694738, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 530817928
+      value: 808661649
       objectReference: {fileID: 0}
     - target: {fileID: 5026510532661582587, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 593950118
+      value: 2883817688
       objectReference: {fileID: 0}
     - target: {fileID: 6199786891558961878, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: whatKindOfShipIsThis
@@ -1455,15 +1460,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7116473224897262517, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 874847726
+      value: 3946035658
       objectReference: {fileID: 0}
     - target: {fileID: 7996313622169870490, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 2985173538
+      value: 203704602
       objectReference: {fileID: 0}
     - target: {fileID: 9131478001904455770, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 3674545626
+      value: 1129697763
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
