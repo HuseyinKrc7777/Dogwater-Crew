@@ -63,6 +63,8 @@ public class WaterController : NetworkBehaviour
         if(followTransform!=null)
         {
             FillerChunks.transform.position = new Vector3(followTransform.position.x,0,followTransform.position.z);
+            //WaterChunks.transform.position = new Vector3(followTransform.position.x,0,followTransform.position.z);
+
         }
         if(IsOwner)
         {

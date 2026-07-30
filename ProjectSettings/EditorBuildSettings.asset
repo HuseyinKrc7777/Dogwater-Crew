@@ -20,5 +20,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ShipTest Cannon.unity
     guid: add1ad0e89bdeb44690a12d53b30bae7
+  - enabled: 1
+    path: Assets/Scenes/SunTest.unity
+    guid: 5d45943a91c0ebcdfb5e6df4f5457f0c
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

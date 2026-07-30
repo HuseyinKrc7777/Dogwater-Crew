@@ -10,16 +10,26 @@ public class GameDayClock : NetworkBehaviour
     public static GameDayClock Instance { get; private set; }
 
     [Tooltip("Real seconds per in-game day.")]
-    [Min(1f)][SerializeField] private float dayLengthSeconds = 600f;
+    [Min(1f)][SerializeField] public float dayLengthSeconds = 600f;
 
     private NetworkVariable<int> currentDay = new NetworkVariable<int>(
         1,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
-    private float dayTimer;
+    public float dayTimer;
 
     public int CurrentDay => currentDay.Value;
+    private DateTime StartDate = DateTime.UtcNow;
+
+    public DateTime GetCurrentDate()
+    {
+        DateTime TempDate = StartDate;
+
+        TempDate = TempDate.AddDays(CurrentDay - 1);
+        TempDate = TempDate.AddSeconds(dayTimer * (86400f / dayLengthSeconds));
+        return TempDate;
+    }
 
     // Fires on every peer when the day rolls over. The UI uses this to refresh remaining-time labels.
     public event Action<int> OnDayChanged;
@@ -31,7 +41,7 @@ public class GameDayClock : NetworkBehaviour
             Destroy(gameObject);
             return;
         }
-
+        //başlangıç tarihi , kayıt sisteminden çekilebilir 
         Instance = this;
     }
 

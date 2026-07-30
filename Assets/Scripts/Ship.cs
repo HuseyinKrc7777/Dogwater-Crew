@@ -50,8 +50,12 @@ public class Ship : NetworkBehaviour
         if(GetComponent<ShipAi>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
         {
             PlayerShip = this;
-            NpcShipController.Instance.CheckShipsToSpawnOrDespawnThem();
-            WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+            if(IsServer)
+            {
+                NpcShipController.Instance.CheckShipsToSpawnOrDespawnThem();
+                WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+            }
+
         }
     }
     float counter = 0.0f;
@@ -88,49 +92,26 @@ public class Ship : NetworkBehaviour
                 return;
             var la = coordinate.latitude;
             var lo = coordinate.longitude;
-            while (Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > GlobalCoordinate.LatitudeSecondLength(la))
+            if (Mathf.Abs(lastCoordinateChangePosition.z - transform.position.z) > GlobalCoordinate.LatitudeSecondLength(coordinate.latitude))
             {
                 float value = transform.position.z - lastCoordinateChangePosition.z;
-                int multiplier = value > 0 ? 1 : -1;
+                float secondLength = GlobalCoordinate.LatitudeSecondLength(coordinate.latitude);
+                int seconds =Mathf.FloorToInt( value / secondLength);
 
-                if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 3600)
-                {
-                    la.AddDegree(1 * multiplier);
-                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * 3600 * multiplier;
-                }
-                else if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 60)
-                {
-                    la.AddMinute(1 * multiplier);
-                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * 60 * multiplier;
-                }
-                else
-                {
-                    la.AddSecond(1 * multiplier);
-                    lastCoordinateChangePosition.z += GlobalCoordinate.LatitudeSecondLength(la) * multiplier;
-                }
+                la.AddSecond(seconds);
+
+                lastCoordinateChangePosition.z += seconds * secondLength;
 
             }
-            while (Mathf.Abs(lastCoordinateChangePosition.x - transform.position.x) > GlobalCoordinate .LongitudeSecondLength(la))
-
+            if (Mathf.Abs(lastCoordinateChangePosition.x - transform.position.x) > GlobalCoordinate .LongitudeSecondLength(coordinate.latitude))
             {
                 float value = transform.position.x - lastCoordinateChangePosition.x;
-                int multiplier = value > 0 ? 1 : -1;
+                float secondLength = GlobalCoordinate.LongitudeSecondLength(coordinate.latitude);
+                int seconds =Mathf.FloorToInt( value / secondLength);
 
-                if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 3600)
-                {
-                    lo.AddDegree(1 * multiplier);
-                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * 3600 * multiplier;
-                }
-                else if (value >= GlobalCoordinate.LatitudeSecondLength(la) * 60)
-                {
-                    lo.AddMinute(1 * multiplier);
-                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * 60 * multiplier;
-                }
-                else
-                {
-                    lo.AddSecond(1 * multiplier);
-                    lastCoordinateChangePosition.x += GlobalCoordinate.LatitudeSecondLength(la) * multiplier;
-                }
+                lo.AddSecond(seconds);
+
+                lastCoordinateChangePosition.x += seconds * secondLength;
             }
             counter = 0;
             coordinate.latitude = la;

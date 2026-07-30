@@ -933,7 +933,7 @@ PrefabInstance:
       objectReference: {fileID: 4012628305966694738, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].shipKind
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[1].shipKind

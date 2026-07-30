@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-
 public class SessionManager : MonoBehaviour
 {
 #if UNITY_EDITOR

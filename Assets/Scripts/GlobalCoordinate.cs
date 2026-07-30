@@ -45,6 +45,16 @@ public class GlobalCoordinate : INetworkSerializable
         float degree = la.GetDegree() * Mathf.Deg2Rad;
         return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) / 3600f);
     }
+    public static float LongitudeMinuteLength(LatitudeCoordinate la)
+    {
+        float degree = la.GetDegree() * Mathf.Deg2Rad;
+        return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) / 60f);
+    }
+    public static float LongitudeDegreeLength(LatitudeCoordinate la)
+    {
+        float degree = la.GetDegree() * Mathf.Deg2Rad;
+        return (float)(Mathf.PI / 180 * EarthRadius * Mathf.Cos(degree) );
+    }
     public static float LatitudeSecondLength(LatitudeCoordinate la)
     {
         float baseRadius = 6367449; 
@@ -52,19 +62,33 @@ public class GlobalCoordinate : INetworkSerializable
         float baseLength = 110574; 
         return baseLength / 3600f * scale;
     }
+     public static float LatitudeMinuteLength(LatitudeCoordinate la)
+    {
+        float baseRadius = 6367449; 
+        float scale = EarthRadius / baseRadius;
+        float baseLength = 110574; 
+        return baseLength / 60 * scale;
+    }
+     public static float LatitudeDegreeLength(LatitudeCoordinate la)
+    {
+        float baseRadius = 6367449; 
+        float scale = EarthRadius / baseRadius;
+        float baseLength = 110574; 
+        return baseLength * scale;
+    }
     public static float CalculateDistanceBetweenTwoPoints(GlobalCoordinate coordinate1,GlobalCoordinate coordinate2)
     {
-        LatitudeCoordinate latitude1 = coordinate1.latitude;
-        LongitudeCoordinate longitude1 = coordinate1.longitude;
+        float latitude1 = coordinate1.latitude.GetDegree();
+        float longitude1 = coordinate1.longitude.GetDegree();
 
-        LatitudeCoordinate latitude2 = coordinate2.latitude;
-        LongitudeCoordinate longitude2 = coordinate2.longitude;
+        float latitude2 = coordinate2.latitude.GetDegree();
+        float longitude2 = coordinate2.longitude.GetDegree();
         // kaynak : https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
-        var dLat = Mathf.Deg2Rad *(latitude2.GetDegree()-latitude1.GetDegree());  // deg2rad below
-        var dLon = Mathf.Deg2Rad *(longitude2.GetDegree()-longitude1.GetDegree()); 
+        var dLat = Mathf.Deg2Rad *(latitude2-latitude1);  // deg2rad below
+        var dLon = Mathf.Deg2Rad * Mathf.DeltaAngle(longitude1,longitude2); 
         var a = 
             Mathf.Sin(dLat/2) * Mathf.Sin(dLat/2) +
-            Mathf.Cos(Mathf.Deg2Rad * (latitude1.GetDegree())) * Mathf.Cos(Mathf.Deg2Rad * (latitude2.GetDegree())) * 
+            Mathf.Cos(Mathf.Deg2Rad * latitude1) * Mathf.Cos(Mathf.Deg2Rad * latitude2) * 
             Mathf.Sin(dLon/2) * Mathf.Sin(dLon/2)
             ; 
         var c = 2 * Mathf.Atan2(Mathf.Sqrt(a), Mathf.Sqrt(1-a)); 
@@ -75,17 +99,17 @@ public class GlobalCoordinate : INetworkSerializable
 
     public static Vector3 CalculateDirectionBetweenTwoPoints(GlobalCoordinate coordinate1,GlobalCoordinate coordinate2)
     {
-        LatitudeCoordinate latitude1 = coordinate1.latitude;
-        LongitudeCoordinate longitude1 = coordinate1.longitude;
-        
-        LatitudeCoordinate latitude2 = coordinate2.latitude;
-        LongitudeCoordinate longitude2 = coordinate2.longitude;
+        float latitude1 = coordinate1.latitude.GetDegree();
+        float longitude1 = coordinate1.longitude.GetDegree();
 
-        float latRad = ((latitude1.GetDegree() + latitude2.GetDegree()) * 0.5f) * Mathf.Deg2Rad;
+        float latitude2 = coordinate2.latitude.GetDegree();
+        float longitude2 = coordinate2.longitude.GetDegree();
 
-        float x = (longitude2.GetDegree() - longitude1.GetDegree()) * Mathf.Cos(latRad);
+        float latRad = (latitude1 + latitude2) * 0.5f * Mathf.Deg2Rad;
+
+        float x =  Mathf.DeltaAngle(longitude1, longitude2) * Mathf.Cos(latRad);
         
-        float y = latitude2.GetDegree() - latitude1.GetDegree();
+        float y = latitude2 - latitude1;
         
         return new Vector3(x,0 ,y).normalized;
         

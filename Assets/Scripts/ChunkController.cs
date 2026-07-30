@@ -5,7 +5,7 @@ using UnityEngine;
 public class ChunkController : MonoBehaviour
 {
     //TODO bunun aynısını düşük kalite su için de yapılması lazım , fakat acelesi yok gibi ?mi acaba.
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    //TODO su shader'ı nı global pozisyona göre yapabilirsek bu işleme gerek kalmıyacak
     public List<GameObject> WaterTiles;
     public GameObject ship;
     [SerializeField] private readonly int edgeBlockCount = 4;

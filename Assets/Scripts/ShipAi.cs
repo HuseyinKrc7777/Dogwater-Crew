@@ -46,8 +46,8 @@ public class ShipAi : NetworkBehaviour
         base.OnNetworkSpawn();
         if (!IsServer)
             return;
-        float targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate,targetCoordinate);
-        Vector3 targetDir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(coordinate,targetCoordinate);
+        float targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate, targetCoordinate);
+        Vector3 targetDir = GlobalCoordinate.CalculateDirectionBetweenTwoPoints(coordinate, targetCoordinate);
         targetPos = targetDir * targetDist + transform.position;
     }
     private void ControlSails()
@@ -59,6 +59,26 @@ public class ShipAi : NetworkBehaviour
         foreach (Sail sail in ship.sailList)
         {
             sail.transform.localRotation = Quaternion.LookRotation(forw);
+        }
+        if (shipState == ShipState.Attack)
+        {
+            Vector3 targetVelocity = Target.GetComponent<Rigidbody>().linearVelocity;
+            Vector3 shipVelocity = ship.GetComponent<Rigidbody>().linearVelocity;
+            targetVelocity.y = 0;
+            shipVelocity.y = 0;
+            int sailD = 0;
+            if (shipVelocity.magnitude > targetVelocity.magnitude)
+            {
+                sailD = -1;
+            }
+            else
+            {
+                sailD = 1;
+            }
+            foreach (Sail sail in ship.sailList)
+            {
+                sail.sailArea.Value += 0.1f * sailD;
+            }
         }
     }
 
@@ -100,8 +120,8 @@ public class ShipAi : NetworkBehaviour
     float counter = 0;
     private void FireCannons()
     {
-        
-        if(shipState != ShipState.Attack)
+
+        if (shipState != ShipState.Attack)
             return;
         foreach (Cannon cannon in ship.cannons)
         {
@@ -116,16 +136,23 @@ public class ShipAi : NetworkBehaviour
 
             float time = distance / horizontalVelocity;
             /* yukarı kısım zaman için hesaplama , aşağı kısım zamanla birlikte hedefin yer değişimini katarak hesaplama */
-            Vector3 targetAdjusted = Target.transform.position + Target.GetComponent<Rigidbody>().linearVelocity * time;
+            Vector3 targetVelocity = Target.GetComponent<Rigidbody>().linearVelocity;
+            Vector3 shipVelocity = ship.GetComponent<Rigidbody>().linearVelocity;
+            targetVelocity.y = 0;
+            shipVelocity.y = 0;
+
+
+            Vector3 targetAdjusted = Target.transform.position  + (targetVelocity - shipVelocity) * time;
+            
             Vector3 directionAdjusted = targetAdjusted - cannon.transform.position;
             float distanceAdjusted = directionAdjusted.magnitude;
 
             float angleAdjusted = CalculateCannonAngle(distanceAdjusted, cannon.fireForce);
-            cannon.cannonPitch.Value = angleAdjusted * -1;
-
-            float dot = Vector3.Dot(direction.normalized, cannon.spawnPoint.forward);
+            cannon.cannonPitch.Value = angleAdjusted*-1;
+            //TODO nedense hedefin azıcık üstüne hedef alıyor , niye bilmiyom , düzeltmeye çalıştım ama yapamadım
+            float dot = Vector3.Dot(directionAdjusted.normalized, cannon.spawnPoint.forward);
             // nekadar kaliteli ateş edebileceği buradan dot ' Un kontrolü ile yapılıyor.
-            if (dot >= 0.85f && angle > 0)
+            if (dot >= 0.85f)
             {
                 cannon.OnButtonInput();
             }
@@ -149,8 +176,8 @@ public class ShipAi : NetworkBehaviour
     void ChangeTravelPosition()
     {
         targetCoordinate = TravelPositions[TravelPositionCounter];
-        
-        if (TravelPositionCounter < TravelPositions.Count)
+
+        if (TravelPositionCounter < TravelPositions.Count-1)
             TravelPositionCounter++;
         else
             TravelPositionCounter = 0;
@@ -160,7 +187,7 @@ public class ShipAi : NetworkBehaviour
         if (shipState != ShipState.Travel)
             return;
 
-        targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate,targetCoordinate);
+        targetDist = GlobalCoordinate.CalculateDistanceBetweenTwoPoints(coordinate, targetCoordinate);
         /*ship.GetComponent<Rigidbody>().linearVelocity.magnitude * 15*/
         if (targetDist < 5)
         {
@@ -178,7 +205,7 @@ public class ShipAi : NetworkBehaviour
     void ChangeState()
     {
         //TODOburaya oyuncu gemisinin tespiti yapılacak
-        if(Target == null && shipState == ShipState.Travel && whatKindOfShipIsThis==ShipKind.Enemy)
+        if (Target == null && shipState == ShipState.Travel && whatKindOfShipIsThis == ShipKind.Enemy)
         {
             //TODOBurada npc ' ler arası savaş eklendiğinde değiştirilecek,
             var ps = Ship.PlayerShip;
