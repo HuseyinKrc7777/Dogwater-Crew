@@ -177,7 +177,7 @@ public class ShipAi : NetworkBehaviour
     {
         targetCoordinate = TravelPositions[TravelPositionCounter];
 
-        if (TravelPositionCounter < TravelPositions.Count)
+        if (TravelPositionCounter < TravelPositions.Count-1)
             TravelPositionCounter++;
         else
             TravelPositionCounter = 0;

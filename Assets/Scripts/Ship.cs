@@ -50,8 +50,12 @@ public class Ship : NetworkBehaviour
         if(GetComponent<ShipAi>().whatKindOfShipIsThis == ShipKind.PlayerControlled)
         {
             PlayerShip = this;
-            NpcShipController.Instance.CheckShipsToSpawnOrDespawnThem();
-            WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+            if(IsServer)
+            {
+                NpcShipController.Instance.CheckShipsToSpawnOrDespawnThem();
+                WorldIslandController.Instance.CheckIslandsToSpawnOrDespawnThem();
+            }
+
         }
     }
     float counter = 0.0f;
