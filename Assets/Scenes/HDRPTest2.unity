@@ -1159,7 +1159,7 @@ MonoBehaviour:
   directLightTipScattering: 0.6
   directLightBodyScattering: 0.5
   maximumHeightOverride: 0
-  caustics: 0
+  caustics: 1
   causticsIntensity: 0.5
   causticsPlaneBlendDistance: 1
   causticsResolution: 256
@@ -1174,7 +1174,7 @@ MonoBehaviour:
   waterCurrentDebugMode: 0
   currentDebugMultiplier: 1
   waterFoamDebugMode: 0
-  underWater: 0
+  underWater: 1
   volumeBounds: {fileID: 0}
   volumeDepth: 50
   volumeHeight: 0
