@@ -37,8 +37,7 @@ Shader "Custom/Skybox"
             #pragma vertex Vertex
             #pragma fragment Fragment
             
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
             struct Attributes
             {
                 float4 posOS    : POSITION;
@@ -54,10 +53,10 @@ Shader "Custom/Skybox"
             {
                 v2f OUT = (v2f)0;
     
-                VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.posOS.xyz);
-    
-                OUT.posCS = vertexInput.positionCS;
-                OUT.viewDirWS = vertexInput.positionWS;
+                float3 positionWS = TransformObjectToWorld(IN.posOS.xyz);
+
+                OUT.posCS = TransformWorldToHClip(positionWS);
+                OUT.viewDirWS = positionWS - GetCameraPositionWS();
 
                 return OUT;
             }
@@ -77,6 +76,7 @@ Shader "Custom/Skybox"
             float _StarPower;
             float _StarLatitude, _StarSpeed;
             float3 _ConstellationColor;
+            float3 _SunColor;
             float GetSunMask(float sunViewDot, float sunRadius)
             {
                 float stepRadius = 1 - sunRadius * sunRadius;
@@ -169,8 +169,7 @@ Shader "Custom/Skybox"
 
                 // The sun
                 float sunMask = GetSunMask(sunViewDot, _SunRadius);
-                float3 sunColor = _MainLightColor.rgb * sunMask;
-
+                float3 sunColor = _SunColor * sunMask;
                 // The moon
                 float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
                 float moonMask = moonIntersect > -1 ? 1 : 0;

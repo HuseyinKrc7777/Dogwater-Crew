@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: d98a8dbfe1167aa79821bd31c809193b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -181,7 +181,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: d98a8dbfe1167aa79821bd31c809193b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -307,7 +307,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: d98a8dbfe1167aa79821bd31c809193b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -439,15 +439,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuoyantObject
   ShowTopMostFoldoutHeaderGroup: 1
-  steepness: {x: 0, y: 0, z: 0, w: 0}
-  wavelength: {x: 0, y: 0, z: 0, w: 0}
-  speed: {x: 0, y: 0, z: 0, w: 0}
-  directions: {x: 0, y: 0, z: 0, w: 0}
   sails: {fileID: 8019163083898211611}
-  strength: 1
+  strength: 3
   objectDepth: 2
-  planingStrength: 0.2
-  maxPlaningLift: 0.8
   effectors:
   - {fileID: 8185786455790925937}
   - {fileID: 6050331723535462959}
@@ -490,13 +484,15 @@ MonoBehaviour:
     m_InternalValue: 0
   coordinate:
     latitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
+      data:
+        Degree: 0
+        Minute: 0
+        Second: 0
     longitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
+      data:
+        Degree: 0
+        Minute: 0
+        Second: 0
 --- !u!114 &65854035236746906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -619,23 +615,27 @@ MonoBehaviour:
   ship: {fileID: 6199786891558961878}
   targetCoordinate:
     latitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
+      data:
+        Degree: 0
+        Minute: 0
+        Second: 0
     longitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
+      data:
+        Degree: 0
+        Minute: 0
+        Second: 0
   targetPos: {x: 0, y: 0, z: 0}
   coordinate:
     latitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
+      data:
+        Degree: 0
+        Minute: 0
+        Second: 0
     longitude:
-      Degree: 0
-      Minute: 0
-      Second: 0
+      data:
+        Degree: 0
+        Minute: 0
+        Second: 0
   targetDist: 0
   whatKindOfShipIsThis: 0
   shipState: 0
@@ -919,7 +919,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: d98a8dbfe1167aa79821bd31c809193b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1094,6 +1094,14 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 4027277819
       objectReference: {fileID: 0}
+    - target: {fileID: 4040483732748417651, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4040483732748417651, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d98a8dbfe1167aa79821bd31c809193b, type: 2}
     - target: {fileID: 5394199800705624522, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: m_Name
       value: CannonR
@@ -1291,6 +1299,14 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2402883839
       objectReference: {fileID: 0}
+    - target: {fileID: 4040483732748417651, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4040483732748417651, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d98a8dbfe1167aa79821bd31c809193b, type: 2}
     - target: {fileID: 5394199800705624522, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
       propertyPath: m_Name
       value: CannonL
