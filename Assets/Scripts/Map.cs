@@ -8,24 +8,26 @@ using UnityEngine.Networking;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 [RequireComponent(typeof(Renderer))]
-public class Map : NetworkBehaviour, IHandInput
+public class Map : MonoBehaviour, IHandInput
 {
     //TODO
     // haritada etkileşime geçerken imleç kalem /silgiye dönüşüsün ,
     // bunun kaliteli bir şekilde olması için ayrı olarak 
     // oyuncu imleç kontrolcüsü yapılmalıdır.
-    Texture2D map;
-    Renderer rend;
-    const int mapSize = 2000;
-    bool eraseMode = false;
-    bool drawing = false;
-    Vector2 lastDrawnPixel = new(-1,-1);
-    List<Vector2Int> playerPixels = new();
-    float buttonPressTimeCounter = 0.0f;
-    float buttonPressTimeout = 1.0f;
-    int buttonPressCounter = 0;
-    int targetButtonPress = 10;
-    bool countingButton = false;
+    public int index = 0;
+    public MapNetworkController controller;
+    public Texture2D map;
+    public Renderer rend;
+    public const int mapSize = 2000;
+    public bool eraseMode = false;
+    public bool drawing = false;
+    public Vector2 lastDrawnPixel = new(-1,-1);
+    public List<Vector2Int> playerPixels = new();
+    public float buttonPressTimeCounter = 0.0f;
+    public float buttonPressTimeout = 1.0f;
+    public int buttonPressCounter = 0;
+    public int targetButtonPress = 10;
+    public bool countingButton = false;
     public void OnButtonInput()
     {
         if(!countingButton)
@@ -41,7 +43,7 @@ public class Map : NetworkBehaviour, IHandInput
         if(buttonPressCounter >= targetButtonPress)
         {
             countingButton = false;
-            EraseByArrayRpc(playerPixels.ToArray());
+            controller.EraseByArrayRpc(index,playerPixels.ToArray());
             playerPixels.Clear();
         }
     }
@@ -83,7 +85,7 @@ public class Map : NetworkBehaviour, IHandInput
                             if (y < 0)
                                 y += mapSize;
                                 
-                            EraseRpc(x + i, y + j);
+                            controller.EraseRpc(index,x + i, y + j);
                         }
                     }
                 }
@@ -98,13 +100,13 @@ public class Map : NetworkBehaviour, IHandInput
                             int newx = (int)filler.x;
                             int newy = (int)filler.y;
 
-                            DrawRpc(newx,newy);
+                            controller.DrawRpc(index,newx,newy);
                             playerPixels.Add(new(newx,newy));
                             filler = Vector2.MoveTowards(filler,current,1.0f);
 
                         }
                     }
-                    DrawRpc(x, y);
+                    controller.DrawRpc(index,x, y);
                     playerPixels.Add(new(x,y));
                     lastDrawnPixel.x = x;
                     lastDrawnPixel.y = y;
@@ -132,44 +134,7 @@ public class Map : NetworkBehaviour, IHandInput
     {
         //throw new System.NotImplementedException();
     }
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-        map = new Texture2D(mapSize, mapSize, TextureFormat.RGBA32, false);
-        for (int x = 0; x < mapSize; x++)
-            for (int y = 0; y < mapSize; y++)
-                map.SetPixel(x, y, Color.white);
-        map.Apply();
-        rend = GetComponent<Renderer>();
-        rend.material.mainTexture = map;
-        rend.material.mainTextureScale = new Vector2(0.35f, 0.35f);
 
-    }
-    [Rpc(SendTo.Everyone)]
-    void DrawRpc(int x, int y)
-    {
-
-        map.SetPixel(x, y, Color.black);
-        map.Apply();
-
-    }
-    [Rpc(SendTo.Everyone)]
-    void EraseRpc(int x, int y)
-    {
-
-        map.SetPixel(x, y, Color.white);
-        map.Apply();
-    }
-
-    [Rpc(SendTo.Everyone)]
-    void EraseByArrayRpc(Vector2Int[] array)
-    {
-        foreach(Vector2Int pixel in array)
-        {
-            map.SetPixel(pixel.x,pixel.y,Color.white);
-        }
-        map.Apply();
-    }
     // Update is called once per frame
     void Update()
     {
