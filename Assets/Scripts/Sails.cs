@@ -10,46 +10,29 @@ public class Sails : NetworkBehaviour
     // rüzgar yönü dışarıdan değiştirilecek networkvariable olacak
     public Vector3 Wind = new Vector3();
     public NetworkList<float> SailRotations = new(writePerm:NetworkVariableWritePermission.Server,readPerm:NetworkVariableReadPermission.Everyone);
-    public NetworkList<float> SailAreas = new(writePerm:NetworkVariableWritePermission.Server,readPerm:NetworkVariableReadPermission.Everyone); 
-
-
-    public override void OnNetworkSpawn()
+    public NetworkList<float> SailAreas = new(writePerm:NetworkVariableWritePermission.Server,readPerm:NetworkVariableReadPermission.Everyone);
+    void Start()
     {
-        base.OnNetworkSpawn();
+        foreach(Sail sail in sailList)
+        {
+            
+        }
+    }
+    protected override void OnNetworkPostSpawn()
+    {
+        base.OnNetworkPostSpawn();
         foreach(Sail sail in sailList)
         {
             sail.index = sailList.IndexOf(sail);
             sail.sailController = this;
-
             SailRotations.Add(0);
             SailAreas.Add(1);
 
-
-            sail.rightRope.hardMax = 80;
-            sail.rightRope.hardMin = -80;
-            sail.rightRope.minValue.Value = -80;
-
-            //******************************************
-
-            sail.leftRope.hardMax = 80;
-            sail.leftRope.hardMin = -80;
-            sail.leftRope.minValue.Value = -80;
-
-            //----------------------------------------------
-
-            sail.openRope.minValue.Value = 0;
-            sail.openRope.maxValue.Value = 100;
-
-            sail.openRope.currentValue.Value = 50;
-
-            sail.openRope.hardMax = 100;
-            sail.openRope.hardMin = 0;
-
             if(IsServer)
             {
-                sail.leftRope.currentValue.OnValueChanged += sail.OnRotationRopeChanged;
-                sail.rightRope.currentValue.OnValueChanged += sail.OnRotationRopeChanged;
-                sail.openRope.currentValue.OnValueChanged += sail.OnOpenRopeChanged;
+                sail.leftRope.controller.currentValueList.OnListChanged += sail.OnRotationRopeChanged;
+                sail.rightRope.controller.currentValueList.OnListChanged += sail.OnRotationRopeChanged;
+                sail.openRope.controller.currentValueList.OnListChanged += sail.OnOpenRopeChanged;
             }
            
             SailAreas.OnListChanged += sail.OnSailAreaChanged;
@@ -59,6 +42,11 @@ public class Sails : NetworkBehaviour
         Wind =WaterController.Instance.wind.Value;
         WaterController.Instance.wind.OnValueChanged+=OnWindChange;
     }
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        
+    }
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
@@ -66,9 +54,9 @@ public class Sails : NetworkBehaviour
         {
             if(IsServer)
             {
-                sail.leftRope.currentValue.OnValueChanged -= sail.OnRotationRopeChanged;
-                sail.rightRope.currentValue.OnValueChanged -= sail.OnRotationRopeChanged;
-                sail.openRope.currentValue.OnValueChanged -= sail.OnOpenRopeChanged;
+                sail.leftRope.controller.currentValueList.OnListChanged -= sail.OnRotationRopeChanged;
+                sail.rightRope.controller.currentValueList.OnListChanged -= sail.OnRotationRopeChanged;
+                sail.openRope.controller.currentValueList.OnListChanged -= sail.OnOpenRopeChanged;
             }
             SailAreas.OnListChanged -= sail.OnSailAreaChanged;
             SailRotations.OnListChanged -= sail.OnSailRotationChanged;

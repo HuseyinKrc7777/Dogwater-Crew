@@ -81,7 +81,6 @@ public class BoatMovement : NetworkBehaviour
             Vector3 b = effectorTargets[1];
             Vector3 c = effectorTargets[2];
             normal = Vector3.Cross(b - a, c - a).normalized;
-            Debug.LogError(normal);
             if (normal == Vector3.zero || float.IsNaN(normal.x)) normal = Vector3.up;
         }
 

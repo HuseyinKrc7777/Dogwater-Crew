@@ -14,35 +14,39 @@ public class Sail : MonoBehaviour
     public Rope leftRope;
     public Rope openRope;
 
-    public void OnRotationRopeChanged(float oldValue, float newValue)
+    public void OnRotationRopeChanged(NetworkListEvent<float> changeEvent)
     {
+        //TODO bu ve alttaki fonksiyonlarda başka yelkendeki değer değişse de bütün yelkenleri senkronize ediyor , sonradan düzeltilebilir.
+        rightRope.SetMaxValue(-leftRope.GetCurrentValue()); 
+        leftRope.SetMaxValue(-rightRope.GetCurrentValue());
 
-        rightRope.maxValue.Value = -leftRope.currentValue.Value;
-        leftRope.maxValue.Value = -rightRope.currentValue.Value;
-
-        if(rightRope.currentValue.Value > 0)
+        if(rightRope.GetCurrentValue() > 0)
         {
-            sailController.SailRotations[index] = rightRope.currentValue.Value;
+            sailController.SailRotations[index] = rightRope.GetCurrentValue();
         }
-        else if(leftRope.currentValue.Value > 0)
+        else if(leftRope.GetCurrentValue() > 0)
         {
-            sailController.SailRotations[index] = leftRope.currentValue.Value * -1;
+            sailController.SailRotations[index] = leftRope.GetCurrentValue() * -1;
             
         }
         
     }
     public void OnSailRotationChanged(NetworkListEvent<float> changeEvent)
     {
+        
         Vector3 euler = transform.localEulerAngles;
         euler.y = sailController.SailRotations[index];
         transform.localEulerAngles = euler;
     }
-    public void OnOpenRopeChanged(float oldVal, float newVal)
+    public void OnOpenRopeChanged(NetworkListEvent<float> changeEvent)
     {
-        sailController.SailAreas[index] = openRope.currentValue.Value / 100;
+
+        
+        sailController.SailAreas[index] = openRope.GetCurrentValue() / 100;
     }
     public void OnSailAreaChanged(NetworkListEvent<float> changeEvent)
     {
+        
         Vector3 scale = transform.localScale;
         scale.y = sailController.SailAreas[index];
         transform.localScale = scale;
@@ -50,7 +54,7 @@ public class Sail : MonoBehaviour
 
     private float _getTightness()
     {
-        return rightRope.currentValue.Value + leftRope.currentValue.Value;
+        return rightRope.GetCurrentValue() + leftRope.GetCurrentValue();
     }
     void Update()
     {
@@ -109,10 +113,5 @@ public class Sail : MonoBehaviour
             return;
         }
         sailController.SailRotations[index] += value;
-    }
-
-    internal void OnSailRotationChangedd(NetworkListEvent<float> changeEvent)
-    {
-        throw new NotImplementedException();
     }
 }

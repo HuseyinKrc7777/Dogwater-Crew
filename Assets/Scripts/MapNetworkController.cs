@@ -5,6 +5,14 @@ using UnityEngine;
 public class MapNetworkController : NetworkBehaviour
 {
     public List<Map> maps = new();
+    void Start()
+    {
+        foreach(Map map in maps)
+        {
+            
+
+        }
+    }
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -12,7 +20,6 @@ public class MapNetworkController : NetworkBehaviour
         {
             map.index  = maps.IndexOf(map);
             map.controller = this;
-
             map.map = new Texture2D(Map.mapSize, Map.mapSize, TextureFormat.RGBA32, false);
             for (int x = 0; x < Map.mapSize; x++)
                 for (int y = 0; y < Map.mapSize; y++)
