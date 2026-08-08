@@ -164,7 +164,7 @@ public class Map : MonoBehaviour, IHandInput
        
     }
     float counter = 0;
-    float syncTimeout = 0.2f;
+    float syncTimeout = 0.05f;
     void LateUpdate()
     {
         

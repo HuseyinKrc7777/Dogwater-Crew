@@ -414,7 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 345906426
+  GlobalObjectIdHash: 3991998473
   InScenePlacedSourceGlobalObjectIdHash: 345906426
   DeferredDespawnTick: 0
   Ownership: 1
@@ -556,6 +556,14 @@ MonoBehaviour:
   sailList:
   - {fileID: 5807671826321795255}
   Wind: {x: 0, y: 0, z: 1}
+  SailRotations:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+  SailAreas:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
 --- !u!54 &3180766565377872494
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1238,7 +1246,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
-      value: 52
+      value: 55
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}

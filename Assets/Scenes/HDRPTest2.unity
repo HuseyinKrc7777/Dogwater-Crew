@@ -1735,7 +1735,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.size
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].prefab
@@ -1755,7 +1755,7 @@ PrefabInstance:
       objectReference: {fileID: 4012628305966694738, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].shipKind
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[1].shipKind
@@ -1831,11 +1831,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].targetPositions.Array.size
-      value: 4
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].coordinate.longitude.Degree
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].coordinate.latitude.data.Degree
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].coordinate.latitude.data.Minute
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].coordinate.longitude.data.Degree
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].coordinate.longitude.data.Minute
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].targetPositions.Array.data[0].latitude.Degree
@@ -1868,6 +1884,22 @@ PrefabInstance:
     - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: shipList.Array.data[0].targetPositions.Array.data[3].longitude.Degree
       value: -15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[0].latitude.data.Degree
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[1].latitude.data.Degree
+      value: -50
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[0].longitude.data.Degree
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7614414464819541159, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
+      propertyPath: shipList.Array.data[0].targetPositions.Array.data[1].longitude.data.Degree
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 8510079139855024352, guid: 10b4b5933c0a4467fb75c3c9ad37be32, type: 3}
       propertyPath: m_LocalPosition.x

@@ -58,7 +58,8 @@ public class ShipAi : NetworkBehaviour
 
         foreach (Sail sail in ship.sailList)
         {
-            sail.transform.localRotation = Quaternion.LookRotation(forw);
+            //sail.transform.localRotation = Quaternion.LookRotation(forw);
+            sail.sailController.SailRotations[sail.index] = Quaternion.LookRotation(forw).eulerAngles.y;
         }
         if (shipState == ShipState.Attack)
         {
@@ -77,7 +78,7 @@ public class ShipAi : NetworkBehaviour
             }
             foreach (Sail sail in ship.sailList)
             {
-                sail.sailArea.Value += 0.1f * sailD;
+                sail.sailController.SailAreas[sail.index] += 0.1f * sailD;
             }
         }
     }
