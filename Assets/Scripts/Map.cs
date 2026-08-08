@@ -23,11 +23,16 @@ public class Map : MonoBehaviour, IHandInput
     public bool drawing = false;
     public Vector2 lastDrawnPixel = new(-1,-1);
     public List<Vector2Int> playerPixels = new();
+    public List<Vector2Int> LastDrawList = new();
+    public List<Vector2Int> LastEraseList = new();
+
+
     public float buttonPressTimeCounter = 0.0f;
     public float buttonPressTimeout = 1.0f;
     public int buttonPressCounter = 0;
     public int targetButtonPress = 10;
     public bool countingButton = false;
+    bool interacting = false;
     public void OnButtonInput()
     {
         if(!countingButton)
@@ -85,7 +90,8 @@ public class Map : MonoBehaviour, IHandInput
                             if (y < 0)
                                 y += mapSize;
                                 
-                            controller.EraseRpc(index,x + i, y + j);
+                            //controller.EraseRpc(index,x + i, y + j);
+                            LastEraseList.Add(new(x + i, y + j));
                         }
                     }
                 }
@@ -100,14 +106,17 @@ public class Map : MonoBehaviour, IHandInput
                             int newx = (int)filler.x;
                             int newy = (int)filler.y;
 
-                            controller.DrawRpc(index,newx,newy);
+                            //controller.DrawRpc(index,newx,newy);
                             playerPixels.Add(new(newx,newy));
+                            LastDrawList.Add(new(newx,newy));
                             filler = Vector2.MoveTowards(filler,current,1.0f);
 
                         }
                     }
-                    controller.DrawRpc(index,x, y);
+                    //controller.DrawRpc(index,x, y);
                     playerPixels.Add(new(x,y));
+                    LastDrawList.Add(new(x,y));
+
                     lastDrawnPixel.x = x;
                     lastDrawnPixel.y = y;
 
@@ -119,6 +128,7 @@ public class Map : MonoBehaviour, IHandInput
     public void OnInteract(Player player)
     {
         eraseMode = false;
+        interacting = true;
         //throw new System.NotImplementedException();
     }
 
@@ -132,22 +142,32 @@ public class Map : MonoBehaviour, IHandInput
 
     public void OnUnInteract(Player player)
     {
+        interacting = false;
         //throw new System.NotImplementedException();
     }
 
     // Update is called once per frame
     void Update()
     {
+        counter+=Time.deltaTime;
+        if(counter>=syncTimeout)
+        {
+            SyncMap();
+            counter=0;
+        }
         if(countingButton)
         {
             buttonPressTimeCounter += Time.deltaTime;
             if(buttonPressTimeCounter >= buttonPressTimeout)
                 countingButton = false;
         }
+       
     }
-
+    float counter = 0;
+    float syncTimeout = 0.2f;
     void LateUpdate()
     {
+        
         if(drawing)
             drawing = false;
         else
@@ -156,4 +176,18 @@ public class Map : MonoBehaviour, IHandInput
             lastDrawnPixel.y = -1;
         }
     }
+    public void SyncMap()
+    {
+        if(LastDrawList.Count>0)
+        {
+            controller.DrawByArrayRpc(index,LastDrawList.ToArray());
+            LastDrawList.Clear();
+        }
+        if(LastEraseList.Count>0)
+        {
+            controller.EraseByArrayRpc(index,LastEraseList.ToArray());
+            LastEraseList.Clear();
+        }
+    }
+
 }

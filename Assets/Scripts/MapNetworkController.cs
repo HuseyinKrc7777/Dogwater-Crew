@@ -56,10 +56,10 @@ public class MapNetworkController : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void OnJoinRpc(int index)
     {
-        SyncPlayerMapForJoinRpc(index,maps[index].playerPixels.ToArray());
+        DrawByArrayRpc(index,maps[index].playerPixels.ToArray());
     }
     [Rpc(SendTo.Everyone)]
-    public void SyncPlayerMapForJoinRpc(int index,Vector2Int[] array)
+    public void DrawByArrayRpc(int index,Vector2Int[] array)
     {
         Texture2D map = maps[index].map;
         foreach(Vector2Int pixel in array)
