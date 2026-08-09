@@ -141,7 +141,7 @@ public class BoatMovement : NetworkBehaviour
         {
             desiredVelocity  = Vector3.zero;
         }
-        else if (ship.anchor.releasedRopeAmount.Value > 1)
+        else if (ship.anchor.controller.releasedRopeAmount.Value > 1)
         {
             accelRate -= accelRate / 4;
         }

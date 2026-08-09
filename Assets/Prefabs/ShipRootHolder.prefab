@@ -374,6 +374,7 @@ GameObject:
   - component: {fileID: 207268922042263618}
   - component: {fileID: 7268387749192060503}
   - component: {fileID: 3690265243491994329}
+  - component: {fileID: 2470433788087330700}
   m_Layer: 0
   m_Name: ShipRootHolder
   m_TagString: Ship
@@ -416,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3991998473
+  GlobalObjectIdHash: 345906426
   InScenePlacedSourceGlobalObjectIdHash: 345906426
   DeferredDespawnTick: 0
   Ownership: 1
@@ -714,6 +715,35 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   wheel: {fileID: 4123916739027338565}
   rudderRotation:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+--- !u!114 &2470433788087330700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcfd78c34bd0886f1bf38127bae3dedc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnchorNetworkController
+  ShowTopMostFoldoutHeaderGroup: 1
+  anchor: {fileID: 5492485562776103550}
+  releasedRopeAmount:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  isRopeFree:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  holdingPlayerCount:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
@@ -1286,6 +1316,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Boat
       objectReference: {fileID: 0}
+    - target: {fileID: 1958632971191563858, guid: 4111baf309fecb9679462856534709cf, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 647134911
+      objectReference: {fileID: 0}
     - target: {fileID: 2986233829023771541, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1250414247
@@ -1296,7 +1330,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
-      value: 61
+      value: 64
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}
