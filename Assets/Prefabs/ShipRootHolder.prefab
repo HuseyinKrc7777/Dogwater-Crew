@@ -238,8 +238,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 896fbb76354c38d278f9abbee3aff850, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterPump
-  ShowTopMostFoldoutHeaderGroup: 1
   ship: {fileID: 6199786891558961878}
+  controller: {fileID: 0}
 --- !u!1 &2170621214721384758
 GameObject:
   m_ObjectHideFlags: 0
@@ -376,6 +376,7 @@ GameObject:
   - component: {fileID: 3690265243491994329}
   - component: {fileID: 2470433788087330700}
   - component: {fileID: 3606112368421006044}
+  - component: {fileID: 8291328451455618065}
   m_Layer: 0
   m_Name: ShipRootHolder
   m_TagString: Ship
@@ -418,7 +419,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 345906426
+  GlobalObjectIdHash: 3991998473
   InScenePlacedSourceGlobalObjectIdHash: 345906426
   DeferredDespawnTick: 0
   Ownership: 1
@@ -775,6 +776,20 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+--- !u!114 &8291328451455618065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f788ae9ac7b37b0bf2b1c9177a56bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterPumpNetworkController
+  ShowTopMostFoldoutHeaderGroup: 1
+  pump: {fileID: 8300954467681297934}
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0
