@@ -149,7 +149,7 @@ public class ShipAi : NetworkBehaviour
             float distanceAdjusted = directionAdjusted.magnitude;
 
             float angleAdjusted = CalculateCannonAngle(distanceAdjusted, cannon.fireForce);
-            cannon.cannonPitch.Value = angleAdjusted*-1;
+            cannon.controller.cannonPitch.Value = angleAdjusted*-1;
             //TODO nedense hedefin azıcık üstüne hedef alıyor , niye bilmiyom , düzeltmeye çalıştım ama yapamadım
             float dot = Vector3.Dot(directionAdjusted.normalized, cannon.spawnPoint.forward);
             // nekadar kaliteli ateş edebileceği buradan dot ' Un kontrolü ile yapılıyor.

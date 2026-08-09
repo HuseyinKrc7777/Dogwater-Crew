@@ -375,6 +375,7 @@ GameObject:
   - component: {fileID: 7268387749192060503}
   - component: {fileID: 3690265243491994329}
   - component: {fileID: 2470433788087330700}
+  - component: {fileID: 3606112368421006044}
   m_Layer: 0
   m_Name: ShipRootHolder
   m_TagString: Ship
@@ -744,6 +745,32 @@ MonoBehaviour:
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
   holdingPlayerCount:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+--- !u!114 &3606112368421006044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18118d229175875448960cbf204e23ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CannonNetworkController
+  ShowTopMostFoldoutHeaderGroup: 1
+  cannons:
+  - {fileID: 2594879908987743956}
+  - {fileID: 7389276746471909446}
+  cannonYaw:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  cannonPitch:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
@@ -1255,6 +1282,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+--- !u!114 &2594879908987743956 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1432306646473340108, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+  m_PrefabInstance: {fileID: 4026867642059610648}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bdf5d590f5587945a48462628f45d7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Cannon
 --- !u!4 &4724156107054957387 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8533719011190020435, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
@@ -1515,3 +1553,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8533719011190020435, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
   m_PrefabInstance: {fileID: 8460978660327447690}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7389276746471909446 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1432306646473340108, guid: cfcdd8dcf653a43c085f402665454256, type: 3}
+  m_PrefabInstance: {fileID: 8460978660327447690}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bdf5d590f5587945a48462628f45d7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Cannon
