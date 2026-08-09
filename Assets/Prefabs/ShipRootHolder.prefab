@@ -373,6 +373,7 @@ GameObject:
   - component: {fileID: 6234907085645861672}
   - component: {fileID: 207268922042263618}
   - component: {fileID: 7268387749192060503}
+  - component: {fileID: 3690265243491994329}
   m_Layer: 0
   m_Name: ShipRootHolder
   m_TagString: Ship
@@ -698,6 +699,25 @@ MonoBehaviour:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
+--- !u!114 &3690265243491994329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3348350456318158277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b0c993c0b5aade490fffab43897cc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WheelNetworkController
+  ShowTopMostFoldoutHeaderGroup: 1
+  wheel: {fileID: 4123916739027338565}
+  rudderRotation:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &5020625188012326644
 GameObject:
   m_ObjectHideFlags: 0
@@ -1276,10 +1296,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8335321775458850037, guid: 4111baf309fecb9679462856534709cf, type: 3}
       propertyPath: m_VersionIndex
-      value: 58
+      value: 61
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4120830886494411605, guid: 4111baf309fecb9679462856534709cf, type: 3}
+    - {fileID: 2986233829023771541, guid: 4111baf309fecb9679462856534709cf, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

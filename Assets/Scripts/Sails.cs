@@ -11,13 +11,6 @@ public class Sails : NetworkBehaviour
     public Vector3 Wind = new Vector3();
     public NetworkList<float> SailRotations = new(writePerm:NetworkVariableWritePermission.Server,readPerm:NetworkVariableReadPermission.Everyone);
     public NetworkList<float> SailAreas = new(writePerm:NetworkVariableWritePermission.Server,readPerm:NetworkVariableReadPermission.Everyone);
-    void Start()
-    {
-        foreach(Sail sail in sailList)
-        {
-            
-        }
-    }
     protected override void OnNetworkPostSpawn()
     {
         base.OnNetworkPostSpawn();

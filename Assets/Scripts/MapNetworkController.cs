@@ -5,14 +5,6 @@ using UnityEngine;
 public class MapNetworkController : NetworkBehaviour
 {
     public List<Map> maps = new();
-    void Start()
-    {
-        foreach(Map map in maps)
-        {
-            
-
-        }
-    }
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
