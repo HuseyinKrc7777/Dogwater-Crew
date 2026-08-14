@@ -87,7 +87,7 @@ public class Sail : MonoBehaviour
         float forwardPush = Vector3.Dot(totalForceVector, transform.root.forward);
 
         float tightnessMultiplier = (100 - Mathf.Abs(_getTightness())) / 100;
-        return transform.root.forward * Mathf.Max(0, forwardPush) * Mathf.Abs(wind.magnitude) * sailController.SailAreas[index] * maxForce * tightnessMultiplier;
+        return transform.root.forward * Mathf.Max(0.1f, forwardPush) * Mathf.Abs(wind.magnitude) * sailController.SailAreas[index] * maxForce * tightnessMultiplier;
     }
     public Quaternion GetWindRotation(Vector3 wind)
     {

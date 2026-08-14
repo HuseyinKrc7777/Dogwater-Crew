@@ -44,7 +44,7 @@ public class WaterController : NetworkBehaviour
             // Build the search parameters
             searchParameters.startPositionWS = searchResult.candidateLocationWS;
             searchParameters.targetPositionWS = position;
-            searchParameters.error = 0.07f;
+            searchParameters.error = 0.01f;
             searchParameters.maxIterations = 20;
 
             // Do the search

@@ -105,7 +105,7 @@ public class BoatMovement : NetworkBehaviour
 
         Vector3 targetPos = new Vector3(
             currentPos.x,
-            Mathf.Lerp(currentPos.y,center.y - currentBuoyancyOffset,0.5f) ,
+            Mathf.Lerp(currentPos.y,center.y - currentBuoyancyOffset,0.2f) ,
             currentPos.z
         );
 
