@@ -2,6 +2,9 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using SunCalcSharp;
+using Unity.Mathematics;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 // shader kaynak = https://kelvinvanhoorn.com/tutorials/unity_skybox_shader/#star-rotations
 // hesaplamalar kaynak = https://github.com/webbwebbwebb/suncalcsharp
 public class SkyboxController : NetworkBehaviour
@@ -12,22 +15,25 @@ public class SkyboxController : NetworkBehaviour
         public Quaternion StartSunRotation;
         public Quaternion TargetMoonRotation;
         public Quaternion StartMoonRotation;
-        public float StartLatitude;
-        public float TargetLatitude;
+        public Vector3 StartSkyRotation;
+        public Vector3 TargetSkyRotation;
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref TargetSunRotation);
             serializer.SerializeValue(ref StartSunRotation);
             serializer.SerializeValue(ref TargetMoonRotation);
             serializer.SerializeValue(ref StartMoonRotation);
-            serializer.SerializeValue(ref StartLatitude);
-            serializer.SerializeValue(ref TargetLatitude);
+            serializer.SerializeValue(ref StartSkyRotation);
+            serializer.SerializeValue(ref TargetSkyRotation);
         }
     }
 
     [SerializeField] Transform _Sun;
     [SerializeField] Transform _Moon;
-    private float _ShipLat;
+    [SerializeField] Volume _Volume;
+
+    private PhysicallyBasedSky _Sky;
+
     NetworkVariable<SkyData> _SkyData = new();
 
 
@@ -49,6 +55,12 @@ public class SkyboxController : NetworkBehaviour
 
     void Start()
     {
+        
+        VolumeProfile profile = _Volume.sharedProfile;
+        if (profile.TryGet<PhysicallyBasedSky>(out var PhysicallyBasedSky))
+        {
+            _Sky = PhysicallyBasedSky;
+        }
 
     }
 
@@ -60,12 +72,14 @@ public class SkyboxController : NetworkBehaviour
         if (IsServer)
         {
             SkyData newData = CalculateData();
-            newData.StartSunRotation = newData.TargetSunRotation; 
+            newData.StartSunRotation = newData.TargetSunRotation;
             newData.StartMoonRotation = newData.TargetMoonRotation;
-            newData.StartLatitude = newData.TargetLatitude;
+            newData.StartSkyRotation = newData.TargetSkyRotation;
             _SkyData.Value = newData;
             UseData();
         }
+
+
 
 
     }
@@ -100,17 +114,39 @@ public class SkyboxController : NetworkBehaviour
 
         Quaternion sunRotation = Quaternion.LookRotation(sunDir, Vector3.up);
         Quaternion moonRotation = Quaternion.LookRotation(moonDir, Vector3.up);
-        
+        Vector3 skyRotation = GetSkyRotation(latitude, (float)GameDayClock.Instance.GetLocalSiderealTime(longitude));
+
         newData.StartSunRotation = _Sun.rotation;
         newData.TargetSunRotation = sunRotation;
 
         newData.StartMoonRotation = _Moon.rotation;
         newData.TargetMoonRotation = moonRotation;
 
-        newData.StartLatitude = _ShipLat;
-        newData.TargetLatitude = latitude; 
+        newData.StartSkyRotation = _Sky.spaceRotation.value;
+        newData.TargetSkyRotation = skyRotation;
+        
+
 
         return newData;
+    }
+    Vector3 GetSkyRotation(float latitude, float localSiderealTime)
+    {
+        float tilt = (latitude - 90f) * Mathf.Deg2Rad;
+        float spin = (0.75f - localSiderealTime) * Mathf.PI * 2f;
+
+        Quaternion tiltRotation = Quaternion.AngleAxis(
+            tilt * Mathf.Rad2Deg,
+            Vector3.right
+        );
+
+        Quaternion spinRotation = Quaternion.AngleAxis(
+            spin * Mathf.Rad2Deg,
+            Vector3.up
+        );
+
+        Quaternion rotation = spinRotation * tiltRotation;
+
+        return rotation.eulerAngles;
     }
     private void UseData()
     {
@@ -128,24 +164,19 @@ public class SkyboxController : NetworkBehaviour
         t
         );
 
-
-        _ShipLat = Mathf.Lerp(
-        _SkyData.Value.StartLatitude,
-        _SkyData.Value.TargetLatitude,
+        _Sky.spaceRotation.value = Vector3.Slerp(
+        _SkyData.Value.StartSkyRotation,
+        _SkyData.Value.TargetSkyRotation,
         t
         );
 
-        Shader.SetGlobalVector("_SunDir", -_Sun.transform.forward);
-        Shader.SetGlobalVector("_MoonDir", -_Moon.transform.forward);
-        Shader.SetGlobalMatrix("_MoonSpaceMatrix", new Matrix4x4(-_Moon.transform.forward, _Moon.transform.up, -_Moon.transform.right, Vector4.zero).transpose);
-
-        Shader.SetGlobalFloat("_StarLatitude", _ShipLat);
 
     }
+
     void LateUpdate()
     {
         UseData();
-      
+
         if (!IsServer)
         {
             counter += Time.deltaTime;
@@ -167,7 +198,7 @@ public class SkyboxController : NetworkBehaviour
             counter = 0;
         }
 
-        
+
     }
 
 

@@ -1359,6 +1359,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _Sun: {fileID: 157207114}
   _Moon: {fileID: 222420031}
+  _Volume: {fileID: 432432460}
 --- !u!114 &590174882
 MonoBehaviour:
   m_ObjectHideFlags: 0
