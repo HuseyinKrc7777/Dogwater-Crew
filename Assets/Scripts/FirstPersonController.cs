@@ -373,14 +373,12 @@ namespace DogWater
             {
                 if (_input.leftMouseButton && !_isMouseClosed)
                 {
-                    Debug.LogError("Cursor Closed");
                     Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = true;
                     startPos = Mouse.current.position.value;
                 }
                 else if (!_input.leftMouseButton && _isMouseClosed)
                 {
-                    Debug.LogError("Cursor Open");
 
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = false;
@@ -388,14 +386,12 @@ namespace DogWater
 
                 if (_input.rightMouseButton && !_isRightMouseClosed)
                 {
-                    Debug.LogError("Right Cursor Closed");
                     Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
                     _isRightMouseClosed = true;
                     startPos = Mouse.current.position.value;
                 }
                 else if (!_input.rightMouseButton && _isRightMouseClosed)
                 {
-                    Debug.LogError("Right Cursor Open");
 
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     _isRightMouseClosed = false;

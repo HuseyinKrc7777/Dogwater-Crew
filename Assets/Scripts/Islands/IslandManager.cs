@@ -113,7 +113,7 @@ public class IslandManager : NetworkBehaviour
         }
         else
         {
-            anchor.releasedRopeAmount.OnValueChanged += HandleAnchorRopeAmountChanged;
+            anchor.controller.releasedRopeAmount.OnValueChanged += HandleAnchorRopeAmountChanged;
         }
 
         NetworkManager.SceneManager.OnLoadEventCompleted += HandleLoadEventCompleted;
@@ -165,7 +165,7 @@ public class IslandManager : NetworkBehaviour
 
         if (anchor != null)
         {
-            anchor.releasedRopeAmount.OnValueChanged -= HandleAnchorRopeAmountChanged;
+            anchor.controller.releasedRopeAmount.OnValueChanged -= HandleAnchorRopeAmountChanged;
         }
 
         subscribed = false;

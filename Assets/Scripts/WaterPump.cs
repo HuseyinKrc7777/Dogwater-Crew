@@ -3,10 +3,11 @@ using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 
-public class WaterPump : NetworkBehaviour, IInteractable, IHandInput
+public class WaterPump : MonoBehaviour, IInteractable, IHandInput
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    [SerializeField] Ship ship;
+    [SerializeField] public Ship ship;
+    public WaterPumpNetworkController controller;
     public void OnInteract(Player player)
     {
         //        throw new System.NotImplementedException();
@@ -18,23 +19,16 @@ public class WaterPump : NetworkBehaviour, IInteractable, IHandInput
     {
        
     }
-    [Rpc(SendTo.Server)]
-    private void PumpWaterRpc(float value)
-    {
-        if(ship.waterInsideTheShip.Value > 0)
-
-        ship.waterInsideTheShip.Value -= Math.Abs(value);
-    }
-
+    
     public void OnHandInput(float xValue, float yValue)
     {
         if(yValue > 0)
-            PumpWaterRpc(yValue);
+            controller.PumpWaterRpc(yValue);
     }
 
     public void OnUnInteract(Player player)
     {
-        throw new System.NotImplementedException();
+        //throw new System.NotImplementedException();
     }
 
     public void OnRightHandInput(float xValue, float yValue)

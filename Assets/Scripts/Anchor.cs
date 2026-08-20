@@ -2,84 +2,45 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Anchor : NetworkBehaviour, IInteractable, IHandInput
+public class Anchor : MonoBehaviour, IInteractable, IHandInput
 {
     public const float FullyDeployedRopeThreshold = 70f;
 
-    public NetworkVariable<float> releasedRopeAmount = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public NetworkVariable<bool> isRopeFree = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public NetworkVariable<int> holdingPlayerCount = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    public float maxRope = 100;
+    public AnchorNetworkController controller;
+       public float maxRope = 100;
     public float ropeDescentMultiplier = 10f;
 
     [Header("Debug")]
-    [SerializeField] private bool logRopeAmount = true;
-    [Min(0.1f)][SerializeField] private float ropeLogIntervalSeconds = 0.5f;
+    [SerializeField] public bool logRopeAmount = true;
+    [Min(0.1f)][SerializeField] public float ropeLogIntervalSeconds = 0.5f;
 
-    public bool IsFullyDeployed => releasedRopeAmount.Value > FullyDeployedRopeThreshold;
+    public bool IsFullyDeployed => controller.releasedRopeAmount.Value > FullyDeployedRopeThreshold;
 
     // The NetworkVariable is the replicated display value. The server-side set is the source of truth:
     // repeated interact requests cannot count the same client twice, and a disconnect can remove the
     // exact holder instead of guessing by decrementing a shared counter.
-    private readonly HashSet<ulong> holdingClients = new HashSet<ulong>();
-    private bool subscribedToDisconnects;
-    private float lastLoggedRopeAmount = float.NaN;
-    private float nextRopeLogTime;
+    public readonly HashSet<ulong> holdingClients = new HashSet<ulong>();
+    public bool subscribedToDisconnects;
+    public float lastLoggedRopeAmount = float.NaN;
+    public float nextRopeLogTime;
 
     public void OnButtonInput()
     {
-        changeRopeRpc(!isRopeFree.Value);
+        controller.changeRopeRpc(!controller.isRopeFree.Value);
     }
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void changeRopeRpc(bool value)
-    {
-        isRopeFree.Value = value;
-    }
-
+    
     public void OnHandInput(float xValue, float yValue)
     {
-        if(isRopeFree.Value)
+        if(controller.isRopeFree.Value)
         {
-            pullAnchorRpc(Mathf.Abs(yValue));
-            pullAnchorRpc(Mathf.Abs(xValue));
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void pullAnchorRpc(float value)
-    {
-        if (releasedRopeAmount.Value > 0)
-        {
-            releasedRopeAmount.Value = Mathf.Max(0f, releasedRopeAmount.Value - value);
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void IncreaseHoldingPlayerRpc(RpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-
-        if (holdingClients.Add(clientId))
-        {
-            SyncHoldingPlayerCount();
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void DecreaseHoldingPlayerRpc(RpcParams rpcParams = default)
-    {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-
-        if (holdingClients.Remove(clientId))
-        {
-            SyncHoldingPlayerCount();
+            controller.pullAnchorRpc(Mathf.Abs(yValue));
+            controller.pullAnchorRpc(Mathf.Abs(xValue));
         }
     }
 
     public void OnInteract(Player player)
     {
-        IncreaseHoldingPlayerRpc();
+        controller.IncreaseHoldingPlayerRpc();
     }
 
     public void OnRightHandInput(float xValue, float yValue)
@@ -88,43 +49,16 @@ public class Anchor : NetworkBehaviour, IInteractable, IHandInput
 
     public void OnUnInteract(Player player)
     {
-        DecreaseHoldingPlayerRpc();
+        controller.DecreaseHoldingPlayerRpc();
     }
 
-    public override void OnNetworkSpawn()
+   
+
+
+ 
+    public void HandleClientDisconnect(ulong clientId)
     {
-        base.OnNetworkSpawn();
-
-        lastLoggedRopeAmount = float.NaN;
-        nextRopeLogTime = 0f;
-        LogRopeAmountIfNeeded();
-
-        if (!IsServer) return;
-
-        holdingClients.Clear();
-        SyncHoldingPlayerCount();
-
-        NetworkManager.OnClientDisconnectCallback += HandleClientDisconnect;
-        subscribedToDisconnects = true;
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        UnsubscribeFromDisconnects();
-
-        base.OnNetworkDespawn();
-    }
-
-    public override void OnDestroy()
-    {
-        UnsubscribeFromDisconnects();
-
-        base.OnDestroy();
-    }
-
-    private void HandleClientDisconnect(ulong clientId)
-    {
-        if (!IsServer || !IsSpawned) return;
+        if (!controller.IsServer || !controller.IsSpawned) return;
 
         if (holdingClients.Remove(clientId))
         {
@@ -132,28 +66,28 @@ public class Anchor : NetworkBehaviour, IInteractable, IHandInput
         }
     }
 
-    private void SyncHoldingPlayerCount()
+    public void SyncHoldingPlayerCount()
     {
-        holdingPlayerCount.Value = holdingClients.Count;
+        controller.holdingPlayerCount.Value = holdingClients.Count;
     }
 
-    private void UnsubscribeFromDisconnects()
+    public void UnsubscribeFromDisconnects()
     {
         if (!subscribedToDisconnects) return;
 
-        if (NetworkManager != null)
+        if (controller.NetworkManager != null)
         {
-            NetworkManager.OnClientDisconnectCallback -= HandleClientDisconnect;
+            controller.NetworkManager.OnClientDisconnectCallback -= HandleClientDisconnect;
         }
 
         subscribedToDisconnects = false;
     }
 
-    private void LogRopeAmountIfNeeded()
+    public void LogRopeAmountIfNeeded()
     {
         if (!logRopeAmount) return;
 
-        float currentAmount = releasedRopeAmount.Value;
+        float currentAmount = controller.releasedRopeAmount.Value;
         if (!float.IsNaN(lastLoggedRopeAmount) && Mathf.Approximately(currentAmount, lastLoggedRopeAmount)) return;
         if (Time.unscaledTime < nextRopeLogTime) return;
 
@@ -168,13 +102,13 @@ public class Anchor : NetworkBehaviour, IInteractable, IHandInput
     {
         LogRopeAmountIfNeeded();
 
-        if (!IsServer) return;
+        if (!controller.IsServer) return;
 
-        if (holdingPlayerCount.Value == 0 && isRopeFree.Value && releasedRopeAmount.Value < maxRope)
+        if (controller.holdingPlayerCount.Value == 0 && controller.isRopeFree.Value && controller.releasedRopeAmount.Value < maxRope)
         {
-            releasedRopeAmount.Value = Mathf.Min(
+            controller.releasedRopeAmount.Value = Mathf.Min(
                 maxRope,
-                releasedRopeAmount.Value + Time.deltaTime * ropeDescentMultiplier);
+                controller.releasedRopeAmount.Value + Time.deltaTime * ropeDescentMultiplier);
         }
     }
 }
