@@ -2460,7 +2460,6 @@ GameObject:
   - component: {fileID: 1852398390}
   - component: {fileID: 1852398394}
   - component: {fileID: 1852398393}
-  - component: {fileID: 1852398395}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -2585,19 +2584,6 @@ MonoBehaviour:
   gameplayScenePath: Assets/Scenes/HDRPTest2.unity
   serverIP: 127.0.0.1
   serverPort: 7777
---- !u!114 &1852398395
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1852398389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef9e3aedc56b97be78abb34fc0a85735, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  connectionTimeout: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
