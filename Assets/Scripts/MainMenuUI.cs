@@ -8,8 +8,10 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private Button joinButton;
     [SerializeField] private SessionManager sessionManager;
     [SerializeField] private TextMeshProUGUI sessionCodeText;
+    [SerializeField] private TMP_InputField NameInput;
 
-    // Artýk Relay kodu deðil, baðlanýlacak kiþinin IP adresi girilecek
+
+    // Artï¿½k Relay kodu deï¿½il, baï¿½lanï¿½lacak kiï¿½inin IP adresi girilecek
     [SerializeField] private TMP_InputField joinCodeInput;
 
     private void Awake()
@@ -18,30 +20,32 @@ public class MainMenuUI : MonoBehaviour
         joinButton.onClick.AddListener(OnJoinClicked);
         sessionCodeText.text = "";
 
-        // Kendi pencerende test ederken sürekli yazmakla uðraþma diye varsayýlan Localhost IP'si
+        // Kendi pencerende test ederken sï¿½rekli yazmakla uï¿½raï¿½ma diye varsayï¿½lan Localhost IP'si
         joinCodeInput.text = "127.0.0.1";
     }
 
-    // async ve await kaldýrýldý çünkü baðlantý lokalde anýnda kurulur
+    // async ve await kaldï¿½rï¿½ldï¿½ ï¿½ï¿½nkï¿½ baï¿½lantï¿½ lokalde anï¿½nda kurulur
     private void OnHostClicked()
     {
+        SessionManager.LocalPlayerName = NameInput.text;
         sessionManager.CreateSession();
 
-        // Ekrana rastgele harfler yerine, dinlenen IP'yi yazdýrýyoruz
-        sessionCodeText.text = "Host Açýldý! IP: " + sessionManager.serverIP;
+        // Ekrana rastgele harfler yerine, dinlenen IP'yi yazdï¿½rï¿½yoruz
+        sessionCodeText.text = "Host Aï¿½ï¿½ldï¿½! IP: " + sessionManager.serverIP;
     }
 
     private void OnJoinClicked()
     {
+        SessionManager.LocalPlayerName = NameInput.text;
         string targetIP = joinCodeInput.text;
 
-        // Eðer input boþ býrakýlýrsa çökmemesi için güvenlik önlemi
+        // Eï¿½er input boï¿½ bï¿½rakï¿½lï¿½rsa ï¿½ï¿½kmemesi iï¿½in gï¿½venlik ï¿½nlemi
         if (string.IsNullOrEmpty(targetIP))
         {
             targetIP = "127.0.0.1";
         }
 
-        // Input'taki IP'yi SessionManager'a gönder
+        // Input'taki IP'yi SessionManager'a gï¿½nder
         sessionManager.JoinSession(targetIP);
     }
 }
