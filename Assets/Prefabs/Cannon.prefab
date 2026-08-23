@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 1784747523637755630}
   - component: {fileID: 4040483732748417651}
   - component: {fileID: 501461744242305181}
-  - component: {fileID: -7518295643791675585}
   - component: {fileID: 1432306646473340108}
   m_Layer: 0
   m_Name: Cannon
@@ -70,7 +69,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: -876546973899608171, guid: 1eebcbb5efcf21a43929e15197fca4bf, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -115,31 +114,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-7518295643791675585
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5394199800705624522}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 729551063
-  InScenePlacedSourceGlobalObjectIdHash: 345906426
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!114 &1432306646473340108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,7 +126,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bdf5d590f5587945a48462628f45d7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cannon
-  ShowTopMostFoldoutHeaderGroup: 1
+  index: 0
+  controller: {fileID: 0}
   cannonballPrefab: {fileID: 4934504865122602455, guid: 1df7ef0117323bd4792bf7776fad94cf, type: 3}
   spawnPoint: {fileID: 842930690829605118}
   fireForce: 100
@@ -160,16 +135,6 @@ MonoBehaviour:
   minPitch: -90
   maxPitch: 15
   manualRotationSpeed: 30
-  cannonYaw:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
-  cannonPitch:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
 --- !u!1 &5974447882893700765
 GameObject:
   m_ObjectHideFlags: 0

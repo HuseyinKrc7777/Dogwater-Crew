@@ -19,6 +19,8 @@ namespace DogWater
 		public bool button2;
 		public bool button3;
 		public bool button4;
+		public bool menu;
+
 
 
 		[Header("Movement Settings")]
@@ -81,6 +83,10 @@ namespace DogWater
 		{
 			button4 = value.isPressed;
 		}
+		public void OnMenu(InputValue value)
+		{
+			menu = value.isPressed;
+		}
 #endif
 
 
@@ -142,6 +148,10 @@ namespace DogWater
 		public void Button4Input(bool newButton4State)
 		{
 			button4 = newButton4State;
+		}
+		public void MenuInput(bool newMenuState)
+		{
+			menu = newMenuState;
 		}
 	}
 	

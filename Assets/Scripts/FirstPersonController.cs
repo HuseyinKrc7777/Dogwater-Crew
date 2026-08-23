@@ -115,7 +115,7 @@ namespace DogWater
                 JumpAndGravity();
                 Move();
                 Interact();
-
+                Menus();
                 // SYNC LOCAL POSITION TO OBSERVERS
                 if (ship != null && ship.NetworkObject != null)
                 {
@@ -127,6 +127,31 @@ namespace DogWater
                 {
                     if (_netIsOnShip.Value) _netIsOnShip.Value = false;
                 }
+            }
+        }
+        private void Menus()
+        {
+            if(_input.menu == true)
+            {
+                if(!MenuController.Instance.isMenuOpen)
+                {
+                    Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+
+                    MenuController.Instance.OpenMenu();
+                    
+                }
+                else
+                {
+                    Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
+
+                    MenuController.Instance.CloseMenu();
+                    
+                }
+
+                _input.menu = false;
             }
         }
         private void FixedUpdate()
@@ -354,6 +379,8 @@ namespace DogWater
         private float handModeTimeoutCounter = 0.0f;
         private void Interact()
         {
+            if(_input.menu)
+                return;
             if (_isMouseClosed && CurrentHandInput != null)
             {
                 Vector2 currentPos = Mouse.current.position.value;
@@ -373,14 +400,12 @@ namespace DogWater
             {
                 if (_input.leftMouseButton && !_isMouseClosed)
                 {
-                    Debug.LogError("Cursor Closed");
                     Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = true;
                     startPos = Mouse.current.position.value;
                 }
                 else if (!_input.leftMouseButton && _isMouseClosed)
                 {
-                    Debug.LogError("Cursor Open");
 
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     _isMouseClosed = false;
@@ -388,14 +413,12 @@ namespace DogWater
 
                 if (_input.rightMouseButton && !_isRightMouseClosed)
                 {
-                    Debug.LogError("Right Cursor Closed");
                     Cursor.SetCursor(cursorClosed, Vector2.zero, CursorMode.Auto);
                     _isRightMouseClosed = true;
                     startPos = Mouse.current.position.value;
                 }
                 else if (!_input.rightMouseButton && _isRightMouseClosed)
                 {
-                    Debug.LogError("Right Cursor Open");
 
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     _isRightMouseClosed = false;

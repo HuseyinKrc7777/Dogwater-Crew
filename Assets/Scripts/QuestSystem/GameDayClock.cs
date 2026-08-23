@@ -30,6 +30,30 @@ public class GameDayClock : NetworkBehaviour
         TempDate = TempDate.AddSeconds(dayTimer * (86400f / dayLengthSeconds));
         return TempDate;
     }
+    public double GetLocalSiderealTime(double longitude)
+    {
+        double jd = Instance.GetCurrentDate().ToOADate() + 2415018.5;
+
+        double T = (jd - 2451545.0) / 36525.0;
+
+        double gmst =
+            280.46061837
+            + 360.98564736629 * (jd - 2451545.0)
+            + 0.000387933 * T * T
+            - T * T * T / 38710000.0;
+
+        gmst %= 360.0;
+        if (gmst < 0)
+            gmst += 360.0;
+
+        double lst = gmst + longitude;
+
+        lst %= 360.0;
+        if (lst < 0)
+            lst += 360.0;
+
+        return lst / 360.0;
+    }
 
     // Fires on every peer when the day rolls over. The UI uses this to refresh remaining-time labels.
     public event Action<int> OnDayChanged;

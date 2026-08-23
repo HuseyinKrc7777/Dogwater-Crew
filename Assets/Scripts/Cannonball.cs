@@ -19,6 +19,10 @@ public class Cannonball : NetworkBehaviour , IDamageDealer
         {
             Invoke(nameof(DespawnBall), lifeTime);
         }
+        else
+        {
+            GetComponent<Rigidbody>().isKinematic = true;
+        }
     }
 
     private void DespawnBall()

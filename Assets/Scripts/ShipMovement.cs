@@ -4,22 +4,13 @@ using UnityEngine;
 public class BoatMovement : NetworkBehaviour
 {
     [Header("Waves")]
-    [SerializeField] Vector4 steepness;
-    [SerializeField] Vector4 wavelength;
-    [SerializeField] Vector4 speed;
-    [SerializeField] Vector4 directions;
     [SerializeField] Sails sails;
 
     [Header("Buoyancy")]
     public float strength = 1f;
     public float objectDepth = 1f;
 
-    [Header("Speed Boat Physics")]
-    [Tooltip("How much the boat rises out of the water based on speed.")]
-    public float planingStrength = 0.2f;
-    [Tooltip("Maximum height the boat can lift above the water surface.")]
-    public float maxPlaningLift = 0.8f;
-    [Tooltip("Limits how much the boat can pitch up/down (X-axis) to prevent flipping.")]
+    
 
     [Header("Effectors")]
     public Transform[] effectors;
@@ -54,12 +45,7 @@ public class BoatMovement : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        // Get synced wave params
-        steepness = waterController.steepness.Value;
-        wavelength = waterController.wavelength.Value;
-        speed = waterController.speed.Value;
-        directions = waterController.directions.Value;
-
+        
         Vector3 center = Vector3.zero;
         float totalWeight = 0f;
         int count = effectors.Length;
@@ -69,16 +55,15 @@ public class BoatMovement : NetworkBehaviour
         for (int i = 0; i < count; i++)
         {
             Vector3 p = effectors[i].position;
-            wave = GerstnerWaveDisplacement.GetWaveDisplacement(
-                p,
-                new float[] { steepness.x, steepness.y, steepness.z, steepness.w },
-                new float[] { wavelength.x, wavelength.y, wavelength.z, wavelength.w },
-                new float[] { speed.x, speed.y, speed.z, speed.w },
-                new float[] { directions.x, directions.y, directions.z, directions.w }
-            );
+            
+            Vector3? temp = WaterController.Instance.GetWave(p);
+            if(temp!=null)
+                wave = (Vector3)temp;
+            else
+                wave = p;
 
             effectorTargets[i] = new Vector3(p.x, wave.y, p.z);
-
+ 
             // SPEED BOAT TWEAK: Weight rear effectors more to keep the engine in the water 
             // and the bow (front) light for jumping.
             float weight = (i < count / 2) ? 1.5f : 1.0f; // Assuming 0,1 are back, 2,3 are front
@@ -108,10 +93,9 @@ public class BoatMovement : NetworkBehaviour
             rb.linearVelocity = currentVelocity;
         }
         float forwardSpeed = Vector3.Dot(currentVelocity, transform.forward);
-        float dynamicLift = Mathf.Clamp(forwardSpeed * planingStrength, 0, maxPlaningLift);
 
         // --- POSITION ---
-        float currentBuoyancyOffset = objectDepth - dynamicLift;
+        float currentBuoyancyOffset = objectDepth;
 
         Vector3 currentPos = rb.position;
         if (float.IsNaN(currentPos.x) || float.IsNaN(currentPos.y) || float.IsNaN(currentPos.z))
@@ -121,7 +105,7 @@ public class BoatMovement : NetworkBehaviour
 
         Vector3 targetPos = new Vector3(
             currentPos.x,
-            center.y - currentBuoyancyOffset,
+            Mathf.Lerp(currentPos.y,center.y - currentBuoyancyOffset,0.2f) ,
             currentPos.z
         );
 
@@ -157,7 +141,7 @@ public class BoatMovement : NetworkBehaviour
         {
             desiredVelocity  = Vector3.zero;
         }
-        else if (ship.anchor.releasedRopeAmount.Value > 1)
+        else if (ship.anchor.controller.releasedRopeAmount.Value > 1)
         {
             accelRate -= accelRate / 4;
         }

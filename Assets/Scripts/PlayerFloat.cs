@@ -1,4 +1,5 @@
 using DogWater;
+using SunCalcSharp.Formulas;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,7 +7,6 @@ public class PlayerFloat : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     FirstPersonController controller;
-    private WaterController waterController;
 
     private void Awake()
     {
@@ -16,7 +16,6 @@ public class PlayerFloat : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        TryCacheWaterController();
     }
 
     // Update is called once per frame
@@ -25,21 +24,12 @@ public class PlayerFloat : NetworkBehaviour
         if (!IsSpawned || !IsOwner)
             return;
 
-        if (waterController == null && !TryCacheWaterController())
-            return;
-
-        Vector4 steepness = waterController.steepness.Value;
-        Vector4 wavelength = waterController.wavelength.Value;
-        Vector4 speed = waterController.speed.Value;
-        Vector4 directions = waterController.directions.Value;
-
-        Vector3 wave = GerstnerWaveDisplacement.GetWaveDisplacement(
-                transform.position,
-                new float[] { steepness.x, steepness.y, steepness.z, steepness.w },
-                new float[] { wavelength.x, wavelength.y, wavelength.z, wavelength.w },
-                new float[] { speed.x, speed.y, speed.z, speed.w },
-                new float[] { directions.x, directions.y, directions.z, directions.w }
-        );
+        Vector3? temp = WaterController.Instance.GetWave(transform.position);
+        Vector3 wave = new();
+        if(temp!=null)
+            wave = (Vector3)temp;
+        else
+            wave = transform.position;
         if(controller.ship==null && !controller.Grounded && transform.position.y + 1 < wave.y)
         {
             controller._verticalVelocity -= controller.Gravity * Time.deltaTime ;
@@ -55,12 +45,7 @@ public class PlayerFloat : NetworkBehaviour
         
     }
 
-    private bool TryCacheWaterController()
-    {
-        GameObject waterControllerObject = GameObject.FindGameObjectWithTag("WaterController");
-        return waterControllerObject != null
-            && waterControllerObject.TryGetComponent(out waterController);
-    }
+   
 
     private Vector3 velocity;
 
