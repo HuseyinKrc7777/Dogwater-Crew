@@ -1222,6 +1222,22 @@ PrefabInstance:
       value: 3985657777
       objectReference: {fileID: 0}
     - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[0].loadDistance
+      value: 3000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[1].loadDistance
+      value: 3000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[2].loadDistance
+      value: 3000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
+      propertyPath: worldIslands.Array.data[3].loadDistance
+      value: 3000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
       propertyPath: worldIslands.Array.data[1].coordinate.latitude.Degree
       value: -90
       objectReference: {fileID: 0}
@@ -1342,7 +1358,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameDayClock
   ShowTopMostFoldoutHeaderGroup: 1
-  dayLengthSeconds: 600
+  dayLengthSeconds: 1440
   dayTimer: 0
 --- !u!114 &590174881
 MonoBehaviour:
@@ -1755,7 +1771,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0

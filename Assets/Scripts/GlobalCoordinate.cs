@@ -9,13 +9,18 @@ public class GlobalCoordinate : INetworkSerializable
 {
     //const int EarthRadius = 6367449;
     //test amaçlı dünya büyüklüğü küçüktür.
-    static int EarthRadius = 1500;
+    public static int EarthRadius = 63674;
     public LatitudeCoordinate latitude;
     public LongitudeCoordinate longitude;
     public GlobalCoordinate(LatitudeCoordinate latitude , LongitudeCoordinate longitude)
     {
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+    public GlobalCoordinate()
+    {
+        this.latitude = new LatitudeCoordinate();
+        this.longitude = new LongitudeCoordinate();
     }
     void Awake()
     {
