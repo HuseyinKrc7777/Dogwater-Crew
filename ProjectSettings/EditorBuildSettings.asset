@@ -29,5 +29,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/HDRPTest2.unity
     guid: 704fe969ac1e9cc04a831beee554c1e6
+  - enabled: 1
+    path: Assets/Scenes/HDRPTest3.unity
+    guid: a70ca016d08cbe146a062427184e096a
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

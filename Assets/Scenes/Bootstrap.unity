@@ -2580,8 +2580,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7224747b5dc7167984bb9302b341394, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionManager
-  gameplaySceneAsset: {fileID: 102900000, guid: 704fe969ac1e9cc04a831beee554c1e6, type: 3}
-  gameplayScenePath: Assets/Scenes/HDRPTest2.unity
+  gameplaySceneAsset: {fileID: 102900000, guid: a70ca016d08cbe146a062427184e096a, type: 3}
+  gameplayScenePath: Assets/Scenes/HDRPTest3.unity
   serverIP: 127.0.0.1
   serverPort: 7777
 --- !u!1660057539 &9223372036854775807
