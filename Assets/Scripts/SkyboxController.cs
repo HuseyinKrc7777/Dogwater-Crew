@@ -30,9 +30,9 @@ public class SkyboxController : NetworkBehaviour
 
     [SerializeField] Transform _Sun;
     [SerializeField] Transform _Moon;
-    [SerializeField] Volume _Volume;
+    [SerializeField] public Volume _Volume;
 
-    private PhysicallyBasedSky _Sky;
+    public PhysicallyBasedSky _Sky;
 
     NetworkVariable<SkyData> _SkyData = new();
 
