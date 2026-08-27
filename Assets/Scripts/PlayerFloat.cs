@@ -24,6 +24,13 @@ public class PlayerFloat : NetworkBehaviour
         if (!IsSpawned || !IsOwner)
             return;
 
+        // The player prefab is spawned by StartHost() before the gameplay scene is loaded,
+        // so the scene's WaterController does not exist yet for the first frames.
+        // Unity's == null is required here: WaterController never clears its static Instance,
+        // so a previous session can leave a destroyed object behind.
+        if (WaterController.Instance == null)
+            return;
+
         Vector3? temp = WaterController.Instance.GetWave(transform.position);
         Vector3 wave = new();
         if(temp!=null)
