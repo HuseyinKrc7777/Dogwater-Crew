@@ -81,7 +81,6 @@ public class BoatMovement : NetworkBehaviour
             Vector3 b = effectorTargets[1];
             Vector3 c = effectorTargets[2];
             normal = Vector3.Cross(b - a, c - a).normalized;
-            Debug.LogError(normal);
             if (normal == Vector3.zero || float.IsNaN(normal.x)) normal = Vector3.up;
         }
 
@@ -106,7 +105,7 @@ public class BoatMovement : NetworkBehaviour
 
         Vector3 targetPos = new Vector3(
             currentPos.x,
-            Mathf.Lerp(currentPos.y,center.y - currentBuoyancyOffset,0.5f) ,
+            Mathf.Lerp(currentPos.y,center.y - currentBuoyancyOffset,0.2f) ,
             currentPos.z
         );
 
@@ -142,7 +141,7 @@ public class BoatMovement : NetworkBehaviour
         {
             desiredVelocity  = Vector3.zero;
         }
-        else if (ship.anchor.releasedRopeAmount.Value > 1)
+        else if (ship.anchor.controller.releasedRopeAmount.Value > 1)
         {
             accelRate -= accelRate / 4;
         }

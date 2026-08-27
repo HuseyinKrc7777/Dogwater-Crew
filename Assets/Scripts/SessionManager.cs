@@ -21,6 +21,7 @@ public class SessionManager : MonoBehaviour
     public ushort serverPort = 7777;
 
     private Coroutine _rttCoroutine;
+    public static string LocalPlayerName;
 
     private void Awake()
     {

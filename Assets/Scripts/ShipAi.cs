@@ -58,7 +58,8 @@ public class ShipAi : NetworkBehaviour
 
         foreach (Sail sail in ship.sailList)
         {
-            sail.transform.localRotation = Quaternion.LookRotation(forw);
+            //sail.transform.localRotation = Quaternion.LookRotation(forw);
+            sail.sailController.SailRotations[sail.index] = Quaternion.LookRotation(forw).eulerAngles.y;
         }
         if (shipState == ShipState.Attack)
         {
@@ -77,7 +78,7 @@ public class ShipAi : NetworkBehaviour
             }
             foreach (Sail sail in ship.sailList)
             {
-                sail.sailArea.Value += 0.1f * sailD;
+                sail.sailController.SailAreas[sail.index] += 0.1f * sailD;
             }
         }
     }
@@ -148,7 +149,7 @@ public class ShipAi : NetworkBehaviour
             float distanceAdjusted = directionAdjusted.magnitude;
 
             float angleAdjusted = CalculateCannonAngle(distanceAdjusted, cannon.fireForce);
-            cannon.cannonPitch.Value = angleAdjusted*-1;
+            cannon.controller.cannonPitch.Value = angleAdjusted*-1;
             //TODO nedense hedefin azıcık üstüne hedef alıyor , niye bilmiyom , düzeltmeye çalıştım ama yapamadım
             float dot = Vector3.Dot(directionAdjusted.normalized, cannon.spawnPoint.forward);
             // nekadar kaliteli ateş edebileceği buradan dot ' Un kontrolü ile yapılıyor.
