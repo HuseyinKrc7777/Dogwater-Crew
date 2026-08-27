@@ -110,7 +110,8 @@ public class BoatMovement : NetworkBehaviour
         );
 
         targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
-        targetPos += sails.GetTotalWindPush() * Time.fixedDeltaTime;
+        Vector3 sailsPush = sails.GetTotalWindPush();
+        targetPos += sailsPush * Time.fixedDeltaTime;
 
         if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z) || float.IsInfinity(velocity.y))
         {
@@ -129,7 +130,8 @@ public class BoatMovement : NetworkBehaviour
         float acceleration = 0.40f;
         float deceleration = 0.20f;
 
-        Vector3 desiredVelocity = desiredDirection * (targetPos - currentPos).magnitude * 10;
+        float magnitudeValue = Mathf.Clamp((targetPos - currentPos).magnitude * 10,0,sailsPush.magnitude);
+        Vector3 desiredVelocity = desiredDirection * magnitudeValue;
 
         float accelRate =
             desiredVelocity.magnitude > currentVelocity.magnitude
