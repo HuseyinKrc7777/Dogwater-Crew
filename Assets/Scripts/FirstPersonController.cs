@@ -109,7 +109,11 @@ namespace DogWater
                 {
                     followCam = GameObject.FindGameObjectWithTag("PlayerFollowCamera");
                     if (followCam != null && followCam.TryGetComponent<CinemachineCamera>(out var vCam))
-                        vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
+                    {
+                        if(vCam.Target.TrackingTarget == null)
+                            vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
+                        
+                    }
                 }
 
                 GroundedCheck();
@@ -184,6 +188,8 @@ namespace DogWater
                 if (_input.interact)
                 {
                     PlayerScript.Items[itemUsed].Interact();
+                    PlayerScript.Items[itemUsed].Interacting = true;
+
                 }
                 else
                 {
