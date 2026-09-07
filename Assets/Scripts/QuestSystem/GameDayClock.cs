@@ -20,7 +20,7 @@ public class GameDayClock : NetworkBehaviour
     public float dayTimer;
 
     public int CurrentDay => currentDay.Value;
-    private DateTime StartDate = DateTime.UtcNow;
+    private DateTime StartDate = DateTime.Today;
 
     public DateTime GetCurrentDate()
     {

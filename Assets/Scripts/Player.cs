@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using DogWater;
+using SunCalcSharp;
 using TMPro;
 using Unity.Cinemachine;
 using Unity.Collections;
@@ -424,14 +426,30 @@ public class Sextant : IItem
 
 
     }
-
+    float count = 0;
     public void Interact()
     {
         //player ' dan görüntüsel fonksiyonlar ve rpc ler çalıştırılacak
         if(!Interacting)
             changeCam();
         Interacting = true;
-       
+        count+=Time.deltaTime;
+        if(count>=1)
+        {
+            count = 0;
+            //eğer kutup yıldızı gibi başka birşeye göre hesap yapılmak istenilirse diye açının gerçek değerini de
+            // gösterilmemesini düşünmedim değil
+            Debug.LogError(GetSunLatitudeCalculation());
+        }
+    }
+    public double GetSunLatitudeCalculation()
+    {
+        float angle = Mathf.Abs(Mathf.DeltaAngle(
+            leftCamera.transform.eulerAngles.x, 
+            rightCamera.transform.eulerAngles.x
+        ));
+        double calculatedLatitude = 90 - angle - Mathf.Rad2Deg*SunCalc.GetDeclination(GameDayClock.Instance.GetCurrentDate());
+        return calculatedLatitude;
     }
 
     public void UnEquip()
@@ -469,12 +487,12 @@ public class Sextant : IItem
     public void Use1()
     {
 
-        rightAimObject.transform.Rotate(Vector3.right,-0.1f);
+        rightAimObject.transform.Rotate(Vector3.right,-0.2f);
     }
 
     public void Use2()
     {
-        rightAimObject.transform.Rotate(Vector3.right,0.1f);
+        rightAimObject.transform.Rotate(Vector3.right,0.2f);
 
 
         
