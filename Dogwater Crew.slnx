@@ -1,4 +1,5 @@
-﻿<Solution>
+<Solution>
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Blocks.Sessions.Common.csproj" />
   <Project Path="Blocks.Sessions.csproj" />
