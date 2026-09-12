@@ -21,8 +21,6 @@ public class Player : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public FirstPersonController controller;
     [SerializeField] public TextMeshPro nameDisplay;
-    private Spyglass spyglass;
-    private EquipableCompass compass;
     public List<IItem> Items = new();
     //TODO oyuncu isminin client dan değiştirilebiliyor olması güvenlik açığı sayılabilir.
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(
@@ -61,13 +59,15 @@ public class Player : NetworkBehaviour
 
         if (IsOwner)
         {
-            spyglass = new();
-            Items.Add(spyglass);
+            
+            Items.Add(new Spyglass());
 
-            compass = new();
-            Items.Add(compass);
+            
+            Items.Add(new EquipableCompass());
 
             Items.Add(new Sextant());
+
+            Items.Add(new Diary());
         }
 
 
@@ -124,6 +124,7 @@ public class Player : NetworkBehaviour
         );
     }
     public GameObject compassObject;
+    public TMP_InputField diaryUi;
     [Rpc(SendTo.Everyone)]
     public void CompassRpc(bool state)
     {

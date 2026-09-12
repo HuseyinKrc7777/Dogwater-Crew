@@ -188,8 +188,6 @@ namespace DogWater
                 if (_input.interact)
                 {
                     PlayerScript.Items[itemUsed].Interact();
-                    PlayerScript.Items[itemUsed].Interacting = true;
-
                 }
                 else
                 {
