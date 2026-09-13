@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using DogWater;
 using NUnit.Framework;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 
@@ -21,16 +22,21 @@ public class Diary : IItem
 
     int currentPage = 0;
 
-    private struct Page
+    private class Page
     {
-        public String Text;
+        public string Text;
+        public Page(){}
+        public Page(string text)
+        {
+            Text = text;
+        }
         //DateTime date;
     }
     public Diary()
     {
         //ilk 2 sayfayı ekliyoruz
-        pages.Add(new Page());
-        pages.Add(new Page());
+        pages.Add(new Page(1.ToString()+'\n'));
+        pages.Add(new Page(2.ToString()+'\n'));
 
     }
     public void Equip(FirstPersonController controller)
@@ -42,7 +48,8 @@ public class Diary : IItem
         UpdateDisplay();
         //elde göster
     }
-    bool open = false;
+
+    public bool open = false;
     bool ready = false;
     
     public void Interact()
@@ -75,6 +82,7 @@ public class Diary : IItem
         open = false;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        Interacting = false;
     }
 
     public void UnEquip()
@@ -93,15 +101,19 @@ public class Diary : IItem
     {
         if (pages.Count <= currentPage)
         {
-            Page page = new();
-            page.Text = "";
+            Page page = new((currentPage+1).ToString()+'\n');
             pages.Add(page);
         }
         textArea.text = pages[currentPage].Text;
         
     }
+    public void savePage()
+    {
+        pages[currentPage].Text = textArea.text;
+    }
     public void NextPage()
     {
+        savePage();
         currentPage++;
         UpdateDisplay();
     }
@@ -110,16 +122,34 @@ public class Diary : IItem
     {
         if (currentPage == 0)
             return;
+        savePage();
         currentPage--;
         UpdateDisplay();
     }
+    float counter1 = 0;
+    float counter2 = 0;
+
     public void Use1()
     {
-        
+        counter1+=Time.deltaTime;
+        counter2=0;
+        Debug.LogError(counter1);
+        if(counter1>=0.3)
+        {
+            counter1=0;
+            PreviousPage();
+        }
     }
 
     public void Use2()
     {
-        
+        counter1=0;
+        counter2+=Time.deltaTime;
+        Debug.LogError(counter2);
+        if(counter2>=0.3)
+        {
+            counter2=0;
+            NextPage();
+        }
     }
 }

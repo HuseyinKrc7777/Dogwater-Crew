@@ -2,17 +2,17 @@ using System;
 using NUnit.Framework;
 using UnityEngine;
 
-public class MenuController : MonoBehaviour
+public class PauseMenuController : MonoBehaviour
 {
     [SerializeField] private GameObject menu;
-    public static MenuController Instance { get; private set; }
+    public static PauseMenuController Instance { get; private set; }
     public bool isMenuOpen = false;
-    internal void OpenMenu()
+    internal void OpenPauseMenu()
     {
         isMenuOpen = true;
         menu.SetActive(true);
     }
-    internal void CloseMenu()
+    internal void ClosePauseMenu()
     {
         isMenuOpen = false;
         menu.SetActive(false);

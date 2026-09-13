@@ -66,8 +66,8 @@ public class Player : NetworkBehaviour
             Items.Add(new EquipableCompass());
 
             Items.Add(new Sextant());
-
-            Items.Add(new Diary());
+            diary = new Diary();
+            Items.Add(diary);
         }
 
 
@@ -125,6 +125,7 @@ public class Player : NetworkBehaviour
     }
     public GameObject compassObject;
     public TMP_InputField diaryUi;
+    public Diary diary;
     [Rpc(SendTo.Everyone)]
     public void CompassRpc(bool state)
     {

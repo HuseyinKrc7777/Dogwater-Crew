@@ -141,6 +141,7 @@ namespace DogWater
         int itemUsed = -1;
         private void Items()
         {
+            
             //eşyaya göre değişken değiştiriliyor
             if (_input.button1)
             {
@@ -164,7 +165,8 @@ namespace DogWater
             }
             else
                 itemButtonPressed = -1;
-
+            if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                itemButtonPressed = -1;
             //basılan tuşa göre eşya takıp çıkarma işlemleri
             if (itemButtonPressed != -1)
             {
@@ -172,11 +174,13 @@ namespace DogWater
                 if (itemUsed != -1) //eğer aktif eşya varsa çıkarılıyor
                 {
                     PlayerScript.Items[itemUsed].UnEquip();
+                    usingItem = false;
                 }
                 if (itemUsed != itemButtonPressed) // eğer aktif eşya seçilen eşyadan farklı ise ; eşya takılıyor
                 {
                     PlayerScript.Items[itemButtonPressed].Equip(this);
                     itemUsed = itemButtonPressed;
+                    usingItem = true;
                 }
                 else
                     itemUsed = -1; // eğer seçilen eşya zaten bulunan eşya ise eşya yok diye işleniyor
@@ -212,13 +216,17 @@ namespace DogWater
         {
             if (_input.menu == true)
             {
-                if (!MenuController.Instance.isMenuOpen)
+                if(PlayerScript.diary.open)
+                {
+                    PlayerScript.diary.CloseDiary();
+                }
+                else if (!PauseMenuController.Instance.isMenuOpen)
                 {
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
 
-                    MenuController.Instance.OpenMenu();
+                    PauseMenuController.Instance.OpenPauseMenu();
 
                 }
                 else
@@ -226,7 +234,7 @@ namespace DogWater
                     Cursor.visible = false;
                     Cursor.lockState = CursorLockMode.Locked;
 
-                    MenuController.Instance.CloseMenu();
+                    PauseMenuController.Instance.ClosePauseMenu();
 
                 }
 
@@ -336,6 +344,8 @@ namespace DogWater
         bool cameraRotationAllowed = true;
         private void CameraRotation()
         {
+            if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                    return;
             if (_input.look.sqrMagnitude >= _threshold && cameraRotationAllowed)
             {
                 float deltaTimeMultiplier = _playerInput.currentControlScheme == "KeyboardMouse" ? 1.0f : Time.deltaTime;
@@ -360,7 +370,7 @@ namespace DogWater
         private void Move()
         {
             if (!IsOwner) return;
-
+            
 
             float targetSpeed = _input.move == Vector2.zero ? 0.0f : (_input.sprint ? SprintSpeed : MoveSpeed);
             _speed = Mathf.Lerp(_speed, targetSpeed, Time.deltaTime * SpeedChangeRate);
@@ -371,6 +381,8 @@ namespace DogWater
             {
                 playerMotion = Vector3.zero;
             }
+            if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                playerMotion = Vector3.zero;
 
 
             Vector3 verticalMotion = Vector3.zero;
@@ -430,8 +442,11 @@ namespace DogWater
                     _verticalVelocity = (ship != null) ? 0.0f : -0.5f;
                 }
 
+                
                 if (_input.jump && _jumpTimeoutDelta <= 0.0f && moveInputEnabled)
                 {
+                    if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                        return;
                     if (ship != null)
                         _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) + ship.VerticalVelocity;
                     else
@@ -458,7 +473,7 @@ namespace DogWater
         private float handModeTimeoutCounter = 0.0f;
         private void Interact()
         {
-            if (MenuController.Instance.isMenuOpen || usingItem) // menü açıksa veya eşya kullanımdaysa etkleşim kapanıyor
+            if (PauseMenuController.Instance.isMenuOpen || usingItem || PlayerScript.diary.open) // menü açıksa veya eşya kullanımdaysa etkleşim kapanıyor
                 return;
             if (_isMouseClosed && CurrentHandInput != null)
             {
