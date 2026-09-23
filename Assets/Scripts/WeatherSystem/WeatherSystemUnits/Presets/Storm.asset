@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 856dc67d707a88642b23b7f310be3546, type: 3}
+  m_Name: Storm
+  m_EditorClassIdentifier: Assembly-CSharp::WeatherPreset
+  displayName: Storm
+  volumeProfile: {fileID: 0}
+  initialWeight: 10
+  transitions:
+  - target: {fileID: 11400000, guid: 04650f5eac7b47d41a1eb861b2c8fdf8, type: 2}
+    weight: 35
+  - target: {fileID: 11400000, guid: c4db96fd7a055734c959b8e211395f42, type: 2}
+    weight: 55
+  - target: {fileID: 11400000}
+    weight: 15
+  transitionSeconds: 6
+  minDurationGameHours: 1.5
+  maxDurationGameHours: 4
+  minWindStrength: 1.5
+  maxWindStrength: 2.2
+  maxWindVeerDegrees: 35
+  currentMultiplier: 1.8
+  moistureSensitivity: 0.5
+  storminessSensitivity: 1

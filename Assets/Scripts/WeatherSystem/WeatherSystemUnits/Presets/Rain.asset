@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 856dc67d707a88642b23b7f310be3546, type: 3}
+  m_Name: Rain
+  m_EditorClassIdentifier: Assembly-CSharp::WeatherPreset
+  displayName: Rain
+  volumeProfile: {fileID: 0}
+  initialWeight: 20
+  transitions:
+  - target: {fileID: 11400000, guid: bf3176a5a07b589478492fa0151bb359, type: 2}
+    weight: 5
+  - target: {fileID: 11400000, guid: 04650f5eac7b47d41a1eb861b2c8fdf8, type: 2}
+    weight: 45
+  - target: {fileID: 11400000}
+    weight: 40
+  - target: {fileID: 11400000, guid: f79019945a4cb054f95fbf7a88a1dadd, type: 2}
+    weight: 20
+  transitionSeconds: 6
+  minDurationGameHours: 2
+  maxDurationGameHours: 6
+  minWindStrength: 1
+  maxWindStrength: 1.4
+  maxWindVeerDegrees: 20
+  currentMultiplier: 1.3
+  moistureSensitivity: 0.9
+  storminessSensitivity: 0.2
