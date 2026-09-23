@@ -7,6 +7,12 @@ public class WaterController : NetworkBehaviour
 {
     public NetworkVariable<Vector3> wind = new NetworkVariable<Vector3>(Vector3.forward, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public Vector3 editorWind;
+
+    // Ocean current as a world-space velocity (units/s, horizontal). Read by BoatMovement.
+    // editorCurrent is the Inspector fallback, like editorWind; the weather system will drive it later.
+    public NetworkVariable<Vector3> current = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public Vector3 editorCurrent;
+
     public WaterSurface targetSurface = null;
 
     // Internal search params
@@ -71,6 +77,7 @@ public class WaterController : NetworkBehaviour
         if(IsServer)
         {
             wind.Value = editorWind;
+            current.Value = new Vector3(editorCurrent.x, 0f, editorCurrent.z);
         }
         
         

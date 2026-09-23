@@ -109,7 +109,10 @@ public class BoatMovement : NetworkBehaviour
             currentPos.z
         );
 
-        targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
+        // Disabled: since the HDRP switch GetWave returns the projected world POSITION, not a wave
+        // displacement, so this pushed the ship away from world origin in proportion to its distance
+        // from it - speed kept growing the further the ship sailed. Replaced by the ocean current below.
+        //targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
         targetPos += sails.GetTotalWindPush() * Time.fixedDeltaTime;
 
         if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z) || float.IsInfinity(velocity.y))
@@ -130,6 +133,13 @@ public class BoatMovement : NetworkBehaviour
         float deceleration = 0.20f;
 
         Vector3 desiredVelocity = desiredDirection * (targetPos - currentPos).magnitude * 10;
+
+        // Ocean current: the sea carries the ship even with sails furled. Added as a velocity, so it does
+        // not depend on where the ship is. Before the anchor check below, so a fully anchored ship holds.
+        if (WaterController.Instance != null)
+        {
+            desiredVelocity += WaterController.Instance.current.Value;
+        }
 
         float accelRate =
             desiredVelocity.magnitude > currentVelocity.magnitude
