@@ -500,7 +500,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1174981344164072961, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 6.085248
       objectReference: {fileID: 0}
     - target: {fileID: 1174981344164072961, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_LocalPosition.y
@@ -508,7 +508,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1174981344164072961, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 9.568004
       objectReference: {fileID: 0}
     - target: {fileID: 1174981344164072961, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_LocalRotation.w
@@ -552,7 +552,7 @@ PrefabInstance:
       objectReference: {fileID: 971830158}
     - target: {fileID: 2622713439418969914, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_VersionIndex
-      value: 145
+      value: 148
       objectReference: {fileID: 0}
     - target: {fileID: 3348350456318158277, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Name
@@ -581,6 +581,22 @@ PrefabInstance:
     - target: {fileID: 7996313622169870490, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1998106558
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192009252856850436, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192009252856850436, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192009252856850436, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192009252856850436, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9131478001904455770, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
@@ -1223,7 +1239,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
       propertyPath: worldIslands.Array.data[0].loadDistance
-      value: 3000
+      value: 5000
       objectReference: {fileID: 0}
     - target: {fileID: 5691323425153172263, guid: 77b1dc2ab69aa7b0384c348f1c088fa9, type: 3}
       propertyPath: worldIslands.Array.data[1].loadDistance
@@ -1376,6 +1392,7 @@ MonoBehaviour:
   _Sun: {fileID: 157207114}
   _Moon: {fileID: 222420031}
   _Volume: {fileID: 432432460}
+  _Sky: {fileID: 0}
 --- !u!114 &590174882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2217,7 +2234,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9005220659476430821, guid: 2d3a85ecde41a8246a79669975912b74, type: 3}
       propertyPath: far clip plane
-      value: 5000
+      value: 20000
       objectReference: {fileID: 0}
     - target: {fileID: 9005220659476430821, guid: 2d3a85ecde41a8246a79669975912b74, type: 3}
       propertyPath: near clip plane

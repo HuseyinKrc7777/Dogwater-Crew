@@ -71,7 +71,7 @@
                 },
                 {
                     "name": "Button1",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "0cdfbed2-d177-434d-b5f2-60cae1fe2feb",
                     "expectedControlType": "",
                     "processors": "",
@@ -80,7 +80,7 @@
                 },
                 {
                     "name": "Button2",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "c7c1f1e8-6f34-4919-81d7-11841256a340",
                     "expectedControlType": "",
                     "processors": "",
@@ -89,7 +89,7 @@
                 },
                 {
                     "name": "Button3",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "86d2c8f8-7aba-4fa8-929f-29094938dace",
                     "expectedControlType": "",
                     "processors": "",
@@ -98,7 +98,7 @@
                 },
                 {
                     "name": "Button4",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "a8f62ddb-0b3d-49b5-ae05-6340bf3aaa72",
                     "expectedControlType": "",
                     "processors": "",

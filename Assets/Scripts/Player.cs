@@ -1,9 +1,19 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using DogWater;
+using SunCalcSharp;
 using TMPro;
+using Unity.Cinemachine;
 using Unity.Collections;
 using Unity.Netcode;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Diagnostics;
+using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using WebSocketSharp;
 
 public class Player : NetworkBehaviour
@@ -11,11 +21,12 @@ public class Player : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public FirstPersonController controller;
     [SerializeField] public TextMeshPro nameDisplay;
+    public List<IItem> Items = new();
     //TODO oyuncu isminin client dan değiştirilebiliyor olması güvenlik açığı sayılabilir.
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(
-        default, 
-        NetworkVariableReadPermission.Everyone, 
-        NetworkVariableWritePermission.Owner 
+        default,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Owner
     );
 
     void Start()
@@ -24,26 +35,47 @@ public class Player : NetworkBehaviour
         originalTextRotation = nameDisplay.transform.eulerAngles;
     }
 
-   
+
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        PlayerName.OnValueChanged+=OnNameChange;
+        PlayerName.OnValueChanged += OnNameChange;
+        compassObject.SetActive(false);
+
         if (IsOwner)
         {
             //burada oyuncu id si filan şey olabilir eğer boş ise
-            if(SessionManager.LocalPlayerName.Trim().IsNullOrEmpty())
+            if (SessionManager.LocalPlayerName.Trim().IsNullOrEmpty())
                 SessionManager.LocalPlayerName = "Player";
             PlayerName.Value = SessionManager.LocalPlayerName;
             SyncNames();
         }
-        
+
+    }
+    protected override void OnNetworkPostSpawn()
+    {
+        base.OnNetworkPostSpawn();
+
+        if (IsOwner)
+        {
+            
+            Items.Add(new Spyglass());
+
+            
+            Items.Add(new EquipableCompass());
+
+            Items.Add(new Sextant());
+            diary = new Diary();
+            Items.Add(diary);
+        }
+
+
     }
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
-        PlayerName.OnValueChanged-=OnNameChange;
+        PlayerName.OnValueChanged -= OnNameChange;
 
     }
 
@@ -52,11 +84,11 @@ public class Player : NetworkBehaviour
         UpdateNameDisplay();
     }
 
-    
+
     private void SyncNames()
     {
         GameObject[] allPlayerObjects = GameObject.FindGameObjectsWithTag("Player");
-        foreach(GameObject obj in allPlayerObjects)
+        foreach (GameObject obj in allPlayerObjects)
         {
             obj.GetComponent<Player>().UpdateNameDisplay();
         }
@@ -66,13 +98,13 @@ public class Player : NetworkBehaviour
         nameDisplay.text = PlayerName.Value.ToString();
     }
 
-    
+
     // Update is called once per frame
     void Update()
     {
-        
+
     }
-private Vector3 originalTextRotation;
+    private Vector3 originalTextRotation;
     void LateUpdate()
     {
         if (Camera.main == null) return;
@@ -88,7 +120,18 @@ private Vector3 originalTextRotation;
         nameDisplay.transform.eulerAngles = new Vector3(
             originalTextRotation.x,
             current.y,
-            originalTextRotation.z 
+            originalTextRotation.z
         );
     }
+    public GameObject compassObject;
+    public TMP_InputField diaryUi;
+    public Diary diary;
+    [Rpc(SendTo.Everyone)]
+    public void CompassRpc(bool state)
+    {
+        ///animasyon manimasyon filan fişman da oynatılabilir burada
+        compassObject.SetActive(state);
+    }
 }
+
+

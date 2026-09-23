@@ -59,6 +59,7 @@ namespace DogWater
         private PlayerInputs _input;
         private GameObject _mainCamera;
         private GameObject followCam;
+        private Player PlayerScript;
 
 #if ENABLE_INPUT_SYSTEM
         private PlayerInput _playerInput;
@@ -71,7 +72,7 @@ namespace DogWater
             base.OnNetworkSpawn();
 
             // DO NOT return on !IsOwner here! Observers need their components enabled to run LateUpdate overrides!
-
+            PlayerScript = GetComponent<Player>();
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<PlayerInputs>();
 #if ENABLE_INPUT_SYSTEM
@@ -108,7 +109,11 @@ namespace DogWater
                 {
                     followCam = GameObject.FindGameObjectWithTag("PlayerFollowCamera");
                     if (followCam != null && followCam.TryGetComponent<CinemachineCamera>(out var vCam))
-                        vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
+                    {
+                        if(vCam.Target.TrackingTarget == null)
+                            vCam.Target.TrackingTarget = CinemachineCameraTarget.transform;
+                        
+                    }
                 }
 
                 GroundedCheck();
@@ -116,6 +121,7 @@ namespace DogWater
                 Move();
                 Interact();
                 Menus();
+                Items();
                 // SYNC LOCAL POSITION TO OBSERVERS
                 if (ship != null && ship.NetworkObject != null)
                 {
@@ -129,26 +135,107 @@ namespace DogWater
                 }
             }
         }
+        bool usingItem = false;
+
+        int itemButtonPressed = -1;
+        int itemUsed = -1;
+        private void Items()
+        {
+            
+            //eşyaya göre değişken değiştiriliyor
+            if (_input.button1)
+            {
+                itemButtonPressed = 0;
+                _input.button1 = false;
+            }
+            else if (_input.button2)
+            {
+                itemButtonPressed = 1;
+                _input.button2 = false;
+            }
+            else if (_input.button3)
+            {
+                itemButtonPressed = 2;
+                _input.button3 = false;
+            }
+            else if (_input.button4)
+            {
+                itemButtonPressed = 3;
+                _input.button4 = false;
+            }
+            else
+                itemButtonPressed = -1;
+            if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                itemButtonPressed = -1;
+            //basılan tuşa göre eşya takıp çıkarma işlemleri
+            if (itemButtonPressed != -1)
+            {
+                Debug.LogError(PlayerScript.Items + itemButtonPressed.ToString());
+                if (itemUsed != -1) //eğer aktif eşya varsa çıkarılıyor
+                {
+                    PlayerScript.Items[itemUsed].UnEquip();
+                    usingItem = false;
+                }
+                if (itemUsed != itemButtonPressed) // eğer aktif eşya seçilen eşyadan farklı ise ; eşya takılıyor
+                {
+                    PlayerScript.Items[itemButtonPressed].Equip(this);
+                    itemUsed = itemButtonPressed;
+                    usingItem = true;
+                }
+                else
+                    itemUsed = -1; // eğer seçilen eşya zaten bulunan eşya ise eşya yok diye işleniyor
+
+            }
+            //eşya kullanımı ile alakalı şeyler
+            if (itemUsed != -1)
+            {
+                if (_input.interact)
+                {
+                    PlayerScript.Items[itemUsed].Interact();
+                }
+                else
+                {
+                    PlayerScript.Items[itemUsed].UnInteract();
+                }
+                if (_input.leftMouseButton && PlayerScript.Items[itemUsed].Interacting)
+                {
+                    PlayerScript.Items[itemUsed].Use1();
+                }
+                if (_input.rightMouseButton && PlayerScript.Items[itemUsed].Interacting)
+                {
+                    PlayerScript.Items[itemUsed].Use2();
+                }
+
+
+            }
+
+
+
+        }
         private void Menus()
         {
-            if(_input.menu == true)
+            if (_input.menu == true)
             {
-                if(!MenuController.Instance.isMenuOpen)
+                if(PlayerScript.diary.open)
+                {
+                    PlayerScript.diary.CloseDiary();
+                }
+                else if (!PauseMenuController.Instance.isMenuOpen)
                 {
                     Cursor.SetCursor(cursorOpen, Vector2.zero, CursorMode.Auto);
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
 
-                    MenuController.Instance.OpenMenu();
-                    
+                    PauseMenuController.Instance.OpenPauseMenu();
+
                 }
                 else
                 {
                     Cursor.visible = false;
                     Cursor.lockState = CursorLockMode.Locked;
 
-                    MenuController.Instance.CloseMenu();
-                    
+                    PauseMenuController.Instance.ClosePauseMenu();
+
                 }
 
                 _input.menu = false;
@@ -213,7 +300,7 @@ namespace DogWater
                 if (!foundShip && !_handMode) ship = null;
                 */
             }
-            
+
         }
         private float lastShipYaw;
         private float yawOffset;
@@ -251,12 +338,14 @@ namespace DogWater
                     targetTilt,
                     Time.deltaTime * tiltLerpSpeed
                 );
-                
+
             }
         }
         bool cameraRotationAllowed = true;
         private void CameraRotation()
         {
+            if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                    return;
             if (_input.look.sqrMagnitude >= _threshold && cameraRotationAllowed)
             {
                 float deltaTimeMultiplier = _playerInput.currentControlScheme == "KeyboardMouse" ? 1.0f : Time.deltaTime;
@@ -281,8 +370,8 @@ namespace DogWater
         private void Move()
         {
             if (!IsOwner) return;
-
             
+
             float targetSpeed = _input.move == Vector2.zero ? 0.0f : (_input.sprint ? SprintSpeed : MoveSpeed);
             _speed = Mathf.Lerp(_speed, targetSpeed, Time.deltaTime * SpeedChangeRate);
             Vector3 inputDirection = (transform.right * _input.move.x + transform.forward * _input.move.y).normalized;
@@ -292,15 +381,17 @@ namespace DogWater
             {
                 playerMotion = Vector3.zero;
             }
+            if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                playerMotion = Vector3.zero;
 
-             
+
             Vector3 verticalMotion = Vector3.zero;
             if (!Grounded || _verticalVelocity > 0f)
             {
                 verticalMotion = transform.up * (_verticalVelocity * Time.deltaTime);
             }
 
-            
+
             if (ship != null)
             {
                 if (_previousShip != ship)
@@ -313,7 +404,7 @@ namespace DogWater
                 Vector3 currentShipPos = ship.transform.position;
                 Quaternion currentShipRot = ship.transform.rotation;
 
-                
+
                 Vector3 relativePos = transform.position - _previousShipPosition;
                 Quaternion shipRotationDelta = currentShipRot * Quaternion.Inverse(_previousShipRotation);
                 Vector3 rotatedPos = shipRotationDelta * relativePos;
@@ -326,7 +417,7 @@ namespace DogWater
                     shipTranslation.y = 0;
                 }
 
-                
+
                 _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
 
                 _previousShipPosition = ship.transform.position;
@@ -351,8 +442,11 @@ namespace DogWater
                     _verticalVelocity = (ship != null) ? 0.0f : -0.5f;
                 }
 
+                
                 if (_input.jump && _jumpTimeoutDelta <= 0.0f && moveInputEnabled)
                 {
+                    if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
+                        return;
                     if (ship != null)
                         _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) + ship.VerticalVelocity;
                     else
@@ -379,13 +473,13 @@ namespace DogWater
         private float handModeTimeoutCounter = 0.0f;
         private void Interact()
         {
-            if(_input.menu)
+            if (PauseMenuController.Instance.isMenuOpen || usingItem || PlayerScript.diary.open) // menü açıksa veya eşya kullanımdaysa etkleşim kapanıyor
                 return;
             if (_isMouseClosed && CurrentHandInput != null)
             {
                 Vector2 currentPos = Mouse.current.position.value;
                 Vector2 value = (startPos - currentPos) / 1000;
-                CurrentHandInput.OnHandInput(value.x , value.y);
+                CurrentHandInput.OnHandInput(value.x, value.y);
                 startPos = currentPos;
             }
 
@@ -393,7 +487,7 @@ namespace DogWater
             {
                 Vector2 currentPos = Mouse.current.position.value;
                 Vector2 value = (startPos - currentPos) / 1000;
-                CurrentHandInput.OnRightHandInput(value.x , value.y);
+                CurrentHandInput.OnRightHandInput(value.x, value.y);
                 startPos = currentPos;
             }
             if (_handMode)
@@ -424,7 +518,7 @@ namespace DogWater
                     _isRightMouseClosed = false;
                 }
 
-                if(_input.jump)
+                if (_input.jump)
                 {
                     CurrentHandInput.OnButtonInput();
                     _input.jump = false;
@@ -440,32 +534,32 @@ namespace DogWater
                     if (!_handMode)
                     {
                         ship = hit.collider.GetComponentInParent<Ship>();
-                        interactable.OnInteract(GetComponent<Player>());
+                        interactable.OnInteract(PlayerScript);
                         CurrentHandInput = handInput;
                         CurrentInteract = interactable;
                         EnterHandMode();
                     }
 
                 }
-                else if( _handMode)
+                else if (_handMode)
                 {
                     handModeTimeoutCounter += Time.deltaTime;
-                    if(handModeTimeoutCounter > 3)
+                    if (handModeTimeoutCounter > 3)
                     {
                         ExitHandMode();
-                        CurrentInteract.OnUnInteract(GetComponent<Player>());
+                        CurrentInteract.OnUnInteract(PlayerScript);
                         CurrentInteract = null;
                         CurrentHandInput = null;
                         handModeTimeoutCounter = 0;
                     }
-                    
+
                 }
 
             }
             else if (_handMode)
             {
                 ExitHandMode();
-                CurrentInteract.OnUnInteract(GetComponent<Player>());
+                CurrentInteract.OnUnInteract(PlayerScript);
                 CurrentInteract = null;
                 CurrentHandInput = null;
             }
@@ -506,32 +600,32 @@ namespace DogWater
 
         void OnTriggerEnter(Collider other)
         {
-            if(other.CompareTag("Ship"))
+            if (other.CompareTag("Ship"))
             {
                 ship = other.GetComponentInParent<Ship>();
 
-            }  
+            }
         }
 
         void OnTriggerStay(Collider other)
         {
-            if(ship!=null)
+            if (ship != null)
                 return;
-            if(other.CompareTag("Ship"))
+            if (other.CompareTag("Ship"))
             {
                 ship = other.GetComponentInParent<Ship>();
 
-            }  
+            }
         }
 
         void OnTriggerExit(Collider other)
         {
-            if(other.CompareTag("Ship"))
+            if (other.CompareTag("Ship"))
             {
-                if(!_handMode)
+                if (!_handMode)
                     ship = null;
 
-            }  
+            }
         }
     }
 }
