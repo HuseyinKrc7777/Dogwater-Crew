@@ -32,5 +32,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/HDRPTest3.unity
     guid: a70ca016d08cbe146a062427184e096a
+  - enabled: 1
+    path: Assets/Scenes/HDRPTestWeatherSysterm.unity
+    guid: afe48a7b5c37d974388ab584aab53110
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

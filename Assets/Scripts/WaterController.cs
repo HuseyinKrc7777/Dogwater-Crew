@@ -13,6 +13,13 @@ public class WaterController : NetworkBehaviour
     public NetworkVariable<Vector3> current = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public Vector3 editorCurrent;
 
+    // Server-only override from the weather system (WeatherManager). While set, it replaces
+    // editorWind / editorCurrent; when cleared (or no weather system exists) the editor values apply.
+    private bool hasWeatherWind;
+    private Vector3 weatherWind;
+    private bool hasWeatherCurrent;
+    private Vector3 weatherCurrent;
+
     public WaterSurface targetSurface = null;
 
     // Internal search params
@@ -38,6 +45,12 @@ public class WaterController : NetworkBehaviour
         if (IsServer)
         {
             wind.Value = Vector3.forward;
+
+            // Never inherit a previous session's weather.
+            hasWeatherWind = false;
+            weatherWind = Vector3.zero;
+            hasWeatherCurrent = false;
+            weatherCurrent = Vector3.zero;
         }
 
         if(!IsOwner)
@@ -63,6 +76,39 @@ public class WaterController : NetworkBehaviour
         return null;
     }
 
+    public void SetWeatherWind(Vector3 value)
+    {
+        if (!IsServer || !IsFinite(value)) return;
+        weatherWind = Vector3.ClampMagnitude(value, 10f);
+        hasWeatherWind = true;
+    }
+
+    public void ClearWeatherWind()
+    {
+        if (!IsServer) return;
+        hasWeatherWind = false;
+    }
+
+    public void SetWeatherCurrent(Vector3 value)
+    {
+        if (!IsServer || !IsFinite(value)) return;
+        value.y = 0f;
+        weatherCurrent = Vector3.ClampMagnitude(value, 10f);
+        hasWeatherCurrent = true;
+    }
+
+    public void ClearWeatherCurrent()
+    {
+        if (!IsServer) return;
+        hasWeatherCurrent = false;
+    }
+
+    private static bool IsFinite(Vector3 v)
+    {
+        return !float.IsNaN(v.x) && !float.IsNaN(v.y) && !float.IsNaN(v.z)
+            && !float.IsInfinity(v.x) && !float.IsInfinity(v.y) && !float.IsInfinity(v.z);
+    }
+
     // Update is called once per frame
     void Update()
     {   
@@ -76,8 +122,9 @@ public class WaterController : NetworkBehaviour
 
         if(IsServer)
         {
-            wind.Value = editorWind;
-            current.Value = new Vector3(editorCurrent.x, 0f, editorCurrent.z);
+            // NetworkVariable only marks itself dirty when the value actually changes.
+            wind.Value = hasWeatherWind ? weatherWind : editorWind;
+            current.Value = hasWeatherCurrent ? weatherCurrent : new Vector3(editorCurrent.x, 0f, editorCurrent.z);
         }
         
         
