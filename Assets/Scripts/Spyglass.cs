@@ -34,7 +34,9 @@ public class Spyglass : IItem
             camera = (CinemachineCamera)CinemachineCore.GetVirtualCamera(0);
         if (fog == null)
         {
-            VolumeProfile profile = SkyboxController.Instance._Volume.sharedProfile;
+            // The sky Volume's runtime copy, not sharedProfile: writing fog into the asset made the zoom
+            // changes permanent after Play Mode (and SkyboxController renders the copy now anyway).
+            VolumeProfile profile = SkyboxController.Instance._Volume.profile;
             if (profile.TryGet<Fog>(out var Fog))
             {
                 fog = Fog;
