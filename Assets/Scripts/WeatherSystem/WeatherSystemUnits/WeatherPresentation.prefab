@@ -32,6 +32,7 @@ Transform:
   m_Children:
   - {fileID: 6091242629865520728}
   - {fileID: 6184075979790847276}
+  - {fileID: 77870849251272866}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8803517567012356183
@@ -97,6 +98,58 @@ MonoBehaviour:
   blendDistance: 0
   weight: 0
   sharedProfile: {fileID: 0}
+--- !u!1 &4272737798508778629
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 77870849251272866}
+  - component: {fileID: 1646055179188562965}
+  m_Layer: 0
+  m_Name: WeatherEffects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &77870849251272866
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4272737798508778629}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5438850432415123033}
+  - {fileID: 6821718192840009113}
+  m_Father: {fileID: 2002426778019343805}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1646055179188562965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4272737798508778629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6aff6546f94a84546abe220a7c664e26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeatherEffects
+  precipitationEffects:
+  - {fileID: 8906441818355854470}
+  lightningEffects:
+  - {fileID: 4926733754971335838}
+  followCamera: 1
+  precipitationChangePerSecond: 0.5
 --- !u!1 &4668873805621991708
 GameObject:
   m_ObjectHideFlags: 0
@@ -146,3 +199,149 @@ MonoBehaviour:
   blendDistance: 0
   weight: 0
   sharedProfile: {fileID: 0}
+--- !u!1001 &806978418653224032
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 77870849251272866}
+    m_Modifications:
+    - target: {fileID: 2456161792965470573, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_Name
+      value: Rain
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+--- !u!4 &5438850432415123033 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4632052539866356281, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+  m_PrefabInstance: {fileID: 806978418653224032}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8906441818355854470 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8118018968393068774, guid: 9f4d24bd51e3bcf4d91977884bb868e9, type: 3}
+  m_PrefabInstance: {fileID: 806978418653224032}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f22ec9c23e192d43874d4d789cf3da6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleWeatherEffect
+--- !u!1001 &7909248223164186693
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 77870849251272866}
+    m_Modifications:
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763858924021645676, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+      propertyPath: m_Name
+      value: Lightning
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+--- !u!114 &4926733754971335838 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2998286183020719323, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+  m_PrefabInstance: {fileID: 7909248223164186693}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643ecc39b5e6b9c498f2a9600518c966, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightningFlashEffect
+--- !u!4 &6821718192840009113 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3704448012804367836, guid: c2f9849399094a04aaca59272889fb38, type: 3}
+  m_PrefabInstance: {fileID: 7909248223164186693}
+  m_PrefabAsset: {fileID: 0}

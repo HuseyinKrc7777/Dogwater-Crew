@@ -27,6 +27,20 @@ public struct WeatherSnapshot : INetworkSerializable, IEquatable<WeatherSnapshot
 
     public bool IsValid => ToPresetIndex >= 0;
 
+    // Fade progress 0..1, from server time - identical on every peer, so a late joiner picks up a fade
+    // in progress instead of restarting it. Shared by every local visual (Volumes, effects).
+    public float GetBlend()
+    {
+        // Zero guard is load-bearing: a NaN here becomes a NaN Volume weight and breaks the HDRP stack.
+        if (TransitionSeconds <= 0f) return 1f;
+        NetworkManager networkManager = NetworkManager.Singleton;
+        if (networkManager == null || !networkManager.IsListening) return 1f;
+
+        double elapsed = networkManager.ServerTime.Time - TransitionStartServerTime;
+        // A client's ServerTime can run slightly behind the start time, so clamp the negative side too.
+        return UnityEngine.Mathf.Clamp01((float)(elapsed / TransitionSeconds));
+    }
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref RegionId);

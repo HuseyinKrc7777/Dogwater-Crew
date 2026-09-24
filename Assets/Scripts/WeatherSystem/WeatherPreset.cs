@@ -44,6 +44,12 @@ public class WeatherPreset : ScriptableObject
     [Tooltip("Multiplies the region's current-belt speed while this state is active. 1 = climate baseline.")]
     [Range(0f, 5f)][SerializeField] private float currentMultiplier = 1f;
 
+    [Header("Effects (local visuals, driven by WeatherEffects)")]
+    [Tooltip("0 = dry, 1 = the heaviest rain the effect prefabs show.")]
+    [Range(0f, 1f)][SerializeField] private float precipitation;
+    [Tooltip("Average lightning strikes per real minute. 0 = none.")]
+    [Range(0f, 60f)][SerializeField] private float lightningPerMinute;
+
     [Header("Climate affinity")]
     [Range(-1f, 1f)][SerializeField] private float moistureSensitivity;
     [Range(-1f, 1f)][SerializeField] private float storminessSensitivity;
@@ -59,6 +65,8 @@ public class WeatherPreset : ScriptableObject
     public float MaxWindStrength => Mathf.Max(MinWindStrength, maxWindStrength);
     public float MaxWindVeerDegrees => Mathf.Clamp(maxWindVeerDegrees, 0f, 90f);
     public float CurrentMultiplier => Mathf.Clamp(currentMultiplier, 0f, 5f);
+    public float Precipitation => Mathf.Clamp01(precipitation);
+    public float LightningPerMinute => Mathf.Clamp(lightningPerMinute, 0f, 60f);
     public float MoistureSensitivity => moistureSensitivity;
     public float StorminessSensitivity => storminessSensitivity;
 }

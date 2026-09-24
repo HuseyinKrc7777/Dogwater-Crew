@@ -1,4 +1,3 @@
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -53,7 +52,7 @@ public class WeatherPresentation : MonoBehaviour
         }
         if (!blending) return;
 
-        float t = ComputeBlend(snapshot);
+        float t = snapshot.GetBlend();
         targetVolume.weight = t;
         if (t >= 1f) CommitTarget();
     }
@@ -101,7 +100,7 @@ public class WeatherPresentation : MonoBehaviour
         if (blending)
         {
             // Two Volumes cannot hold a three-way mix: collapse to the dominant side, then retarget.
-            int dominant = ComputeBlend(snapshot) >= 0.5f ? snapshot.ToPresetIndex : displayedIndex;
+            int dominant = snapshot.GetBlend() >= 0.5f ? snapshot.ToPresetIndex : displayedIndex;
             SetSource(dominant);
         }
         else if (displayedIndex < 0)
@@ -114,19 +113,7 @@ public class WeatherPresentation : MonoBehaviour
         targetVolume.sharedProfile = ProfileOf(snap.ToPresetIndex);
         targetVolume.weight = 0f;
         blending = true;
-        if (ComputeBlend(snap) >= 1f) CommitTarget();
-    }
-
-    private static float ComputeBlend(in WeatherSnapshot snap)
-    {
-        // Zero guard is load-bearing: a NaN weight breaks the HDRP Volume stack.
-        if (snap.TransitionSeconds <= 0f) return 1f;
-        NetworkManager networkManager = NetworkManager.Singleton;
-        if (networkManager == null || !networkManager.IsListening) return 1f;
-
-        double elapsed = networkManager.ServerTime.Time - snap.TransitionStartServerTime;
-        // A client's ServerTime can run slightly behind the start time, so clamp the negative side too.
-        return Mathf.Clamp01((float)(elapsed / snap.TransitionSeconds));
+        if (snap.GetBlend() >= 1f) CommitTarget();
     }
 
     private void CommitTarget()

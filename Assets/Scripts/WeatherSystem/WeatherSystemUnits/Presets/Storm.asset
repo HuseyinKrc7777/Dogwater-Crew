@@ -29,5 +29,7 @@ MonoBehaviour:
   maxWindStrength: 2.2
   maxWindVeerDegrees: 35
   currentMultiplier: 1.8
+  precipitation: 1
+  lightningPerMinute: 3
   moistureSensitivity: 0.5
   storminessSensitivity: 1
