@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cloudy
   m_EditorClassIdentifier: Assembly-CSharp::WeatherPreset
   displayName: Cloudy
-  volumeProfile: {fileID: 0}
+  volumeProfile: {fileID: 11400000, guid: 82e2d07c94b8063449a5060883a8b57f, type: 2}
   initialWeight: 35
   transitions:
   - target: {fileID: 11400000, guid: bf3176a5a07b589478492fa0151bb359, type: 2}

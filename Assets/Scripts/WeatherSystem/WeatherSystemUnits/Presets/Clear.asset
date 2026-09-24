@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Clear
   m_EditorClassIdentifier: Assembly-CSharp::WeatherPreset
   displayName: Clear
-  volumeProfile: {fileID: 0}
+  volumeProfile: {fileID: 11400000, guid: 81dc35a6fc67e844d8204fe2da04c33b, type: 2}
   initialWeight: 35
   transitions:
   - target: {fileID: 11400000}

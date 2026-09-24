@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Storm
   m_EditorClassIdentifier: Assembly-CSharp::WeatherPreset
   displayName: Storm
-  volumeProfile: {fileID: 0}
+  volumeProfile: {fileID: 11400000, guid: ae992b35161395c4bab8a6ed4d160417, type: 2}
   initialWeight: 10
   transitions:
   - target: {fileID: 11400000, guid: 04650f5eac7b47d41a1eb861b2c8fdf8, type: 2}
