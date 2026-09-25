@@ -49,6 +49,8 @@ public class WeatherPreset : ScriptableObject
     [Range(0f, 1f)][SerializeField] private float precipitation;
     [Tooltip("Average lightning strikes per real minute. 0 = none.")]
     [Range(0f, 60f)][SerializeField] private float lightningPerMinute;
+    [Tooltip("Sun light strength. 1 = as authored in the scene, lower = sun behind clouds.")]
+    [Range(0f, 1f)][SerializeField] private float sunlight = 1f;
 
     [Header("Climate affinity")]
     [Range(-1f, 1f)][SerializeField] private float moistureSensitivity;
@@ -67,6 +69,7 @@ public class WeatherPreset : ScriptableObject
     public float CurrentMultiplier => Mathf.Clamp(currentMultiplier, 0f, 5f);
     public float Precipitation => Mathf.Clamp01(precipitation);
     public float LightningPerMinute => Mathf.Clamp(lightningPerMinute, 0f, 60f);
+    public float Sunlight => Mathf.Clamp01(sunlight);
     public float MoistureSensitivity => moistureSensitivity;
     public float StorminessSensitivity => storminessSensitivity;
 }

@@ -31,5 +31,6 @@ MonoBehaviour:
   currentMultiplier: 1.8
   precipitation: 1
   lightningPerMinute: 3
+  sunlight: 0.12
   moistureSensitivity: 0.5
   storminessSensitivity: 1

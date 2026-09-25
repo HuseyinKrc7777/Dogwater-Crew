@@ -14,13 +14,20 @@ public class WeatherEffects : MonoBehaviour
     [SerializeField] private WeatherEffect[] precipitationEffects;
     [Tooltip("Triggered on each lightning strike (presets' Lightning Per Minute).")]
     [SerializeField] private WeatherEffect[] lightningEffects;
+    [Tooltip("Driven by the presets' Sunlight (1 = sun as authored, lower = behind clouds).")]
+    [SerializeField] private WeatherEffect[] sunlightEffects;
     [Tooltip("Keeps this object - and every effect under it - on the local camera.")]
     [SerializeField] private bool followCamera = true;
-    [Tooltip("Max change of the applied precipitation per second. Smooths the jump when a fade is retargeted mid-way.")]
+    [Tooltip("Max change per second of each applied value (precipitation, sunlight). Smooths the jump when a fade is retargeted mid-way.")]
     [Min(0.01f)][SerializeField] private float precipitationChangePerSecond = 0.5f;
+
+    // Value an effect channel has when there is no weather: dry, full sun.
+    private const float NeutralPrecipitation = 0f;
+    private const float NeutralSunlight = 1f;
 
     private WeatherManager manager;
     private float appliedPrecipitation = -1f;   // -1 = nothing applied yet
+    private float appliedSunlight = -1f;
     private long lastLightningSecond = long.MinValue;
 
     private void Update()
@@ -38,7 +45,8 @@ public class WeatherEffects : MonoBehaviour
         WeatherSnapshot snapshot = manager.CurrentWeather;
         if (!snapshot.IsValid || manager.Database == null)
         {
-            ApplyPrecipitation(0f, true);
+            ApplyChannel(precipitationEffects, ref appliedPrecipitation, NeutralPrecipitation, true);
+            ApplyChannel(sunlightEffects, ref appliedSunlight, NeutralSunlight, true);
             return;
         }
 
@@ -46,8 +54,11 @@ public class WeatherEffects : MonoBehaviour
         WeatherPreset from = snapshot.FromPresetIndex >= 0 ? manager.Database.GetPreset(snapshot.FromPresetIndex) : to;
         float t = snapshot.GetBlend();
 
-        float precipitation = Mathf.Lerp(from != null ? from.Precipitation : 0f, to != null ? to.Precipitation : 0f, t);
-        ApplyPrecipitation(precipitation, appliedPrecipitation < 0f);
+        float precipitation = Mathf.Lerp(from != null ? from.Precipitation : NeutralPrecipitation, to != null ? to.Precipitation : NeutralPrecipitation, t);
+        ApplyChannel(precipitationEffects, ref appliedPrecipitation, precipitation, appliedPrecipitation < 0f);
+
+        float sunlight = Mathf.Lerp(from != null ? from.Sunlight : NeutralSunlight, to != null ? to.Sunlight : NeutralSunlight, t);
+        ApplyChannel(sunlightEffects, ref appliedSunlight, sunlight, appliedSunlight < 0f);
 
         float lightningPerMinute = Mathf.Lerp(from != null ? from.LightningPerMinute : 0f, to != null ? to.LightningPerMinute : 0f, t);
         UpdateLightning(lightningPerMinute, snapshot.RegionId);
@@ -63,26 +74,30 @@ public class WeatherEffects : MonoBehaviour
     private void OnDisable()
     {
         manager = null;
-        ApplyPrecipitation(0f, true);
+        // Hand every effect back its no-weather value (dry, full sun), then forget what was applied.
+        ApplyChannel(precipitationEffects, ref appliedPrecipitation, NeutralPrecipitation, true);
+        ApplyChannel(sunlightEffects, ref appliedSunlight, NeutralSunlight, true);
         appliedPrecipitation = -1f;
+        appliedSunlight = -1f;
         lastLightningSecond = long.MinValue;
     }
 
-    private void ApplyPrecipitation(float target, bool snap)
+    // applied < 0 means nothing was applied yet. snap = jump straight to the target.
+    private void ApplyChannel(WeatherEffect[] effects, ref float applied, float target, bool snap)
     {
-        float next = snap ? target : Mathf.MoveTowards(appliedPrecipitation, target, precipitationChangePerSecond * Time.deltaTime);
-        if (appliedPrecipitation >= 0f)
+        float next = snap || applied < 0f ? target : Mathf.MoveTowards(applied, target, precipitationChangePerSecond * Time.deltaTime);
+        if (applied >= 0f)
         {
-            if (next == appliedPrecipitation) return;
+            if (next == applied) return;
             // Skip tiny steps, but always land exactly on the target (an effect must reach a real 0 to stop).
-            if (next != target && Mathf.Abs(next - appliedPrecipitation) < 0.001f) return;
+            if (next != target && Mathf.Abs(next - applied) < 0.001f) return;
         }
-        appliedPrecipitation = next;
+        applied = next;
 
-        if (precipitationEffects == null) return;
-        for (int i = 0; i < precipitationEffects.Length; i++)
+        if (effects == null) return;
+        for (int i = 0; i < effects.Length; i++)
         {
-            if (precipitationEffects[i] != null) precipitationEffects[i].SetIntensity(next);
+            if (effects[i] != null) effects[i].SetIntensity(next);
         }
     }
 
