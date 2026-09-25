@@ -1360,7 +1360,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   dayLengthSeconds: 1440
   dayTimer: 0
-  startHourUtc: 6
+  startHourUtc: 22
 --- !u!114 &590174881
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2996,6 +2996,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2301559339159943045, guid: 2f346abf596f8c843a97c9e84b9eb0e4, type: 3}
+      propertyPath: sun
+      value: 
+      objectReference: {fileID: 222420030}
     - target: {fileID: 7621610680631466137, guid: 2f346abf596f8c843a97c9e84b9eb0e4, type: 3}
       propertyPath: sun
       value: 
