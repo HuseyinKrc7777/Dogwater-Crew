@@ -572,7 +572,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6199786891558961878, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6199786891558961878, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: whatKindOfShipIsThis
@@ -584,7 +584,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6522370224890489918, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7116473224897262517, guid: 944099cbcf077a06fbe3af6f58b44147, type: 3}
       propertyPath: GlobalObjectIdHash
