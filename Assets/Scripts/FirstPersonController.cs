@@ -468,6 +468,7 @@ namespace DogWater
 
         IHandInput CurrentHandInput;
         IInteractable CurrentInteract;
+        IHoldableItem CurrentHoldableItem;
         Vector2 startPos = Vector2.zero;
 
         private float handModeTimeoutCounter = 0.0f;
@@ -524,12 +525,17 @@ namespace DogWater
                     _input.jump = false;
                 }
             }
+            
             if (_input.interact)
             {
 
                 RaycastHit hit;
                 Physics.Raycast(CinemachineCameraTarget.transform.position, CinemachineCameraTarget.transform.forward, out hit, 2f);
-                if (hit.collider != null && hit.collider.TryGetComponent<IInteractable>(out var interactable) && hit.collider.TryGetComponent<IHandInput>(out var handInput))
+                if(CurrentHoldableItem!=null)
+                {
+                    
+                }
+                else if (hit.collider != null && hit.collider.TryGetComponent<IInteractable>(out var interactable) && hit.collider.TryGetComponent<IHandInput>(out var handInput))
                 {
                     if (!_handMode)
                     {
@@ -554,6 +560,14 @@ namespace DogWater
                     }
 
                 }
+                else if(hit.collider != null && hit.collider.TryGetComponent<IHoldableItem>(out var holdableItem))
+                {
+                    holdableItem.OnInteract(PlayerScript);
+                    CurrentInteract = holdableItem;
+                    CurrentHoldableItem = holdableItem;
+                }
+                
+                
 
             }
             else if (_handMode)
@@ -562,6 +576,12 @@ namespace DogWater
                 CurrentInteract.OnUnInteract(PlayerScript);
                 CurrentInteract = null;
                 CurrentHandInput = null;
+            }
+            else if(CurrentHoldableItem!=null)
+            {
+                CurrentHoldableItem = null;
+                CurrentInteract?.OnUnInteract(PlayerScript);
+                CurrentInteract=null;
             }
         }
         [SerializeField] private bool _handMode = false;
