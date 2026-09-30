@@ -20,7 +20,15 @@ public class GameDayClock : NetworkBehaviour
     public float dayTimer;
 
     public int CurrentDay => currentDay.Value;
-    private DateTime StartDate = DateTime.Today;
+
+    [Tooltip("In-game time of day (hours, 0-24) when a session starts. The clock is UTC-based, " +
+             "so at longitude 0 this is also the local solar time: 7 = the sun has just risen.")]
+    [Range(0f, 24f)][SerializeField] private float startHourUtc = 7f;
+
+    // UTC on purpose: SunCalc converts the DateTime through DateTimeOffset (a Local date would be shifted
+    // by the machine's time zone) and GetLocalSiderealTime reads it through ToOADate (no shift at all).
+    // A UTC date makes the sun and the star field agree. Set in Awake so startHourUtc can be used.
+    private DateTime StartDate = DateTime.UtcNow.Date;
 
     public DateTime GetCurrentDate()
     {
@@ -65,8 +73,9 @@ public class GameDayClock : NetworkBehaviour
             Destroy(gameObject);
             return;
         }
-        //başlangıç tarihi , kayıt sisteminden çekilebilir 
+        //başlangıç tarihi , kayıt sisteminden çekilebilir
         Instance = this;
+        StartDate = DateTime.UtcNow.Date.AddHours(startHourUtc);
     }
 
     public override void OnNetworkSpawn()

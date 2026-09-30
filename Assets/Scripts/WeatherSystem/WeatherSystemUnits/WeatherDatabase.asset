@@ -1,0 +1,177 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4a44ee538973a24f96296eb63013097, type: 3}
+  m_Name: WeatherDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::WeatherDatabase
+  presets:
+  - {fileID: 11400000, guid: bf3176a5a07b589478492fa0151bb359, type: 2}
+  - {fileID: 11400000, guid: 04650f5eac7b47d41a1eb861b2c8fdf8, type: 2}
+  - {fileID: 11400000, guid: c4db96fd7a055734c959b8e211395f42, type: 2}
+  - {fileID: 11400000, guid: f79019945a4cb054f95fbf7a88a1dadd, type: 2}
+  latitudeRows: 9
+  longitudeColumns: 3
+  moistureByAbsLatitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.85
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40
+      value: 0.55
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 60
+      value: 0.75
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 80
+      value: 0.25
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 90
+      value: 0.2
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  storminessByAbsLatitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40
+      value: 0.5
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 60
+      value: 0.85
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 80
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 90
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  windBelts:
+  - maxAbsLatitude: 10
+    towardBearingNorth: 270
+    towardBearingSouth: 270
+    strengthFactor: 0.6
+  - maxAbsLatitude: 30
+    towardBearingNorth: 225
+    towardBearingSouth: 315
+    strengthFactor: 1
+  - maxAbsLatitude: 60
+    towardBearingNorth: 45
+    towardBearingSouth: 135
+    strengthFactor: 1.15
+  - maxAbsLatitude: 90
+    towardBearingNorth: 225
+    towardBearingSouth: 315
+    strengthFactor: 0.9
+  currentBelts:
+  - maxAbsLatitude: 10
+    towardBearingNorth: 270
+    towardBearingSouth: 270
+    speed: 0.8
+  - maxAbsLatitude: 30
+    towardBearingNorth: 270
+    towardBearingSouth: 270
+    speed: 0.6
+  - maxAbsLatitude: 60
+    towardBearingNorth: 90
+    towardBearingSouth: 90
+    speed: 0.5
+  - maxAbsLatitude: 90
+    towardBearingNorth: 270
+    towardBearingSouth: 270
+    speed: 0.3
+  regionSwitchDebounceSeconds: 3
+  maintenanceIntervalSeconds: 0.5
