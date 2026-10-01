@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEditor.Callbacks;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -11,6 +12,8 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
     Rigidbody Rigidbody;
     ParentConstraint constraint;
     Collider Collider;
+    string NameOfObjectOnThePlayerPrefab = "HoldingSpherePlayer";
+    
 
     public void Drop()
     {
@@ -37,8 +40,10 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
 
     }
     [Rpc(SendTo.Everyone)]
-    private void DropRpc()
+    private void DropRpc(RpcParams rpcParams = default)
     {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.transform.Find(NameOfObjectOnThePlayerPrefab).gameObject.SetActive(false);
         Debug.LogError("dropping on everyone");
         
         gameObject.SetActive(true);
@@ -48,11 +53,15 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        
         Rigidbody = GetComponent<Rigidbody>();
         constraint = GetComponent<ParentConstraint>();
         Collider = GetComponent<Collider>();
-        Drop();
         Rigidbody.isKinematic = true;
+
+        if(IsServer)
+            Drop();
+       
         
     }
 
@@ -78,6 +87,8 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
     public void PickUpVisualRpc(RpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
+        NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.transform.Find(NameOfObjectOnThePlayerPrefab).gameObject.SetActive(true);
+
         gameObject.SetActive(false);
         //oyuncunun prefabında eşyayı tutma durumu olacak , bunu buradam aktifleştireceğiz , eşyayın collisionunu ve modelini kapayacağız.
     }
