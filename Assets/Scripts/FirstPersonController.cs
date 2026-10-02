@@ -562,9 +562,11 @@ namespace DogWater
                 }
                 else if(hit.collider != null && hit.collider.TryGetComponent<IHoldableItem>(out var holdableItem))
                 {
-                    holdableItem.OnInteract(PlayerScript);
-                    CurrentInteract = holdableItem;
-                    CurrentHoldableItem = holdableItem;
+                    
+                    
+                    CurrentInteract = holdableItem.originalItem;
+                    CurrentHoldableItem = holdableItem.originalItem;
+                    CurrentInteract.OnInteract(PlayerScript);
                 }
                 
                 
