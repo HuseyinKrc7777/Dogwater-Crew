@@ -126,8 +126,20 @@ public class WaterController : NetworkBehaviour
             wind.Value = hasWeatherWind ? weatherWind : editorWind;
             current.Value = hasWeatherCurrent ? weatherCurrent : new Vector3(editorCurrent.x, 0f, editorCurrent.z);
         }
-        
-        
-       
+
+        SyncWaveTime();
+    }
+
+    // Every peer simulates its own copy of the ocean, and HDRP advances each copy from that peer's own
+    // scene-load time (and loses time on frame hitches). So the waves on a client were out of phase with
+    // the waves the owner floats the ship on, and the client saw the ship sink into or hover over its
+    // water. Pinning the simulation time to NGO's shared server clock gives every peer the same waves,
+    // late joiners included, with no extra network traffic (HDRP docs: "Synchronize multiple water
+    // surfaces"). Written every frame because HDRP also resets the time whenever it rebuilds the wave
+    // spectrum. Outside a session HDRP keeps running its own clock.
+    private void SyncWaveTime()
+    {
+        if (targetSurface == null || !IsSpawned) return;
+        targetSurface.simulationTime = (float)(NetworkManager.ServerTime.Time * targetSurface.timeMultiplier);
     }
 }
