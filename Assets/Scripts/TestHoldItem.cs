@@ -93,34 +93,39 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
     private void StickToSurface(Transform surfaceTransform,Vector3 pos,Quaternion rot)
     {
         //sadece sunucuda çalışmalı
-        ConstraintSource c = new()
-        {
-            weight = 1,
-            sourceTransform = surfaceTransform
-        }; 
-
-        
-        surfaceTransform.TryGetComponent<NetworkObject>(out NetworkObject nobj);
         ulong surfaceId= 0;
         bool inworld = false;
-        if(nobj!=null)
-            surfaceId = nobj.NetworkObjectId;
+        bool inWater = false;
+
+        if(surfaceTransform!=null)
+        {
+            surfaceTransform.TryGetComponent(out NetworkObject nobj);
+            if(nobj!=null)
+                surfaceId = nobj.NetworkObjectId;
+            else
+                inworld = true;
+        }
         else
-            inworld = true;
-        
-        StickRpc(inworld,surfaceId,pos,rot);
+        {
+            inWater = true;
+            inworld = true;            
+        }
+        StickRpc(inworld,surfaceId,pos,rot,inWater);
     }
     public float objectHeight = 0.5f; 
     [Rpc(SendTo.Everyone)]
-    private void StickRpc(bool inWorld,ulong shipId,Vector3 pos,Quaternion rot)
+    private void StickRpc(bool inWorld,ulong shipId,Vector3 pos,Quaternion rot,bool inWater)
     {
         Transform obj = null;
         if(!inWorld)
             obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)shipId].transform;
         spawnedMesh = Instantiate(mesh);
         spawnedMesh.transform.SetPositionAndRotation(pos,rot);
-        if(!inWorld)
-            spawnedMesh.transform.parent = obj;
+        spawnedMesh.transform.parent = obj;
+        if(inWater)
+        {
+            spawnedMesh.GetComponent<holdabkeobjectmeshextension>().stuckToFloor = false;
+        }
         spawnedMesh.GetComponent<IHoldableItem>().originalItem = this;
         spawnedMesh.SetActive(true);
 
@@ -140,6 +145,11 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
         if (hit.collider != null)
         {
             StickToSurface(hit.transform,hit.point + hit.transform.up * objectHeight,hit.transform.rotation);
+        }
+        else
+        {
+            StickToSurface(null,pos,transform.rotation);
+            
         }
     }
     
