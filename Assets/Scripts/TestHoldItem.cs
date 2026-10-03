@@ -99,18 +99,28 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
             sourceTransform = surfaceTransform
         }; 
 
-
-        ulong surfaceId = surfaceTransform.GetComponent<NetworkObject>().NetworkObjectId;
-        StickRpc(surfaceId,pos,rot);
+        
+        surfaceTransform.TryGetComponent<NetworkObject>(out NetworkObject nobj);
+        ulong surfaceId= 0;
+        bool inworld = false;
+        if(nobj!=null)
+            surfaceId = nobj.NetworkObjectId;
+        else
+            inworld = true;
+        
+        StickRpc(inworld,surfaceId,pos,rot);
     }
     public float objectHeight = 0.5f; 
     [Rpc(SendTo.Everyone)]
-    private void StickRpc(ulong shipId,Vector3 pos,Quaternion rot)
+    private void StickRpc(bool inWorld,ulong shipId,Vector3 pos,Quaternion rot)
     {
-        GameObject obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[shipId].gameObject;
+        Transform obj = null;
+        if(!inWorld)
+            obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)shipId].transform;
         spawnedMesh = Instantiate(mesh);
         spawnedMesh.transform.SetPositionAndRotation(pos,rot);
-        spawnedMesh.transform.parent = obj.transform;
+        if(!inWorld)
+            spawnedMesh.transform.parent = obj;
         spawnedMesh.GetComponent<IHoldableItem>().originalItem = this;
         spawnedMesh.SetActive(true);
 
@@ -129,11 +139,7 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
         Physics.Raycast(pos, Vector3.down, out hit, 10f,layer,queryTriggerInteraction:QueryTriggerInteraction.Ignore);
         if (hit.collider != null)
         {
-            if(hit.collider.tag == "Ship" || hit.collider.tag == "Ground")
-            {
-                Debug.LogError(hit.point);
-                StickToSurface(hit.transform,hit.point + hit.transform.up * objectHeight,hit.transform.rotation);
-            }
+            StickToSurface(hit.transform,hit.point + hit.transform.up * objectHeight,hit.transform.rotation);
         }
     }
     
