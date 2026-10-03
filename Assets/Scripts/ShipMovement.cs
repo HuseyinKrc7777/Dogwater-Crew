@@ -25,6 +25,11 @@ public class BoatMovement : NetworkBehaviour
     private Vector3[] effectorTargets;
     private Vector3 velocity;
 
+    // Time the hull takes to follow the sampled water height (SmoothDamp). Small on purpose: it only has
+    // to hide the stall-then-jump steps of the water samples, not the waves themselves.
+    private const float BuoyancySmoothTime = 0.05f;
+    private float buoyancyYVelocity;
+
     private WaterController waterController;
     private Rigidbody rb;
     private Ship ship;
@@ -39,6 +44,7 @@ public class BoatMovement : NetworkBehaviour
         effectorTargets = new Vector3[effectors.Length];
         waterController = WaterController.Instance;
         ship = GetComponent<Ship>();
+        buoyancyYVelocity = 0f;
     }
 
     void FixedUpdate()
@@ -171,9 +177,19 @@ public class BoatMovement : NetworkBehaviour
 
         newPos = Vector3.Scale(new Vector3(1, 0, 1), newPos);
 
+        // The water heights come from HDRP's GPU readback, which does not refresh every frame: the raw
+        // samples stall, then jump, so snapping to them moved the hull in steps (and players on deck kept
+        // losing the ground). Follow the sampled height smoothly instead.
+        if (float.IsNaN(buoyancyYVelocity) || float.IsInfinity(buoyancyYVelocity))
+        {
+            buoyancyYVelocity = 0f;
+        }
+        float smoothedY = Mathf.SmoothDamp(currentPos.y, center.y - currentBuoyancyOffset,
+            ref buoyancyYVelocity, BuoyancySmoothTime, Mathf.Infinity, Time.fixedDeltaTime);
+
         newPos = new Vector3(
             newPos.x,
-            center.y - currentBuoyancyOffset,
+            smoothedY,
             newPos.z
         );
 
