@@ -410,12 +410,10 @@ namespace DogWater
                 Vector3 rotatedPos = shipRotationDelta * relativePos;
                 Vector3 rotationDisplacement = rotatedPos - relativePos;
 
+                // The ship's vertical motion is applied even while not grounded: dropping it whenever the ground
+                // check failed for a frame let the deck sink away under the player, who then fell and landed
+                // again over and over ("bouncing" on a descending deck). The player now stays in the ship's frame.
                 Vector3 shipTranslation = currentShipPos - _previousShipPosition;
-
-                if (!Grounded)
-                {
-                    shipTranslation.y = 0;
-                }
 
 
                 _controller.Move(playerMotion + verticalMotion + shipTranslation + rotationDisplacement);
@@ -447,10 +445,9 @@ namespace DogWater
                 {
                     if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
                         return;
-                    if (ship != null)
-                        _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity) + ship.VerticalVelocity;
-                    else
-                        _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+                    // No ship.VerticalVelocity here: Move() already carries the player with the ship while airborne,
+                    // so adding the deck's speed would count it twice.
+                    _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
                 }
                 if (_jumpTimeoutDelta >= 0.0f) _jumpTimeoutDelta -= Time.deltaTime;
             }
