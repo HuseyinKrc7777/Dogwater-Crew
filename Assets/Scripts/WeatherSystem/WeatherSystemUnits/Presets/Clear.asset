@@ -22,12 +22,66 @@ MonoBehaviour:
     weight: 40
   - target: {fileID: 11400000, guid: c4db96fd7a055734c959b8e211395f42, type: 2}
     weight: 5
-  transitionSeconds: 10
-  minDurationGameHours: 4
-  maxDurationGameHours: 10
+  transitionSeconds: 60
+  minDurationGameHours: 8
+  maxDurationGameHours: 20
+  durationScaleByAbsLatitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 1
+      inSlope: -0
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40
+      value: 1
+      inSlope: -0
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 60
+      value: 1
+      inSlope: -0
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 80
+      value: 1
+      inSlope: -0
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   minWindStrength: 0.6
   maxWindStrength: 1
   maxWindVeerDegrees: 10
   currentMultiplier: 1
+  precipitation: 0
+  lightningPerMinute: 0
+  sunlight: 1
   moistureSensitivity: -0.8
   storminessSensitivity: -0.5

@@ -91,7 +91,7 @@ public sealed class WeatherSimulation
             r.PresetIndex = first;
             r.WindStrength = RollStrength(first) * r.BeltStrengthFactor;
             r.WindVeerDegrees = RollVeer(first);
-            r.NextChangeGameHour = nowGameHours + RollDuration(first);
+            r.NextChangeGameHour = nowGameHours + RollDuration(first, id);
             r.ForcedPresetIndex = -1;
         }
 
@@ -139,7 +139,7 @@ public sealed class WeatherSimulation
                     r.WindStrength = RollStrength(next) * r.BeltStrengthFactor;
                     r.WindVeerDegrees = RollVeer(next);
                 }
-                r.NextChangeGameHour += RollDuration(next);
+                r.NextChangeGameHour += RollDuration(next, id);
             }
 
             if (r.IsForced && r.ForcedEndGameHour > 0d && nowGameHours >= r.ForcedEndGameHour)
@@ -238,7 +238,7 @@ public sealed class WeatherSimulation
             r.WindStrength = RollStrength(next) * r.BeltStrengthFactor;
             r.WindVeerDegrees = RollVeer(next);
         }
-        r.NextChangeGameHour = nowGameHours + RollDuration(next);
+        r.NextChangeGameHour = nowGameHours + RollDuration(next, regionId);
         return true;
     }
 
@@ -408,10 +408,13 @@ public sealed class WeatherSimulation
         return ((float)random.NextDouble() * 2f - 1f) * p.MaxWindVeerDegrees;
     }
 
-    private float RollDuration(int presetIndex)
+    // The climate scale is sampled at the row centre, like the wind belts, so every region of a row
+    // shares it. Still one random draw per call, so a seed replays the same sequence of choices.
+    private float RollDuration(int presetIndex, int regionId)
     {
         WeatherPreset p = presets[presetIndex];
-        return Mathf.Lerp(p.MinDurationGameHours, p.MaxDurationGameHours, (float)random.NextDouble());
+        float hours = Mathf.Lerp(p.MinDurationGameHours, p.MaxDurationGameHours, (float)random.NextDouble());
+        return hours * p.GetDurationScale(Mathf.Abs(GetRowCentreLatitude(regionId)));
     }
 
     private static Vector3 BearingToVector(float bearingDegrees, float magnitude)

@@ -48,6 +48,13 @@ public class WorldIslandController : NetworkBehaviour
     float counter = 0.0f;
     float timeout = 1.0f;
 
+    // Island generation was tuned at EarthRadius = 63674 (3 * R / 100 = 1910 islands, clusters within
+    // +/-7 degrees). The sea should look the same at any world size, so the island count keeps the
+    // islands per square world unit and the cluster spread keeps its size in world units.
+    const float ReferenceEarthRadius = 63674f;
+    const int ReferenceIslandCount = 1910;
+    const float ReferenceClusterSpreadDegrees = 7f;
+
     public static WorldIslandController Instance { get; private set; }
     private void Awake()
     {
@@ -69,7 +76,8 @@ public class WorldIslandController : NetworkBehaviour
         }
         if (IsServer)
         {
-            GenerateIslands(3 * GlobalCoordinate.EarthRadius / 100);
+            float radiusRatio = GlobalCoordinate.EarthRadius / ReferenceEarthRadius;
+            GenerateIslands(Mathf.RoundToInt(ReferenceIslandCount * radiusRatio * radiusRatio));
         }
     }
 
@@ -213,6 +221,7 @@ public class WorldIslandController : NetworkBehaviour
             worldIslands.Add(newisland);
         }
 
+        int clusterSpreadSeconds = Mathf.RoundToInt(ReferenceClusterSpreadDegrees * 60 * 60 * ReferenceEarthRadius / GlobalCoordinate.EarthRadius);
         for(int i = 0;i<count/6;i++)
         {
             
@@ -239,8 +248,8 @@ public class WorldIslandController : NetworkBehaviour
 
             GlobalCoordinate randcoordinate = coordinates[UnityEngine.Random.Range(0,coordinates.Count)];
             GlobalCoordinate coordinate = new(randcoordinate.latitude,randcoordinate.longitude);
-            coordinate.latitude.AddSecond((int)(UnityEngine.Random.value  * 7 * 60 * 60 * sign1));
-            coordinate.longitude.AddSecond((int)(UnityEngine.Random.value  * 7 * 60 * 60 * sign2));
+            coordinate.latitude.AddSecond((int)(UnityEngine.Random.value  * clusterSpreadSeconds * sign1));
+            coordinate.longitude.AddSecond((int)(UnityEngine.Random.value  * clusterSpreadSeconds * sign2));
             if(max>10)
             {
                 break;                
