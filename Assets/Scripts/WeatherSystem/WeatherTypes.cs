@@ -82,6 +82,7 @@ public struct WeatherRegionState
     public float Storminess;
     public float PrevailingBearing;      // degrees, toward
     public float BeltStrengthFactor;
+    public float BeltExtraVeerDegrees;   // added to the preset's veer range (wind belt)
     public float CurrentBearing;         // degrees, toward (current belt)
     public float CurrentBaseSpeed;       // world units/s before the preset multiplier
 

@@ -90,7 +90,7 @@ public sealed class WeatherSimulation
 
             r.PresetIndex = first;
             r.WindStrength = RollStrength(first) * r.BeltStrengthFactor;
-            r.WindVeerDegrees = RollVeer(first);
+            r.WindVeerDegrees = RollVeer(first, r);
             r.NextChangeGameHour = nowGameHours + RollDuration(first, id);
             r.ForcedPresetIndex = -1;
         }
@@ -137,7 +137,7 @@ public sealed class WeatherSimulation
                 {
                     r.PresetIndex = next;
                     r.WindStrength = RollStrength(next) * r.BeltStrengthFactor;
-                    r.WindVeerDegrees = RollVeer(next);
+                    r.WindVeerDegrees = RollVeer(next, r);
                 }
                 r.NextChangeGameHour += RollDuration(next, id);
             }
@@ -211,7 +211,7 @@ public sealed class WeatherSimulation
         r.ForcedPresetIndex = presetIndex;
         r.ForcedEndGameHour = durationGameHours > 0f ? nowGameHours + durationGameHours : 0d;
         r.ForcedWindStrength = RollStrength(presetIndex) * r.BeltStrengthFactor;
-        r.ForcedWindVeerDegrees = RollVeer(presetIndex);
+        r.ForcedWindVeerDegrees = RollVeer(presetIndex, r);
         return true;
     }
 
@@ -236,7 +236,7 @@ public sealed class WeatherSimulation
         {
             r.PresetIndex = next;
             r.WindStrength = RollStrength(next) * r.BeltStrengthFactor;
-            r.WindVeerDegrees = RollVeer(next);
+            r.WindVeerDegrees = RollVeer(next, r);
         }
         r.NextChangeGameHour = nowGameHours + RollDuration(next, regionId);
         return true;
@@ -327,6 +327,7 @@ public sealed class WeatherSimulation
         WeatherDatabase.WindBelt wind = database.GetWindBelt(absLat);
         r.PrevailingBearing = north ? wind.towardBearingNorth : wind.towardBearingSouth;
         r.BeltStrengthFactor = Mathf.Max(0f, wind.strengthFactor);
+        r.BeltExtraVeerDegrees = Mathf.Clamp(wind.extraVeerDegrees, 0f, 180f);
 
         WeatherDatabase.CurrentBelt current = database.GetCurrentBelt(absLat);
         r.CurrentBearing = north ? current.towardBearingNorth : current.towardBearingSouth;
@@ -402,10 +403,13 @@ public sealed class WeatherSimulation
         return Mathf.Lerp(p.MinWindStrength, p.MaxWindStrength, (float)random.NextDouble());
     }
 
-    private float RollVeer(int presetIndex)
+    // The belt widens the preset's range (doldrums: up to any direction). Still exactly one random
+    // draw per call, so a seed replays the same sequence whatever the belts say.
+    private float RollVeer(int presetIndex, in WeatherRegionState r)
     {
         WeatherPreset p = presets[presetIndex];
-        return ((float)random.NextDouble() * 2f - 1f) * p.MaxWindVeerDegrees;
+        float range = Mathf.Min(180f, p.MaxWindVeerDegrees + r.BeltExtraVeerDegrees);
+        return ((float)random.NextDouble() * 2f - 1f) * range;
     }
 
     // The climate scale is sampled at the row centre, like the wind belts, so every region of a row

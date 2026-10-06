@@ -144,23 +144,27 @@ MonoBehaviour:
     towardBearingNorth: 270
     towardBearingSouth: 270
     strengthFactor: 0.6
+    extraVeerDegrees: 180
   - maxAbsLatitude: 30
     towardBearingNorth: 225
     towardBearingSouth: 315
     strengthFactor: 1
+    extraVeerDegrees: 0
   - maxAbsLatitude: 60
     towardBearingNorth: 45
     towardBearingSouth: 135
     strengthFactor: 1.15
+    extraVeerDegrees: 0
   - maxAbsLatitude: 90
     towardBearingNorth: 225
     towardBearingSouth: 315
     strengthFactor: 0.9
+    extraVeerDegrees: 0
   currentBelts:
   - maxAbsLatitude: 10
     towardBearingNorth: 270
     towardBearingSouth: 270
-    speed: 0.8
+    speed: 0.3
   - maxAbsLatitude: 30
     towardBearingNorth: 270
     towardBearingSouth: 270

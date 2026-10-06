@@ -18,6 +18,9 @@ public class WeatherDatabase : ScriptableObject
         [Range(0f, 360f)] public float towardBearingSouth;
         [Tooltip("Multiplies the preset's wind strength.")]
         [Min(0f)] public float strengthFactor;
+        [Tooltip("Added to the preset's maxWindVeerDegrees when a stay rolls its wind direction (total capped at 180). " +
+                 "180 = the wind may come from any direction (doldrums); 0 = the preset's veer only.")]
+        [Range(0f, 180f)] public float extraVeerDegrees;
     }
 
     [Serializable]
@@ -53,7 +56,7 @@ public class WeatherDatabase : ScriptableObject
     [Header("Prevailing wind belts")]
     [SerializeField] private WindBelt[] windBelts =
     {
-        new WindBelt { maxAbsLatitude = 10f, towardBearingNorth = 270f, towardBearingSouth = 270f, strengthFactor = 0.6f },  // doldrums
+        new WindBelt { maxAbsLatitude = 10f, towardBearingNorth = 270f, towardBearingSouth = 270f, strengthFactor = 0.6f, extraVeerDegrees = 180f },  // doldrums, variable
         new WindBelt { maxAbsLatitude = 30f, towardBearingNorth = 225f, towardBearingSouth = 315f, strengthFactor = 1.0f },  // trade winds
         new WindBelt { maxAbsLatitude = 60f, towardBearingNorth = 45f,  towardBearingSouth = 135f, strengthFactor = 1.15f }, // westerlies
         new WindBelt { maxAbsLatitude = 90f, towardBearingNorth = 225f, towardBearingSouth = 315f, strengthFactor = 0.9f },  // polar easterlies
