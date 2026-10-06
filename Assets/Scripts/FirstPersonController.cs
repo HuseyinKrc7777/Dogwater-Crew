@@ -163,6 +163,16 @@ namespace DogWater
                 itemButtonPressed = 3;
                 _input.button4 = false;
             }
+            else if (_input.button5)
+            {
+                itemButtonPressed = 4;
+                _input.button5 = false;
+            }
+            else if (_input.buttonf)
+            {
+                itemButtonPressed = 5;
+                _input.buttonf = false;
+            }
             else
                 itemButtonPressed = -1;
             if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 

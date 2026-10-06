@@ -8,9 +8,10 @@ using UnityEngine.Rendering;
 public class TestHoldItem : NetworkBehaviour , IHoldableItem
 {
     Transform holder;
-    bool beingHeld = false;
     Collider Collider;
+    //objenin meshini oyuncu prefabında bulunması lazım
     string NameOfObjectOnThePlayerPrefab = "HoldingSpherePlayer";
+    //objenin altında çocuk olarak bulunacak bir mesh ' e ihtiyaç vardır
     GameObject mesh;
     GameObject spawnedMesh;
 

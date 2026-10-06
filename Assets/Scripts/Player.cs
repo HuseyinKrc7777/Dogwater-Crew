@@ -42,6 +42,7 @@ public class Player : NetworkBehaviour
         base.OnNetworkSpawn();
         PlayerName.OnValueChanged += OnNameChange;
         compassObject.SetActive(false);
+        LanternObject.SetActive(false);
 
         if (IsOwner)
         {
@@ -68,6 +69,11 @@ public class Player : NetworkBehaviour
             Items.Add(new Sextant());
             diary = new Diary();
             Items.Add(diary);
+
+            Items.Add(new FishingRod());
+
+            Items.Add(new Lantern());
+
         }
 
 
@@ -132,6 +138,13 @@ public class Player : NetworkBehaviour
         ///animasyon manimasyon filan fişman da oynatılabilir burada
         compassObject.SetActive(state);
     }
+    public GameObject LanternObject;
+    [Rpc(SendTo.Everyone)]
+    internal void LanternRpc(bool v)
+    {
+        LanternObject.SetActive(v);
+    }
 }
+
 
 

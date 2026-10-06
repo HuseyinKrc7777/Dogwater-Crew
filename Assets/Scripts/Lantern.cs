@@ -1,31 +1,7 @@
 using System;
 using DogWater;
 using UnityEngine;
-[ExecuteAlways]
-public class Compass : MonoBehaviour
-{
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public Transform stick;
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    { 
-        Vector3 forw = Vector3.forward;
-        if(transform.parent!=null)
-        {
-            forw = transform.parent.InverseTransformDirection(forw);
-        }
-        stick.localRotation = Quaternion.LookRotation(forw);
-    }
-
-}
-
-
-public class EquipableCompass : IItem
+public class Lantern : IItem
 {
     private bool _equipped;
     private bool _interacting;
@@ -37,20 +13,17 @@ public class EquipableCompass : IItem
     {
         //burada 
         player = controller.GetComponent<Player>();
-        player.CompassRpc(true);
-        //throw new NotImplementedException();
+        player.LanternRpc(true);
     }
 
     public void Interact()
     {
-        //TODO pusulayı ekrana yaklaştırıp açıları daha okunablir yapılacak
         //throw new NotImplementedException();
     }
 
     public void UnEquip()
     {
-        player.CompassRpc(false);
-
+        player.LanternRpc(false);
         //throw new NotImplementedException();
     }
 
@@ -69,4 +42,3 @@ public class EquipableCompass : IItem
         //throw new NotImplementedException();
     }
 }
-

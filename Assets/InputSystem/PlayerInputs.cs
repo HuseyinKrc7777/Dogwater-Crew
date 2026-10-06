@@ -19,6 +19,10 @@ namespace DogWater
 		public bool button2;
 		public bool button3;
 		public bool button4;
+		public bool button5;
+		
+		public bool buttonf;
+
 		public bool menu;
 
 
@@ -82,6 +86,14 @@ namespace DogWater
 		public void OnButton4(InputValue value)
 		{
 			button4 = value.isPressed;
+		}
+		public void OnButton5(InputValue value)
+		{
+			button5 = value.isPressed;
+		}
+		public void OnButtonf(InputValue value)
+		{
+			buttonf = value.isPressed;
 		}
 		public void OnMenu(InputValue value)
 		{
@@ -148,6 +160,14 @@ namespace DogWater
 		public void Button4Input(bool newButton4State)
 		{
 			button4 = newButton4State;
+		}
+		public void Button5Input(bool newButton5State)
+		{
+			button5 = newButton5State;
+		}
+		public void ButtonfInput(bool newButtonfState)
+		{
+			buttonf = newButtonfState;
 		}
 		public void MenuInput(bool newMenuState)
 		{
