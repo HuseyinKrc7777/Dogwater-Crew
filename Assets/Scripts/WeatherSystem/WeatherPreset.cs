@@ -33,6 +33,9 @@ public class WeatherPreset : ScriptableObject
     [Tooltip("How long this state lasts once entered, in IN-GAME hours.")]
     [Min(0.01f)][SerializeField] private float minDurationGameHours = 3f;
     [Min(0.01f)][SerializeField] private float maxDurationGameHours = 8f;
+    [Tooltip("Climate-dependent stay length: multiplies the rolled duration, sampled at the region's row-centre " +
+             "|latitude| (0-90). 1 = unchanged. Clamped to 0.1-10; an empty curve counts as 1 everywhere.")]
+    [SerializeField] private AnimationCurve durationScaleByAbsLatitude = AnimationCurve.Constant(0f, 90f, 1f);
 
     [Header("Wind (WaterController.wind units; 1 = reference breeze)")]
     [Min(0f)][SerializeField] private float minWindStrength = 0.8f;
@@ -63,6 +66,14 @@ public class WeatherPreset : ScriptableObject
     public float TransitionSeconds => Mathf.Max(0f, transitionSeconds);
     public float MinDurationGameHours => Mathf.Max(0.01f, minDurationGameHours);
     public float MaxDurationGameHours => Mathf.Max(MinDurationGameHours, maxDurationGameHours);
+    // An empty AnimationCurve evaluates to 0, which would make every stay zero-length - treat it as 1.
+    public float GetDurationScale(float absLatitude)
+    {
+        if (durationScaleByAbsLatitude == null || durationScaleByAbsLatitude.length == 0) return 1f;
+        float scale = durationScaleByAbsLatitude.Evaluate(Mathf.Clamp(absLatitude, 0f, 90f));
+        if (float.IsNaN(scale) || float.IsInfinity(scale)) return 1f;
+        return Mathf.Clamp(scale, 0.1f, 10f);
+    }
     public float MinWindStrength => Mathf.Max(0f, minWindStrength);
     public float MaxWindStrength => Mathf.Max(MinWindStrength, maxWindStrength);
     public float MaxWindVeerDegrees => Mathf.Clamp(maxWindVeerDegrees, 0f, 90f);

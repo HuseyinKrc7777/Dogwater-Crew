@@ -24,9 +24,60 @@ MonoBehaviour:
     weight: 40
   - target: {fileID: 11400000, guid: f79019945a4cb054f95fbf7a88a1dadd, type: 2}
     weight: 20
-  transitionSeconds: 6
-  minDurationGameHours: 2
-  maxDurationGameHours: 6
+  transitionSeconds: 60
+  minDurationGameHours: 4
+  maxDurationGameHours: 12
+  durationScaleByAbsLatitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.5
+      inSlope: 0
+      outSlope: 0.0050000013
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 0.6
+      inSlope: 0.0050000013
+      outSlope: 0.030000001
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40
+      value: 1.2
+      inSlope: 0.030000001
+      outSlope: 0.02
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 60
+      value: 1.6
+      inSlope: 0.02
+      outSlope: -0.030000001
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 80
+      value: 1
+      inSlope: -0.030000001
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   minWindStrength: 1
   maxWindStrength: 1.4
   maxWindVeerDegrees: 20
