@@ -6,10 +6,13 @@ public class holdabkeobjectmeshextension : MonoBehaviour , IHoldableItem
     protected IHoldableItem _originalItem;
 
     IHoldableItem IHoldableItem.originalItem { get => _originalItem; set => _originalItem = value; }
+    public GameObject spawnedMesh { get => gameObject; set => throw new System.NotImplementedException(); }
+    public ulong NetworkObjectId { get => _originalItem.NetworkObjectId; set => throw new System.NotImplementedException(); }
+
     public bool stuckToFloor = true;
-    public void Drop()
+    public void Drop(Vector3 position)
     {
-        _originalItem.Drop();
+        _originalItem.Drop(position);
     }
 
     public void OnInteract(Player player)

@@ -7,24 +7,27 @@ using UnityEngine.Rendering;
 
 public class TestHoldItem : NetworkBehaviour , IHoldableItem
 {
-    Transform holder;
+    public Transform holder;
     Collider Collider;
     //objenin meshini oyuncu prefabında bulunması lazım
     string NameOfObjectOnThePlayerPrefab = "HoldingSpherePlayer";
     //objenin altında çocuk olarak bulunacak bir mesh ' e ihtiyaç vardır
     GameObject mesh;
-    GameObject spawnedMesh;
+    private GameObject spawnedMesh;
 
     public IHoldableItem originalItem { get => this; set => throw new System.NotImplementedException(); }
+    GameObject IHoldableItem.spawnedMesh { get => spawnedMesh; set => spawnedMesh = value; }
+    ulong IHoldableItem.NetworkObjectId { get => NetworkObjectId; set => throw new System.NotImplementedException(); }
+
     [Rpc(SendTo.Server)]
     private void JoinRpc()
     {
-        Drop();
+        Drop(transform.position);
     }
-    public void Drop()
+    public void Drop(Vector3 position)
     {
         Debug.LogError("dropping");
-        Vector3 pos = transform.position;
+        Vector3 pos = position;
         if(holder!=null)
         {
             pos = holder.position + new Vector3(holder.forward.x,1,holder.forward.z)*2;
@@ -65,7 +68,7 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
         mesh = transform.Find("mesh").gameObject;
         mesh.SetActive(false);
         if(IsServer)
-            Drop();
+            Drop(transform.position);
         else
             JoinRpc();
        
@@ -161,6 +164,6 @@ public class TestHoldItem : NetworkBehaviour , IHoldableItem
 
     public void OnUnInteract(Player player)
     {
-        Drop();
+        Drop(transform.position);
     }
 }

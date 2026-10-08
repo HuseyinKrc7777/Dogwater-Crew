@@ -225,9 +225,9 @@ public class BoatMovement : NetworkBehaviour
 
         float minTurnSpeed = 0.3f;
 
-        if (forwardSpeed < minTurnSpeed)
+        if (forwardSpeed < minTurnSpeed && Mathf.Abs(yawDelta)>0.1f)
         {
-            yawDelta = 0.1f;
+            yawDelta = 0.1f * Mathf.Sign(yawDelta);
         }
 
         Quaternion yawRot = Quaternion.Euler(0f, yawDelta, 0f);
