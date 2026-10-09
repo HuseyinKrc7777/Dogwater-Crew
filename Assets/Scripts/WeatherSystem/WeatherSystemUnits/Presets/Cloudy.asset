@@ -85,5 +85,7 @@ MonoBehaviour:
   precipitation: 0
   lightningPerMinute: 0
   sunlight: 0.45
+  seaSwell: 0.6
+  seaChop: 0.6
   moistureSensitivity: 0.3
   storminessSensitivity: 0

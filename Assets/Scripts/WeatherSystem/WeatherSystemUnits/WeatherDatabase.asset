@@ -177,5 +177,6 @@ MonoBehaviour:
     towardBearingNorth: 270
     towardBearingSouth: 270
     speed: 0.3
+  seaBaseWindSpeedKmh: 80
   regionSwitchDebounceSeconds: 3
   maintenanceIntervalSeconds: 0.5

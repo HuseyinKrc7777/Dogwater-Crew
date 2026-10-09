@@ -55,6 +55,12 @@ public class WeatherPreset : ScriptableObject
     [Tooltip("Sun light strength. 1 = as authored in the scene, lower = sun behind clouds.")]
     [Range(0f, 1f)][SerializeField] private float sunlight = 1f;
 
+    [Header("Sea state (driven by WeatherSeaState; scales the sea set by the database's Sea Base Wind Speed)")]
+    [Tooltip("Height of the big swell (ocean band 0). 1 = the full base sea, lower = calmer.")]
+    [Range(0f, 1f)][SerializeField] private float seaSwell = 1f;
+    [Tooltip("Height of the shorter, choppy waves (ocean band 1). 1 = the full base sea, lower = calmer.")]
+    [Range(0f, 1f)][SerializeField] private float seaChop = 1f;
+
     [Header("Climate affinity")]
     [Range(-1f, 1f)][SerializeField] private float moistureSensitivity;
     [Range(-1f, 1f)][SerializeField] private float storminessSensitivity;
@@ -81,6 +87,8 @@ public class WeatherPreset : ScriptableObject
     public float Precipitation => Mathf.Clamp01(precipitation);
     public float LightningPerMinute => Mathf.Clamp(lightningPerMinute, 0f, 60f);
     public float Sunlight => Mathf.Clamp01(sunlight);
+    public float SeaSwell => Mathf.Clamp01(seaSwell);
+    public float SeaChop => Mathf.Clamp01(seaChop);
     public float MoistureSensitivity => moistureSensitivity;
     public float StorminessSensitivity => storminessSensitivity;
 }

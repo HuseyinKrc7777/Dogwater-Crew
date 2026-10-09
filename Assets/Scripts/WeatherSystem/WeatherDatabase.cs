@@ -71,6 +71,12 @@ public class WeatherDatabase : ScriptableObject
         new CurrentBelt { maxAbsLatitude = 90f, towardBearingNorth = 270f, towardBearingSouth = 270f, speed = 0.3f },  // polar drift, westward
     };
 
+    [Header("Sea state")]
+    [Tooltip("Distant wind speed (km/h) the ocean WaterSurface gets while weather runs - the size of the full storm sea. " +
+             "Applied once per session (changing it rebuilds HDRP's wave spectrum); the presets' Sea Swell/Chop scale it down. " +
+             "0 = keep the speed authored on the scene's WaterSurface.")]
+    [Range(0f, 250f)][SerializeField] private float seaBaseWindSpeedKmh;
+
     [Header("Tuning")]
     [Min(0f)][SerializeField] private float regionSwitchDebounceSeconds = 3f;
     [Min(0.05f)][SerializeField] private float maintenanceIntervalSeconds = 0.5f;
@@ -81,6 +87,7 @@ public class WeatherDatabase : ScriptableObject
     public int RegionCount => LatitudeRows * LongitudeColumns;
     public float RegionSwitchDebounceSeconds => Mathf.Max(0f, regionSwitchDebounceSeconds);
     public float MaintenanceIntervalSeconds => Mathf.Max(0.05f, maintenanceIntervalSeconds);
+    public float SeaBaseWindSpeedKmh => Mathf.Clamp(seaBaseWindSpeedKmh, 0f, 250f);
 
     public float EvaluateMoisture(float absLatitude) => Mathf.Clamp01(moistureByAbsLatitude.Evaluate(absLatitude));
     public float EvaluateStorminess(float absLatitude) => Mathf.Clamp01(storminessByAbsLatitude.Evaluate(absLatitude));

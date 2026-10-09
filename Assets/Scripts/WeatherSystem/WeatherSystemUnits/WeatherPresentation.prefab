@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2002426778019343805}
   - component: {fileID: 8803517567012356183}
+  - component: {fileID: 8118373986362459546}
   m_Layer: 0
   m_Name: WeatherPresentation
   m_TagString: Untagged
@@ -49,6 +50,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeatherPresentation
   sourceVolume: {fileID: 3482668299012301362}
   targetVolume: {fileID: 59478946297351408}
+--- !u!114 &8118373986362459546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922607048101008587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed98b7e316148304f9d9cc8bb9388b9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeatherSeaState
+  maxChangePerSecond: 0.05
 --- !u!1 &2791171499425491521
 GameObject:
   m_ObjectHideFlags: 0
