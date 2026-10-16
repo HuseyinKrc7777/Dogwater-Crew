@@ -23,6 +23,10 @@ public class Player : NetworkBehaviour
     public Vector3 LookDirection {get => controller.CinemachineCameraTarget.transform.forward;}
     [SerializeField] public TextMeshPro nameDisplay;
     public List<IItem> Items = new();
+    public Vector3 getRodTipPosition()
+    {
+        return FishingRodObject.transform.position + FishingRodObject.transform.up * 2;
+    }
     //TODO oyuncu isminin client dan değiştirilebiliyor olması güvenlik açığı sayılabilir.
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(
         default,
@@ -110,9 +114,20 @@ public class Player : NetworkBehaviour
 
 
     // Update is called once per frame
+    float counter = 0;
     void Update()
     {
-
+        if(!IsOwner)
+            return;
+        if(rod.bober != null)
+        {
+            counter+=Time.deltaTime;
+            if(counter>=0.2f)
+            {
+                boberSyncRpc(rod.bober.transform.position);
+                counter=0;
+            }
+        }
     }
     private Vector3 originalTextRotation;
     void LateUpdate()
@@ -156,10 +171,12 @@ public class Player : NetworkBehaviour
     {
         FishingRodObject.SetActive(v);
     }
-    private boberController bober;
+        boberController bober;
+
     [Rpc(SendTo.NotOwner)]
-    internal void FishingRodCastRpc(float charge,Vector3 dir)
+    internal void FishingRodCastRpc(float charge,Vector3 dir,RpcParams rpcParams = default)
     {
+        ulong id  = rpcParams.Receive.SenderClientId;
         bober= UnityEngine.Object.Instantiate(bobber).GetComponent<boberController>();
         bober.transform.position = bobber.transform.position;
         bober.gameObject.SetActive(true);
@@ -168,27 +185,45 @@ public class Player : NetworkBehaviour
         //rod.CastRod(charge,dir);
     }
     [Rpc(SendTo.NotOwner)]
-    internal void FishingRodReelRpc(Vector3 force)
+    internal void FishingRodReelRpc(Vector3 force,RpcParams rpcParams = default)
     {
         bober._rigidbody.AddForce(force, ForceMode.Force);
     }
     [Rpc(SendTo.NotOwner)]
-    internal void FishingRodFlickRpc(Vector3 force)
+    internal void FishingRodFlickRpc(Vector3 force,RpcParams rpcParams = default)
     {
         bober._rigidbody.AddForce(force, ForceMode.Impulse);
         
     }
     [Rpc(SendTo.NotOwner)]
-    internal void DestroyBobberRpc()
+    internal void DestroyBobberRpc(RpcParams rpcParams = default)
     {
-        Destroy(bober.gameObject);
+        Destroy(bober?.gameObject);
         
     }
     [Rpc(SendTo.NotOwner)]
-    internal void HookRpc(ulong objectid)
+    internal void HookRpc(ulong objectid,RpcParams rpcParams = default)
     {
         IHoldableItem obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)objectid].GetComponent<IHoldableItem>();
+        bober.transform.position = obj.spawnedMesh.transform.position;
         obj.spawnedMesh.transform.parent = bober.transform;
+
+    }
+
+    [Rpc(SendTo.NotOwner)]
+    internal void OnRodRpc(ulong objectid,RpcParams rpcParams = default)
+    {
+        IHoldableItem obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)objectid].GetComponent<IHoldableItem>();
+        obj.spawnedMesh.transform.position = getRodTipPosition();
+        obj.spawnedMesh.transform.parent = transform;
+    }
+
+    [Rpc(SendTo.NotOwner)]
+    internal void boberSyncRpc(Vector3 pos,RpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        bober.MoveTowardsPosition(pos);
+        
     }
 
 }

@@ -1,4 +1,6 @@
 using Unity.Netcode;
+using Unity.VisualScripting;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -17,8 +19,18 @@ public class boberController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    
         floatObject();
+    }
+    public void MoveTowardsPosition(Vector3 pos)
+    {
+        float dist = Vector3.Distance(pos,transform.position);
+        Vector3 dir = pos - transform.position;
+        if(dist > 3.0f)
+            transform.position = pos;
+        else
+        {
+            _rigidbody.AddForce(dir*dist/3);
+        }
     }
     public void floatObject()
     {
@@ -47,26 +59,24 @@ public class boberController : MonoBehaviour
     }
     public void ReelIn()
     {
-        Debug.LogError("REELING IN");
 
         onWater = false;
-        if(rod.GetLenght() > 2f)
-        {
-            Vector3 dir = (rod.rodTipPosition - transform.position).normalized;
-            _rigidbody.AddForce(dir * 2, ForceMode.Force);
-            rod.player.FishingRodReelRpc(dir*2);
-            
-        }
-        else if(Mathf.Abs((rod.rodTipPosition - transform.position).x) < 0.5f && Mathf.Abs((rod.rodTipPosition - transform.position).z) < 0.5f)
-        {
-            //TODO: bu düzeltilecek , bober oltanın altında iken yukarı doğru hareket edecek.
-            //hatta direk kinematic yapıp yukarı doğru bile hareket ettirilebilr.
-            Vector3 dir = Vector3.up;
-            _rigidbody.AddForce(dir * 30, ForceMode.Impulse);
-            rod.player.FishingRodFlickRpc(dir*30);
+ 
+        Vector3 dir = (rod.player.getRodTipPosition() - transform.position).normalized;
+        //float dist = rod.GetLenght();
+        Vector2 pos1 = new Vector2(rod.player.getRodTipPosition().x,rod.player.getRodTipPosition().z);
+        Vector2 pos2 = new Vector2(transform.position.x,transform.position.z);
+        float horizontalDist = Vector2.Distance(pos1,pos2);
+        float power = Mathf.Max(2,10/horizontalDist);
 
-        }
+        
+        _rigidbody.AddForce(dir * power, ForceMode.Force);
+        rod.player.FishingRodReelRpc(dir*power);
 
+        if(Vector3.Distance(rod.player.getRodTipPosition(),transform.position) < 0.3f)
+        {
+            rod.retractBoberOnRod();
+        }
 
     }
 
