@@ -9,7 +9,11 @@ public class GlobalCoordinate : INetworkSerializable
 {
     //const int EarthRadius = 6367449;
     //test amaçlı dünya büyüklüğü küçüktür.
-    public static int EarthRadius = 63674;
+    // 2026-10-05: 63674 -> 26000 so a typical weather-region crossing takes ~40 min instead of ~1.5-4 h.
+    // Degree-based systems (weather, sky, coordinates) follow automatically; world-unit distances
+    // (load distances, camera range, ship speed) are deliberately unchanged. WorldIslandController
+    // scales its island count and cluster spread from this value.
+    public static int EarthRadius = 26000;
     public LatitudeCoordinate latitude;
     public LongitudeCoordinate longitude;
     public GlobalCoordinate(LatitudeCoordinate latitude , LongitudeCoordinate longitude)

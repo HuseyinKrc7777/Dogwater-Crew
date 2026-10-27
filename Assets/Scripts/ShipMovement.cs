@@ -25,6 +25,11 @@ public class BoatMovement : NetworkBehaviour
     private Vector3[] effectorTargets;
     private Vector3 velocity;
 
+    // Time the hull takes to follow the sampled water height (SmoothDamp). Small on purpose: it only has
+    // to hide the stall-then-jump steps of the water samples, not the waves themselves.
+    private const float BuoyancySmoothTime = 0.05f;
+    private float buoyancyYVelocity;
+
     private WaterController waterController;
     private Rigidbody rb;
     private Ship ship;
@@ -39,6 +44,7 @@ public class BoatMovement : NetworkBehaviour
         effectorTargets = new Vector3[effectors.Length];
         waterController = WaterController.Instance;
         ship = GetComponent<Ship>();
+        buoyancyYVelocity = 0f;
     }
 
     void FixedUpdate()
@@ -109,8 +115,12 @@ public class BoatMovement : NetworkBehaviour
             currentPos.z
         );
 
-        targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
-        targetPos += sails.GetTotalWindPush() * Time.fixedDeltaTime;
+        // Disabled: since the HDRP switch GetWave returns the projected world POSITION, not a wave
+        // displacement, so this pushed the ship away from world origin in proportion to its distance
+        // from it - speed kept growing the further the ship sailed. Replaced by the ocean current below.
+        //targetPos += WaveDrift(wave) * Time.fixedDeltaTime;
+        Vector3 sailsPush = sails.GetTotalWindPush();
+        targetPos += sailsPush * Time.fixedDeltaTime;
 
         if (float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z) || float.IsInfinity(velocity.y))
         {
@@ -129,7 +139,16 @@ public class BoatMovement : NetworkBehaviour
         float acceleration = 0.40f;
         float deceleration = 0.20f;
 
-        Vector3 desiredVelocity = desiredDirection * (targetPos - currentPos).magnitude * 10;
+        float magnitudeValue = Mathf.Clamp((targetPos - currentPos).magnitude * 10,0,sailsPush.magnitude);
+        Vector3 desiredVelocity = desiredDirection * magnitudeValue;
+
+        // Ocean current: the sea carries the ship even with sails furled. Added as a velocity after the
+        // sail clamp above, so it neither depends on where the ship is nor gets clamped away when the
+        // sails give no push. Before the anchor check below, so a fully anchored ship holds.
+        if (WaterController.Instance != null)
+        {
+            desiredVelocity += WaterController.Instance.current.Value;
+        }
 
         float accelRate =
             desiredVelocity.magnitude > currentVelocity.magnitude
@@ -158,9 +177,19 @@ public class BoatMovement : NetworkBehaviour
 
         newPos = Vector3.Scale(new Vector3(1, 0, 1), newPos);
 
+        // The water heights come from HDRP's GPU readback, which does not refresh every frame: the raw
+        // samples stall, then jump, so snapping to them moved the hull in steps (and players on deck kept
+        // losing the ground). Follow the sampled height smoothly instead.
+        if (float.IsNaN(buoyancyYVelocity) || float.IsInfinity(buoyancyYVelocity))
+        {
+            buoyancyYVelocity = 0f;
+        }
+        float smoothedY = Mathf.SmoothDamp(currentPos.y, center.y - currentBuoyancyOffset,
+            ref buoyancyYVelocity, BuoyancySmoothTime, Mathf.Infinity, Time.fixedDeltaTime);
+
         newPos = new Vector3(
             newPos.x,
-            center.y - currentBuoyancyOffset,
+            smoothedY,
             newPos.z
         );
 
@@ -196,9 +225,9 @@ public class BoatMovement : NetworkBehaviour
 
         float minTurnSpeed = 0.3f;
 
-        if (forwardSpeed < minTurnSpeed)
+        if (forwardSpeed < minTurnSpeed && Mathf.Abs(yawDelta)>0.1f)
         {
-            yawDelta = 0.1f;
+            yawDelta = 0.1f * Mathf.Sign(yawDelta);
         }
 
         Quaternion yawRot = Quaternion.Euler(0f, yawDelta, 0f);

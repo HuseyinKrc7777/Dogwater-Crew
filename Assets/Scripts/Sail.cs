@@ -78,10 +78,19 @@ public class Sail : MonoBehaviour
             return Vector3.zero;
         if(angleOfAttack > 35)
             angleOfAttack =  35 + (angleOfAttack-35) / 2f;
-        float lift = Mathf.Cos(angleOfAttack ) * liftCoefficient;
+        // Fix B (agreed with Hüseyin, 2026-09-23). Old lines kept for reference:
+        //float lift = Mathf.Cos(angleOfAttack ) * liftCoefficient;
+        //   -> Vector3.Angle returns degrees but Mathf.Cos expects radians, so lift jumped around
+        //      (10° gave -0.84, 20° gave +0.41) whenever the wind direction changed a little.
+        float lift = Mathf.Cos(angleOfAttack * Mathf.Deg2Rad) * liftCoefficient;
         float drag = Mathf.Max(0, Vector3.Dot(currentSailForward, wind.normalized)) * 0.5f;
 
         Vector3 sailNormal = Vector3.Cross(currentSailForward, Vector3.up);
+        // Old: sailNormal always pointed to the same side of the sail, so turning the sail one way always
+        // helped and the other way always hurt, whichever side the wind came from. Lift pushes the sail
+        // toward the downwind side, so flip the normal to the side the wind is blowing toward.
+        if (Vector3.Dot(sailNormal, wind.normalized) < 0f)
+            sailNormal = -sailNormal;
         Vector3 totalForceVector = sailNormal * lift + currentSailForward * drag;
 
         float forwardPush = Vector3.Dot(totalForceVector, transform.root.forward);

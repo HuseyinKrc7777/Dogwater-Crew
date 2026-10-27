@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -652,7 +652,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: -876546973899608171, guid: 1eebcbb5efcf21a43929e15197fca4bf, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1160,6 +1160,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: "G\xF6rev Tahtasi"
       objectReference: {fileID: 0}
+    - target: {fileID: 763807366643084113, guid: bd24614e96a2e1d44820a7fa4d907298, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: -876546973899608171, guid: 1eebcbb5efcf21a43929e15197fca4bf, type: 3}
     - target: {fileID: 8778287557146023014, guid: bd24614e96a2e1d44820a7fa4d907298, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.85

@@ -1,21 +1,37 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using DogWater;
+using SunCalcSharp;
 using TMPro;
+using Unity.Cinemachine;
 using Unity.Collections;
 using Unity.Netcode;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Diagnostics;
+using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using WebSocketSharp;
 
 public class Player : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public FirstPersonController controller;
+    public Vector3 LookDirection {get => controller.CinemachineCameraTarget.transform.forward;}
     [SerializeField] public TextMeshPro nameDisplay;
+    public List<IItem> Items = new();
+    public Vector3 getRodTipPosition()
+    {
+        return FishingRodObject.transform.position + FishingRodObject.transform.up * 2;
+    }
     //TODO oyuncu isminin client dan değiştirilebiliyor olması güvenlik açığı sayılabilir.
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(
-        default, 
-        NetworkVariableReadPermission.Everyone, 
-        NetworkVariableWritePermission.Owner 
+        default,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Owner
     );
 
     void Start()
@@ -24,26 +40,56 @@ public class Player : NetworkBehaviour
         originalTextRotation = nameDisplay.transform.eulerAngles;
     }
 
-   
+
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        PlayerName.OnValueChanged+=OnNameChange;
+        PlayerName.OnValueChanged += OnNameChange;
+        compassObject.SetActive(false);
+        LanternObject.SetActive(false);
+        FishingRodObject.SetActive(false);
+        bobber.SetActive(false);
+
         if (IsOwner)
         {
             //burada oyuncu id si filan şey olabilir eğer boş ise
-            if(SessionManager.LocalPlayerName.Trim().IsNullOrEmpty())
+            if (SessionManager.LocalPlayerName.Trim().IsNullOrEmpty())
                 SessionManager.LocalPlayerName = "Player";
             PlayerName.Value = SessionManager.LocalPlayerName;
             SyncNames();
         }
-        
+
+    }
+    protected override void OnNetworkPostSpawn()
+    {
+        base.OnNetworkPostSpawn();
+
+        if (IsOwner)
+        {
+            
+            Items.Add(new Spyglass());
+
+            
+            Items.Add(new EquipableCompass());
+
+            Items.Add(new Sextant());
+            diary = new Diary();
+            Items.Add(diary);
+
+            rod = new FishingRod();
+            Items.Add(rod);
+
+            Items.Add(new Lantern());
+
+        }
+
+
     }
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
-        PlayerName.OnValueChanged-=OnNameChange;
+        PlayerName.OnValueChanged -= OnNameChange;
 
     }
 
@@ -52,11 +98,11 @@ public class Player : NetworkBehaviour
         UpdateNameDisplay();
     }
 
-    
+
     private void SyncNames()
     {
         GameObject[] allPlayerObjects = GameObject.FindGameObjectsWithTag("Player");
-        foreach(GameObject obj in allPlayerObjects)
+        foreach (GameObject obj in allPlayerObjects)
         {
             obj.GetComponent<Player>().UpdateNameDisplay();
         }
@@ -66,13 +112,24 @@ public class Player : NetworkBehaviour
         nameDisplay.text = PlayerName.Value.ToString();
     }
 
-    
+
     // Update is called once per frame
+    float counter = 0;
     void Update()
     {
-        
+        if(!IsOwner)
+            return;
+        if(rod.bober != null)
+        {
+            counter+=Time.deltaTime;
+            if(counter>=0.2f)
+            {
+                boberSyncRpc(rod.bober.transform.position);
+                counter=0;
+            }
+        }
     }
-private Vector3 originalTextRotation;
+    private Vector3 originalTextRotation;
     void LateUpdate()
     {
         if (Camera.main == null) return;
@@ -88,7 +145,88 @@ private Vector3 originalTextRotation;
         nameDisplay.transform.eulerAngles = new Vector3(
             originalTextRotation.x,
             current.y,
-            originalTextRotation.z 
+            originalTextRotation.z
         );
     }
+    public GameObject compassObject;
+    public TMP_InputField diaryUi;
+    public Diary diary;
+    [Rpc(SendTo.Everyone)]
+    public void CompassRpc(bool state)
+    {
+        ///animasyon manimasyon filan fişman da oynatılabilir burada
+        compassObject.SetActive(state);
+    }
+    public GameObject LanternObject;
+    [Rpc(SendTo.Everyone)]
+    internal void LanternRpc(bool v)
+    {
+        LanternObject.SetActive(v);
+    }
+    public GameObject FishingRodObject;
+    private FishingRod rod;
+    public GameObject bobber;
+    [Rpc(SendTo.Everyone)]
+    internal void FishingRodEquipRpc(bool v)
+    {
+        FishingRodObject.SetActive(v);
+    }
+        boberController bober;
+
+    [Rpc(SendTo.NotOwner)]
+    internal void FishingRodCastRpc(float charge,Vector3 dir,RpcParams rpcParams = default)
+    {
+        ulong id  = rpcParams.Receive.SenderClientId;
+        bober= UnityEngine.Object.Instantiate(bobber).GetComponent<boberController>();
+        bober.transform.position = bobber.transform.position;
+        bober.gameObject.SetActive(true);
+        bober._rigidbody = bober.GetComponent<Rigidbody>();
+        bober._rigidbody.AddForce(dir.normalized * charge*15,ForceMode.Impulse);
+        //rod.CastRod(charge,dir);
+    }
+    [Rpc(SendTo.NotOwner)]
+    internal void FishingRodReelRpc(Vector3 force,RpcParams rpcParams = default)
+    {
+        bober._rigidbody.AddForce(force, ForceMode.Force);
+    }
+    [Rpc(SendTo.NotOwner)]
+    internal void FishingRodFlickRpc(Vector3 force,RpcParams rpcParams = default)
+    {
+        bober._rigidbody.AddForce(force, ForceMode.Impulse);
+        
+    }
+    [Rpc(SendTo.NotOwner)]
+    internal void DestroyBobberRpc(RpcParams rpcParams = default)
+    {
+        Destroy(bober?.gameObject);
+        
+    }
+    [Rpc(SendTo.NotOwner)]
+    internal void HookRpc(ulong objectid,RpcParams rpcParams = default)
+    {
+        IHoldableItem obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)objectid].GetComponent<IHoldableItem>();
+        bober.transform.position = obj.spawnedMesh.transform.position;
+        obj.spawnedMesh.transform.parent = bober.transform;
+
+    }
+
+    [Rpc(SendTo.NotOwner)]
+    internal void OnRodRpc(ulong objectid,RpcParams rpcParams = default)
+    {
+        IHoldableItem obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)objectid].GetComponent<IHoldableItem>();
+        obj.spawnedMesh.transform.position = getRodTipPosition();
+        obj.spawnedMesh.transform.parent = transform;
+    }
+
+    [Rpc(SendTo.NotOwner)]
+    internal void boberSyncRpc(Vector3 pos,RpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        bober.MoveTowardsPosition(pos);
+        
+    }
+
 }
+
+
+

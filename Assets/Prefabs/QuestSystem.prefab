@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3838908770542197133
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8268999839659723037}
+  - component: {fileID: 806395657977693326}
+  - component: {fileID: 8001032846663056102}
+  - component: {fileID: 1841189966076368591}
+  - component: {fileID: 5139870459888172213}
+  - component: {fileID: 689369655530018143}
+  m_Layer: 0
+  m_Name: QuestSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8268999839659723037
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838908770542197133}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -35.63801, y: -0, z: -33.88681}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &806395657977693326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838908770542197133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 3217602834
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &8001032846663056102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838908770542197133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5716ba519ee22684285f27f4e977f301, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuestManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  database: {fileID: 11400000, guid: 1ebb81b888fbf9745900a5046f29a97f, type: 2}
+  questNpcPrefab: {fileID: 6950888020828119446, guid: 90803a74b90efd249afd00c94f194d1d, type: 3}
+  questItemPrefab: {fileID: 4427093582276888909, guid: 80ee0c6b1a2eabb418f2d0b1caa6fee8, type: 3}
+  islandDestinations:
+  - {fileID: 11400000, guid: 1ac2c65c99359304998772aaa092f991, type: 2}
+  minQuestsPerBoard: 1
+  maxQuestsPerBoard: 6
+  goldPerDayFactor: 0.1
+  expiryDays: 1
+  logGeneration: 1
+--- !u!114 &1841189966076368591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838908770542197133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a285215e6d0f8984ab38e95fe0ddde64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameDayClock
+  ShowTopMostFoldoutHeaderGroup: 1
+  dayLengthSeconds: 600
+  dayTimer: 0
+--- !u!114 &5139870459888172213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838908770542197133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f381b6e7adba2774685c94f1ef2a5edb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CrewGold
+  ShowTopMostFoldoutHeaderGroup: 1
+  startingGold: 0
+--- !u!114 &689369655530018143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838908770542197133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a94924b7fabd8bc48b7b5e3916d796de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuestLogUI
+  questListText: {fileID: 0}
+  goldText: {fileID: 0}
+  logToConsole: 1

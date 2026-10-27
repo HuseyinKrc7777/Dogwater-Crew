@@ -33,6 +33,18 @@ namespace SunCalcSharp
                 Altitude = Position.Altitude(H, phi, c.Declination)
             };
         }
+        /// <summary>
+        /// Get the declination of the sun at a date
+        /// </summary>
+        /// <param name="date">time and date calculate for</param>
+        /// <returns></returns>
+        public static double GetDeclination(DateTime date)
+        {
+           
+            double d = Calendar.ToDays(date);
+            SunCoordinates c = Sun.Coordinates(d);
+            return c.Declination;
+        }
 
         /// <summary>
         /// Calculates sun times for a given date, latitude/longitude, and, optionally,

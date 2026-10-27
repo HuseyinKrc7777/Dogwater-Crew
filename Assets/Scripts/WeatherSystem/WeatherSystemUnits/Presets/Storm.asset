@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 856dc67d707a88642b23b7f310be3546, type: 3}
+  m_Name: Storm
+  m_EditorClassIdentifier: Assembly-CSharp::WeatherPreset
+  displayName: Storm
+  volumeProfile: {fileID: 11400000, guid: ae992b35161395c4bab8a6ed4d160417, type: 2}
+  initialWeight: 10
+  transitions:
+  - target: {fileID: 11400000, guid: 04650f5eac7b47d41a1eb861b2c8fdf8, type: 2}
+    weight: 35
+  - target: {fileID: 11400000, guid: c4db96fd7a055734c959b8e211395f42, type: 2}
+    weight: 55
+  - target: {fileID: 11400000}
+    weight: 15
+  transitionSeconds: 60
+  minDurationGameHours: 4
+  maxDurationGameHours: 10
+  durationScaleByAbsLatitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.6
+      inSlope: 0
+      outSlope: 0.01
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 0.8
+      inSlope: 0.01
+      outSlope: 0.020000001
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40
+      value: 1.2
+      inSlope: 0.020000001
+      outSlope: 0.029999996
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 60
+      value: 1.8
+      inSlope: 0.029999996
+      outSlope: -0.04
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 80
+      value: 1
+      inSlope: -0.04
+      outSlope: 0
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minWindStrength: 1.5
+  maxWindStrength: 2.2
+  maxWindVeerDegrees: 35
+  currentMultiplier: 1.8
+  precipitation: 1
+  lightningPerMinute: 3
+  sunlight: 0.12
+  moistureSensitivity: 0.5
+  storminessSensitivity: 1
