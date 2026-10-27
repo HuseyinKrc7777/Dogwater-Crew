@@ -1,3 +1,4 @@
+using DogWater;
 using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
@@ -6,8 +7,11 @@ public class Wheel : MonoBehaviour, IInteractable, IHandInput
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public WheelNetworkController controller;
+    private FirstPersonController PlayerController;
     public void OnInteract(Player player)
     {
+        PlayerController = player.GetComponent<FirstPersonController>();
+
         //        throw new System.NotImplementedException();
     }
 
@@ -17,8 +21,13 @@ public class Wheel : MonoBehaviour, IInteractable, IHandInput
     }
 
     // Update is called once per frame
+    bool holdingRight = false;
     void Update()
     {
+        if(holdingRight==false && PlayerController!=null)
+            PlayerController.cameraRotationAllowed = false;
+        else
+            holdingRight = false;
         Vector3 euler = transform.localEulerAngles;
 
         // convert to -180 → 180 range
@@ -48,20 +57,27 @@ public class Wheel : MonoBehaviour, IInteractable, IHandInput
         //TODO burda belki x ve y nin toplamı veya tutuş yerine göre x veya y daha ağırlıklı olacak şekilde olabilir
         //mesela önünden tutarsam sadece x , yanından tutarsan sadece y , ama yöne göre aynalanmış filan fişman öyle yani
         //belki olabilir ama gerek yok gibi bişey
+        PlayerController.cameraRotationAllowed = false;
+        
         controller.RotateRudderRpc(yValue * 3);
     }
 
     public void OnUnInteract(Player player)
     {
-        throw new System.NotImplementedException();
+        PlayerController.cameraRotationAllowed = true;
+        PlayerController=null;
     }
 
     public void OnRightHandInput(float xValue, float yValue)
     {
-        //test için yapılmıştır , tamamlanmış ürünü temsil etmemektedir
-        controller.RotateRudderRpc(xValue);
+        holdingRight = true;
+        PlayerController.cameraRotationAllowed = true;
+        
 
+        
+        //throw new System.NotImplementedException();
     }
+
 
     public void OnButtonInput()
     {

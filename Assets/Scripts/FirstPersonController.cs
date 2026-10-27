@@ -351,7 +351,7 @@ namespace DogWater
 
             }
         }
-        bool cameraRotationAllowed = true;
+        public bool cameraRotationAllowed = true;
         private void CameraRotation()
         {
             if (PauseMenuController.Instance.isMenuOpen || PlayerScript.diary.open) 
@@ -557,7 +557,8 @@ namespace DogWater
                 else if (_handMode)
                 {
                     handModeTimeoutCounter += Time.deltaTime;
-                    if (handModeTimeoutCounter > 3)
+                    //TODO buraya interaksiyon sırasında hareket edilen şeylerin exceptionları şey olacak
+                    if (handModeTimeoutCounter > 3 && CurrentInteract is RatLines)
                     {
                         ExitHandMode();
                         CurrentInteract.OnUnInteract(PlayerScript);
