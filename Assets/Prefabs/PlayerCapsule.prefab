@@ -1634,7 +1634,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3744462911
+  GlobalObjectIdHash: 3776343090
   InScenePlacedSourceGlobalObjectIdHash: 3744462911
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -1685,6 +1685,7 @@ MonoBehaviour:
   _verticalVelocity: 0
   yawSmoothTime: 0.08
   tiltLerpSpeed: 12
+  cameraRotationAllowed: 1
   moveInputEnabled: 1
   _handMode: 0
   cursorClosed: {fileID: 2800000, guid: 4cf01273b1dbb68818f6ba4a07fd708d, type: 3}

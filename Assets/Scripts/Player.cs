@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using DogWater;
@@ -20,7 +21,8 @@ public class Player : NetworkBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public FirstPersonController controller;
-    public Vector3 LookDirection {get => controller.CinemachineCameraTarget.transform.forward;}
+    public Vector3 LookDirection { get => controller.CinemachineCameraTarget.transform.forward; }
+
     [SerializeField] public TextMeshPro nameDisplay;
     public List<IItem> Items = new();
     public Vector3 getRodTipPosition()
@@ -60,6 +62,8 @@ public class Player : NetworkBehaviour
             SyncNames();
         }
 
+        
+
     }
     protected override void OnNetworkPostSpawn()
     {
@@ -67,10 +71,10 @@ public class Player : NetworkBehaviour
 
         if (IsOwner)
         {
-            
+
             Items.Add(new Spyglass());
 
-            
+
             Items.Add(new EquipableCompass());
 
             Items.Add(new Sextant());
@@ -86,6 +90,7 @@ public class Player : NetworkBehaviour
 
 
     }
+    
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
@@ -117,15 +122,15 @@ public class Player : NetworkBehaviour
     float counter = 0;
     void Update()
     {
-        if(!IsOwner)
+        if (!IsOwner)
             return;
-        if(rod.bober != null)
+        if (rod.bober != null)
         {
-            counter+=Time.deltaTime;
-            if(counter>=0.2f)
+            counter += Time.deltaTime;
+            if (counter >= 0.2f)
             {
                 boberSyncRpc(rod.bober.transform.position);
-                counter=0;
+                counter = 0;
             }
         }
     }
@@ -171,38 +176,38 @@ public class Player : NetworkBehaviour
     {
         FishingRodObject.SetActive(v);
     }
-        boberController bober;
+    boberController bober;
 
     [Rpc(SendTo.NotOwner)]
-    internal void FishingRodCastRpc(float charge,Vector3 dir,RpcParams rpcParams = default)
+    internal void FishingRodCastRpc(float charge, Vector3 dir, RpcParams rpcParams = default)
     {
-        ulong id  = rpcParams.Receive.SenderClientId;
-        bober= UnityEngine.Object.Instantiate(bobber).GetComponent<boberController>();
+        ulong id = rpcParams.Receive.SenderClientId;
+        bober = UnityEngine.Object.Instantiate(bobber).GetComponent<boberController>();
         bober.transform.position = bobber.transform.position;
         bober.gameObject.SetActive(true);
         bober._rigidbody = bober.GetComponent<Rigidbody>();
-        bober._rigidbody.AddForce(dir.normalized * charge*15,ForceMode.Impulse);
+        bober._rigidbody.AddForce(dir.normalized * charge * 15, ForceMode.Impulse);
         //rod.CastRod(charge,dir);
     }
     [Rpc(SendTo.NotOwner)]
-    internal void FishingRodReelRpc(Vector3 force,RpcParams rpcParams = default)
+    internal void FishingRodReelRpc(Vector3 force, RpcParams rpcParams = default)
     {
         bober._rigidbody.AddForce(force, ForceMode.Force);
     }
     [Rpc(SendTo.NotOwner)]
-    internal void FishingRodFlickRpc(Vector3 force,RpcParams rpcParams = default)
+    internal void FishingRodFlickRpc(Vector3 force, RpcParams rpcParams = default)
     {
         bober._rigidbody.AddForce(force, ForceMode.Impulse);
-        
+
     }
     [Rpc(SendTo.NotOwner)]
     internal void DestroyBobberRpc(RpcParams rpcParams = default)
     {
         Destroy(bober?.gameObject);
-        
+
     }
     [Rpc(SendTo.NotOwner)]
-    internal void HookRpc(ulong objectid,RpcParams rpcParams = default)
+    internal void HookRpc(ulong objectid, RpcParams rpcParams = default)
     {
         IHoldableItem obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)objectid].GetComponent<IHoldableItem>();
         bober.transform.position = obj.spawnedMesh.transform.position;
@@ -211,7 +216,7 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc(SendTo.NotOwner)]
-    internal void OnRodRpc(ulong objectid,RpcParams rpcParams = default)
+    internal void OnRodRpc(ulong objectid, RpcParams rpcParams = default)
     {
         IHoldableItem obj = NetworkManager.Singleton.SpawnManager.SpawnedObjects[(ulong)objectid].GetComponent<IHoldableItem>();
         obj.spawnedMesh.transform.position = getRodTipPosition();
@@ -219,11 +224,11 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc(SendTo.NotOwner)]
-    internal void boberSyncRpc(Vector3 pos,RpcParams rpcParams = default)
+    internal void boberSyncRpc(Vector3 pos, RpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
         bober.MoveTowardsPosition(pos);
-        
+
     }
 
 }
