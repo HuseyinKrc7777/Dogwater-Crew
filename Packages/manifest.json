@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.adrenak.concentus-unity": "https://github.com/adrenak/concentus-unity.git?path=/Assets/Concentus-Unity",
+    "com.adrenak.unimic": "https://github.com/adrenak/unimic.git?path=/Assets/UniMic",
     "com.unity.ai.navigation": "2.0.14",
     "com.unity.cinemachine": "3.1.6",
     "com.unity.collab-proxy": "2.13.6",
